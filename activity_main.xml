@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:text="GJIMT Registration Form"
+        android:textColor="@color/black"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <View
+        android:layout_width="400dp"
+        android:layout_height="1dp"
+        android:background="#ACA1A1"
+        android:layout_gravity="center"
+        android:layout_marginTop="2dp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User Name:"
+            android:textSize="20dp"
+            android:layout_marginLeft="5dp"/>
+        <EditText
+            android:id="@+id/userName"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:textSize="20dp"
+            android:background="#5676"
+            android:hint="Enter Username.."
+            android:layout_marginLeft="3dp"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/userAlert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="#B71C1C"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Password:"
+            android:textSize="20dp"
+            android:layout_marginLeft="5dp" />
+        <EditText
+            android:id="@+id/userPassword"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:textSize="20dp"
+            android:background="#5676"
+            android:hint="Enter Password.."
+            android:layout_marginLeft="13dp"
+            android:inputType="textPassword" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="5dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Contact:"
+            android:textSize="20dp"
+            android:layout_marginLeft="5dp" />
+        <EditText
+            android:id="@+id/userContact"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:textSize="20dp"
+            android:background="#5676"
+            android:hint="Enter Contact No.."
+            android:layout_marginLeft="32dp"
+            android:inputType="number" />
+
+    </LinearLayout>
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gender"
+            android:textSize="20dp"
+            android:layout_marginRight="35dp"
+            android:layout_marginLeft="5dp"/>
+        <RadioButton
+            android:id="@+id/Male"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Male"
+            android:gravity="center"
+            android:textSize="20dp"/>
+        <RadioButton
+            android:id="@+id/Female"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Female"
+            android:gravity="center"
+            android:textSize="20dp"/>
+    </RadioGroup>
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20dp"
+            android:text="Skills"
+            android:layout_marginRight="53dp"
+            android:layout_marginLeft="5dp"/>
+        <CheckBox
+            android:id="@+id/HTML"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HTML"
+            android:textSize="20dp"/>
+        <CheckBox
+            android:id="@+id/CSS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CSS"
+            android:textSize="20dp"/>
+        <CheckBox
+            android:id="@+id/PHP"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PHP"
+            android:textSize="20dp"/>
+    </RadioGroup>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Country"
+            android:textSize="20dp"
+            android:layout_marginLeft="5dp"/>
+        <Spinner
+            android:id="@+id/SpCountry"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+
+            android:layout_marginLeft="38dp"
+            android:textSize="30dp"/>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Comment"
+            android:textSize="20dp"
+
+            android:layout_marginLeft="5dp"/>
+        <EditText
+            android:id="@+id/usercomment"
+            android:layout_width="300dp"
+            android:layout_height="100dp"
+            android:hint="Enter your comments.."
+            android:layout_marginLeft="15dp"
+            android:background="#5676"/>
+
+    </LinearLayout>
+    <Button
+        android:id="@+id/btnSubmit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Click To Submit"
+        android:textColor="#F5FBF6"
+        android:background="#B71C1C"
+        android:layout_marginTop="10dp"/>
+
+</LinearLayout>
+
+
