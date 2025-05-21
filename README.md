@@ -49,5 +49,34 @@ We welcome contributions from the community! To contribute, follow these steps:
 
 
 For any questions or concerns, please contact the project maintainers at [krishanmurari.gjimt@gmail.com](mailto:krishanmurari.gjimt@gmail.com).
+## ✨ Author: Krishan Murari
+
+👋 Welcome to [Krishan Murari's](https://krishanmurari.live/) profile!  
+<a href="https://krishanmurari.live/"><img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="25px"></a>
+
+Connect with me on:
+
+<a href="https://www.linkedin.com/in/krishan-murari/" target="_blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/linked-in-alt.svg" alt="LinkedIn" height="30" width="40" /></a>
+&nbsp;
+<a href="https://twitter.com/KrishanMuraari" target="_blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/twitter.svg" alt="Twitter" height="30" width="40" /></a>
+&nbsp;
+<a href="https://www.instagram.com/krishanmurariji/" target="_blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/instagram.svg" alt="Instagram" height="30" width="40" /></a>
+&nbsp;
+<a href="https://www.youtube.com/@Decode-And-discover" target="_blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/youtube.svg" alt="YouTube" height="30" width="40" /></a>
+&nbsp;
+<a href="https://github.com/krishanmurariji" target="_blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/github.svg" alt="GitHub" height="30" width="40" /></a>
+&nbsp;
+<a href="https://leetcode.com/Krishanmurariji/" target="_blank"><img align="center" src="https://raw.githubusercontent.com/rahuldkjain/github-profile-readme-generator/master/src/images/icons/Social/leet-code.svg" alt="LeetCode" height="30" width="40" /></a>
+
+---
+
+## 👨‍💻 About Me
+
+- 🔭 I’m currently working on JavaScript and React projects  
+- 🌱 I’m learning Data Structures, Algorithms, and modern web development tools  
+- ✍ I’m a Web Developer, Designer, Teacher & Student  
+- 🎭 I also enjoy poetry, movies, and tech exploration  
+
+---
 
 Happy coding! 🎉
