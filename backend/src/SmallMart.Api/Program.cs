@@ -8,7 +8,10 @@ using Microsoft.IdentityModel.Tokens;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
+using Microsoft.Extensions.FileProviders;
 using SmallMart.Api.Email;
+using SmallMart.Api.Shops;
+using SmallMart.Api.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
@@ -64,6 +67,8 @@ builder.Services
     });
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
+builder.Services.AddScoped<ShopAccess>();
+builder.Services.AddSingleton<ImageStorage>();
 
 builder.Services.Configure<ExternalAuthOptions>(config.GetSection(ExternalAuthOptions.Section));
 builder.Services.AddSingleton<IExternalTokenValidator, GoogleTokenValidator>();
@@ -98,6 +103,21 @@ else
     app.UseHttpsRedirection();
 
 app.UseCors();
+
+// Uploaded pictures. "nosniff" stops browsers from treating a file as anything but the image type we stored.
+var imageStorage = app.Services.GetRequiredService<ImageStorage>();
+Directory.CreateDirectory(imageStorage.Root);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imageStorage.Root),
+    RequestPath = ImageStorage.RequestPath,
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.XContentTypeOptions = "nosniff";
+        ctx.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+    },
+});
+
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

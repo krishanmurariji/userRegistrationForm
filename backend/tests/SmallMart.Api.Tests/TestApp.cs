@@ -26,6 +26,8 @@ public class TestApp : WebApplicationFactory<Program>
         (Environment.GetEnvironmentVariable("SMALLMART_TEST_DB") ?? "Host=localhost;Username=postgres;Password=postgres")
         + $";Database=smallmart_test_{Guid.NewGuid():N}";
 
+    private readonly string _uploads = Path.Combine(Path.GetTempPath(), $"smallmart-test-{Guid.NewGuid():N}");
+
     public FakeEmailSender Emails { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -38,6 +40,7 @@ public class TestApp : WebApplicationFactory<Program>
         builder.UseSetting("Seed:AdminEmail", AdminEmail);
         builder.UseSetting("Seed:AdminPassword", AdminPassword);
         builder.UseSetting("App:ClientUrl", "https://app.test");
+        builder.UseSetting("Storage:Root", _uploads);
 
         builder.ConfigureServices(services =>
         {
@@ -54,6 +57,8 @@ public class TestApp : WebApplicationFactory<Program>
         using (var scope = Services.CreateScope())
             await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureDeletedAsync();
         await base.DisposeAsync();
+        if (Directory.Exists(_uploads))
+            Directory.Delete(_uploads, recursive: true);
         GC.SuppressFinalize(this);
     }
 
