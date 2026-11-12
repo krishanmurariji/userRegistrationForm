@@ -10,7 +10,9 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | 1 | Backend: accounts, sign-in, Google/Microsoft sign-in, roles | Done, tested |
 | 1 | App: sign-in, register, password reset and email confirmation screens | Done, tested in a browser |
 | 1 | App: Google and Microsoft sign-in buttons | Not started (needs OAuth client ids) |
-| 2+ | Shops, items, cart, payments, orders, inventory | Not started |
+| 2 | Shops, categories, items with photos (API and app screens) | Done, tested |
+| 2 | Item variants, staff invites, opening hours, Excel import | Not started |
+| 3+ | Customer browsing, cart, payments, orders, inventory | Not started |
 
 ## App (`app/`)
 
@@ -62,6 +64,20 @@ Tests run the real API against a throwaway PostgreSQL database. Set `SMALLMART_T
 | `GET /api/auth/me` | Current user (needs access token) |
 | `GET /api/admin/users` | List/search users (platform admin) |
 | `POST /api/admin/users/{id}/suspend`, `/unsuspend` | Block or unblock an account (platform admin) |
+
+Shop management (signed-in members of the shop only; others get 404):
+
+| Method and path | Purpose |
+|---|---|
+| `GET /api/shops/mine` | Shops the user owns or works in |
+| `POST /api/shops`, `GET/PUT /api/shops/{id}` | Create, read, update a shop |
+| `POST /api/shops/{id}/logo` | Upload the logo (form field `file`) |
+| `GET/POST /api/shops/{id}/categories`, `PUT/DELETE .../{categoryId}` | Categories |
+| `GET/POST /api/shops/{id}/items`, `GET/PUT/DELETE .../{itemId}` | Items (`?search=`, `?categoryId=`) |
+| `POST /api/shops/{id}/items/{itemId}/image` | Upload the item photo (form field `file`) |
+
+Pictures must be JPEG, PNG or WebP up to 5 MB. They are stored under `App_Data/uploads` (set `Storage__Root`
+to a persistent folder in production) and served from `/files/...`.
 
 Errors are `application/problem+json` with a machine-readable `code` (for example `invalid_credentials`,
 `email_not_confirmed`, `locked_out`, `account_exists`).

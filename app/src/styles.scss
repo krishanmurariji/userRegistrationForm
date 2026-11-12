@@ -59,3 +59,144 @@
     text-decoration: none;
   }
 }
+
+/* Shared layout of the signed-in pages. */
+.page-column {
+  max-width: 640px;
+  margin: 0 auto;
+  padding-bottom: 88px; /* room for the floating add button */
+
+  h1 {
+    margin: 8px 0 16px;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  .section-title {
+    margin: 24px 0 4px;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .message {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .muted {
+    color: var(--ion-color-medium-shade);
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  .centered {
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+  }
+
+  .chips {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 0 8px 8px;
+  }
+
+  .mrp {
+    margin-left: 6px;
+    color: var(--ion-color-medium);
+  }
+
+  .summary {
+    margin-inline: 0;
+  }
+
+  .plain-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+  }
+
+  .add-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+
+    ion-input {
+      flex: 1;
+    }
+  }
+
+  .empty {
+    text-align: center;
+    padding: 48px 16px;
+
+    > ion-icon {
+      font-size: 64px;
+      color: var(--ion-color-primary);
+    }
+
+    h2 {
+      margin: 12px 0 4px;
+      font-weight: 700;
+    }
+
+    p {
+      margin: 0 0 20px;
+      color: var(--ion-color-medium-shade);
+    }
+  }
+
+  .thumb {
+    --size: 48px;
+    --border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ion-color-light);
+    color: var(--ion-color-medium);
+    font-size: 24px;
+
+    img {
+      object-fit: cover;
+    }
+  }
+
+  .photo-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .photo {
+    width: 96px;
+    height: 96px;
+    flex: none;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ion-color-light);
+    color: var(--ion-color-medium-shade);
+    font-size: 0.8rem;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}

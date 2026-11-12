@@ -16,6 +16,9 @@ export function toApiError(error: unknown): ApiError {
     if (error.status === 429) {
       return { code: 'rate_limited', message: 'Too many attempts. Please wait a minute and try again.' };
     }
+    if (error.status === 404) {
+      return { code: 'not_found', message: 'This is not available. It may have been removed, or you may not have access to it.' };
+    }
     const body = error.error;
     if (body && typeof body === 'object') {
       if (typeof body.code === 'string' && typeof body.detail === 'string') {

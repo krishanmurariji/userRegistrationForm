@@ -23,7 +23,8 @@ or reset link from the API's log output.
 | `src/app/core/auth.service.ts` | Sign-in state, saved session, token refresh |
 | `src/app/core/auth.interceptor.ts` | Adds the access token to API calls, refreshes it when expired |
 | `src/app/core/auth.guard.ts` | Route guards for signed-in and signed-out pages |
-| `src/app/pages/` | Login, register, forgot password, reset password, confirm email, home |
+| `src/app/core/shop.service.ts` | Shop, category and item API calls |
+| `src/app/pages/` | Sign-in screens, my shops, shop page, shop form, categories, item form, account |
 
 ## Not done yet
 
