@@ -97,7 +97,7 @@ public partial class FakeEmailSender : IEmailSender
     /// <summary>Reads the user id and token out of the most recent link emailed to this address.</summary>
     public ConfirmEmailRequest LinkFor(string email)
     {
-        var body = _sent.Last(m => m.To == email).Body;
+        var body = System.Net.WebUtility.HtmlDecode(_sent.Last(m => m.To == email).Body);
         var match = LinkPattern().Match(body);
         Assert.True(match.Success, "No link found in the email.");
         return new ConfirmEmailRequest(Guid.Parse(match.Groups[1].Value), match.Groups[2].Value);
