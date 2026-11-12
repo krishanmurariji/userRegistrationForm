@@ -131,7 +131,7 @@ public class AuthController(
             var link = ClientLink("reset-password", user.Id, token);
             await email.SendAsync(user.Email!, "Reset your Small Mart password",
                 $"<p>Hello {WebUtility.HtmlEncode(user.FullName)},</p>" +
-                $"<p><a href=\"{link}\">Choose a new password</a>. This link expires in 24 hours.</p>" +
+                $"<p><a href=\"{WebUtility.HtmlEncode(link)}\">Choose a new password</a>. This link expires in 24 hours.</p>" +
                 "<p>If you did not ask for this, you can ignore this email.</p>", ct);
         }
         return Ok(new MessageResponse(CheckEmailMessage));
@@ -243,7 +243,7 @@ public class AuthController(
         var link = ClientLink("confirm-email", user.Id, token);
         await email.SendAsync(user.Email!, "Confirm your Small Mart account",
             $"<p>Hello {WebUtility.HtmlEncode(user.FullName)},</p>" +
-            $"<p><a href=\"{link}\">Confirm your email address</a> to finish creating your account.</p>", ct);
+            $"<p><a href=\"{WebUtility.HtmlEncode(link)}\">Confirm your email address</a> to finish creating your account.</p>", ct);
     }
 
     private string ClientLink(string path, Guid userId, string token) =>

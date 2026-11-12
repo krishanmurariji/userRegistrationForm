@@ -76,7 +76,7 @@ else
     builder.Services.AddSingleton<IEmailSender, SmtpEmailSender>();
 
 // Slows down password guessing and email flooding: a per-IP limit on the sign-in endpoints.
-var authPermitsPerMinute = config.GetValue("RateLimiting:AuthPermitsPerMinute", 20);
+var authPermitsPerMinute = config.GetValue("RateLimiting:AuthPermitsPerMinute", 60);
 builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

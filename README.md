@@ -8,8 +8,13 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | Phase | Scope | State |
 |---|---|---|
 | 1 | Backend: accounts, sign-in, Google/Microsoft sign-in, roles | Done, tested |
-| 1 | App: Ionic + Angular sign-in screens | Not started |
+| 1 | App: sign-in, register, password reset and email confirmation screens | Done, tested in a browser |
+| 1 | App: Google and Microsoft sign-in buttons | Not started (needs OAuth client ids) |
 | 2+ | Shops, items, cart, payments, orders, inventory | Not started |
+
+## App (`app/`)
+
+Angular, Ionic and Capacitor. See [app/README.md](app/README.md).
 
 ## Backend (`backend/`)
 
@@ -71,7 +76,7 @@ Errors are `application/problem+json` with a machine-readable `code` (for exampl
 - Register, forgot-password and resend-confirmation answer the same way whether or not the email exists.
 - Google/Microsoft accounts are matched by the provider's account id. They attach to an existing account
   by email only when the provider verified the email and the existing account's email is confirmed.
-- Sign-in endpoints are rate-limited per IP (default 20 requests a minute).
+- Sign-in endpoints are rate-limited per IP (default 60 requests a minute).
 
 ### Configuration for production
 

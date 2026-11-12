@@ -1,0 +1,61 @@
+@import '@ionic/angular/css/core.css';
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/flex-utils.css';
+@import '@ionic/angular/css/text-alignment.css';
+@import '@ionic/angular/css/display.css';
+@import '@ionic/angular/css/palettes/dark.system.css';
+
+:root {
+  --ion-color-primary: #0b7a4b;
+  --ion-color-primary-rgb: 11, 122, 75;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #0a6b42;
+  --ion-color-primary-tint: #23875d;
+}
+
+/* Shared layout of the sign-in pages: one centred column that fits a phone and stays narrow on desktop. */
+.auth-card {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 4px 32px;
+
+  h1 {
+    margin: 0 0 4px;
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+
+  .lead {
+    margin: 0 0 24px;
+    color: var(--ion-color-medium-shade);
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .message {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .links {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+
+  a {
+    color: var(--ion-color-primary);
+    font-weight: 600;
+    text-decoration: none;
+  }
+}
