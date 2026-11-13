@@ -12,7 +12,7 @@ import { ShopService, fileUrl } from '../core/shop.service';
   template: `
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button [defaultHref]="shopId ? '/shops/' + shopId : '/'" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button [defaultHref]="shopId ? '/shops/' + shopId : '/my-shops'" /></ion-buttons>
         <ion-title>{{ shopId ? 'Shop details' : 'Open a shop' }}</ion-title>
       </ion-toolbar>
     </ion-header>

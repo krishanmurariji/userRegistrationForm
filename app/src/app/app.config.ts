@@ -5,6 +5,7 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/auth.interceptor';
 import { AuthService } from './core/auth.service';
+import { CartService } from './core/cart.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,6 +15,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     // The saved session must be loaded before the first route guard runs.
-    provideAppInitializer(() => inject(AuthService).init()),
+    provideAppInitializer(async () => {
+      // Both services must be looked up before the first await.
+      const auth = inject(AuthService);
+      const cart = inject(CartService);
+      await auth.init();
+      await cart.init();
+    }),
   ],
 };

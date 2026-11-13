@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Category, Item, ItemInput, Shop, ShopInput } from './shop.models';
+import { Order, OrderStatus, OrderSummary } from './store.models';
 
 /** Full address of a picture path returned by the API, or null when there is no picture. */
 export function fileUrl(path: string | null | undefined): string | null {
@@ -76,6 +77,42 @@ export class ShopService {
 
   uploadItemImage(shopId: string, id: string, file: File): Promise<Item> {
     return firstValueFrom(this.http.post<Item>(`${this.api}/${shopId}/items/${id}/image`, this.form(file)));
+  }
+
+  // ----- Orders, as handled by the shop -----
+
+  orders(shopId: string, view: string): Promise<OrderSummary[]> {
+    const params = view ? new HttpParams().set('view', view) : undefined;
+    return firstValueFrom(this.http.get<OrderSummary[]>(`${this.api}/${shopId}/orders`, { params }));
+  }
+
+  orderCounts(shopId: string): Promise<{ new: number; active: number; payments: number }> {
+    return firstValueFrom(this.http.get<{ new: number; active: number; payments: number }>(`${this.api}/${shopId}/orders/counts`));
+  }
+
+  order(shopId: string, id: string): Promise<Order> {
+    return firstValueFrom(this.http.get<Order>(`${this.api}/${shopId}/orders/${id}`));
+  }
+
+  /** The customer's payment screenshot. It is private, so it is fetched with the sign-in token, not by a plain link. */
+  upiProof(shopId: string, id: string): Promise<Blob> {
+    return firstValueFrom(this.http.get(`${this.api}/${shopId}/orders/${id}/upi-proof`, { responseType: 'blob' }));
+  }
+
+  advanceOrder(shopId: string, id: string, status: OrderStatus): Promise<Order> {
+    return firstValueFrom(this.http.post<Order>(`${this.api}/${shopId}/orders/${id}/status`, { status }));
+  }
+
+  cancelOrder(shopId: string, id: string, reason: string): Promise<Order> {
+    return firstValueFrom(this.http.post<Order>(`${this.api}/${shopId}/orders/${id}/cancel`, { reason }));
+  }
+
+  verifyPayment(shopId: string, id: string): Promise<Order> {
+    return firstValueFrom(this.http.post<Order>(`${this.api}/${shopId}/orders/${id}/payment/verify`, null));
+  }
+
+  rejectPayment(shopId: string, id: string, reason: string): Promise<Order> {
+    return firstValueFrom(this.http.post<Order>(`${this.api}/${shopId}/orders/${id}/payment/reject`, { reason }));
   }
 
   private form(file: File): FormData {

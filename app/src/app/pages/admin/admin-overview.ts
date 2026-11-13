@@ -25,6 +25,12 @@ import { toApiError } from '../../core/api-error';
         <div class="stat" [class.alert]="s.deactivatedShops > 0"><span class="value">{{ s.deactivatedShops }}</span><span class="label">Deactivated shops</span></div>
         <div class="stat"><span class="value">{{ s.items }}</span><span class="label">Items listed</span></div>
       </div>
+      <h2 class="section-title">Orders</h2>
+      <div class="stats">
+        <div class="stat"><span class="value">{{ s.orders }}</span><span class="label">Total orders</span></div>
+        <div class="stat"><span class="value">{{ s.ordersLast24Hours }}</span><span class="label">Orders in 24 hours</span></div>
+        <div class="stat"><span class="value">{{ s.paymentsAwaitingVerification }}</span><span class="label">UPI payments waiting</span></div>
+      </div>
       <h2 class="section-title">Last 24 hours</h2>
       <div class="stats">
         <div class="stat"><span class="value">{{ s.signInsLast24Hours }}</span><span class="label">Sign-ins</span></div>

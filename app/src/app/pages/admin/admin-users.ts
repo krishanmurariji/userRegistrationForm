@@ -17,6 +17,9 @@ type Filter = 'all' | 'Customer' | 'ShopOwner' | 'suspended';
     <ion-button routerLink="/admin/shop-owners/new" class="ion-margin-bottom">
       <ion-icon slot="start" name="add-outline" />Add shop owner
     </ion-button>
+    <ion-button fill="outline" [disabled]="exporting()" (click)="exportCsv()" class="ion-margin-bottom">
+      {{ exporting() ? 'Preparing…' : 'Export to Excel (CSV)' }}
+    </ion-button>
     <ion-searchbar placeholder="Search by name or email" [debounce]="300"
       (ionInput)="search.set($event.detail.value ?? ''); list.reload()" />
     <ion-segment [value]="filter()" (ionChange)="filter.set($any($event.detail.value)); list.reload()" [scrollable]="true">
@@ -38,7 +41,7 @@ type Filter = 'all' | 'Customer' | 'ShopOwner' | 'suspended';
       @for (user of list.items(); track user.id) {
         <ion-item>
           <ion-label>
-            <h2>{{ user.fullName }}</h2>
+            <h2><a [routerLink]="['/admin/users', user.id]">{{ user.fullName }}</a></h2>
             <p>{{ user.email }}</p>
             <p class="meta">
               Joined {{ user.createdAt | date: 'd MMM y' }}
@@ -96,6 +99,19 @@ export class AdminUsers {
       this.refresh();
       void this.list.reload();
     });
+  }
+
+  protected readonly exporting = signal(false);
+
+  protected async exportCsv(): Promise<void> {
+    this.exporting.set(true);
+    try {
+      await this.admin.export('users');
+    } catch (e) {
+      this.list.error.set(toApiError(e).message);
+    } finally {
+      this.exporting.set(false);
+    }
   }
 
   protected async actions(user: AdminUser): Promise<void> {

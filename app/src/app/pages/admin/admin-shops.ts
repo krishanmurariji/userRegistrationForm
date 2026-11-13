@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AlertController, IonBadge, IonButton, IonItem, IonLabel, IonList, IonSearchbar, IonSegment, IonSegmentButton, IonSpinner, IonText } from '@ionic/angular';
 import { AdminService, AdminShop } from '../../core/admin.service';
 import { toApiError } from '../../core/api-error';
@@ -9,8 +10,11 @@ type Filter = 'all' | 'active' | 'deactivated';
 
 @Component({
   selector: 'app-admin-shops',
-  imports: [DatePipe, IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonBadge, IonButton, IonSpinner, IonText],
+  imports: [DatePipe, RouterLink, IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonBadge, IonButton, IonSpinner, IonText],
   template: `
+    <ion-button fill="outline" [disabled]="exporting()" (click)="exportCsv()" class="ion-margin-bottom">
+      {{ exporting() ? 'Preparing…' : 'Export to Excel (CSV)' }}
+    </ion-button>
     <ion-searchbar placeholder="Search by shop, city or owner email" [debounce]="300"
       (ionInput)="search.set($event.detail.value ?? ''); list.reload()" />
     <ion-segment [value]="filter()" (ionChange)="filter.set($any($event.detail.value)); list.reload()">
@@ -31,7 +35,7 @@ type Filter = 'all' | 'active' | 'deactivated';
       @for (shop of list.items(); track shop.id) {
         <ion-item>
           <ion-label>
-            <h2>{{ shop.name }}</h2>
+            <h2><a [routerLink]="['/admin/shops', shop.id]">{{ shop.name }}</a></h2>
             <p>{{ shop.city }} · {{ shop.phone }}</p>
             <p>Owner: {{ shop.ownerName ?? 'none' }} @if (shop.ownerEmail) { ({{ shop.ownerEmail }}) }</p>
             <p class="meta">
@@ -82,6 +86,19 @@ export class AdminShops {
 
   constructor() {
     void this.list.reload();
+  }
+
+  protected readonly exporting = signal(false);
+
+  protected async exportCsv(): Promise<void> {
+    this.exporting.set(true);
+    try {
+      await this.admin.export('shops');
+    } catch (e) {
+      this.list.error.set(toApiError(e).message);
+    } finally {
+      this.exporting.set(false);
+    }
   }
 
   protected async toggle(shop: AdminShop): Promise<void> {

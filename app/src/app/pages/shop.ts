@@ -15,7 +15,7 @@ import { ShopService, fileUrl } from '../core/shop.service';
   template: `
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/my-shops" /></ion-buttons>
         <ion-title>{{ shop()?.name ?? 'Shop' }}</ion-title>
         <ion-buttons slot="end">
           <ion-button [routerLink]="['/shops', shopId, 'edit']" aria-label="Edit shop details">
@@ -41,6 +41,11 @@ import { ShopService, fileUrl } from '../core/shop.service';
               <ion-toggle [checked]="s.isOpen" [disabled]="saving() || !s.isActive" (ionChange)="setOpen($event.detail.checked)">
                 {{ s.isOpen ? 'Open for orders' : 'Closed' }}
               </ion-toggle>
+            </ion-item>
+            <ion-item [routerLink]="['/shops', shopId, 'orders']" detail>
+              <ion-label>Orders</ion-label>
+              @if (counts().new) { <ion-badge slot="end" color="warning">{{ counts().new }} new</ion-badge> }
+              @if (counts().payments) { <ion-badge slot="end" color="danger">{{ counts().payments }} to verify</ion-badge> }
             </ion-item>
             <ion-item [routerLink]="['/shops', shopId, 'categories']" detail lines="none">
               <ion-label>Categories</ion-label>
@@ -109,6 +114,7 @@ export class ShopPage {
   protected readonly shopId = inject(ActivatedRoute).snapshot.paramMap.get('shopId')!;
   protected readonly shop = signal<Shop | null>(null);
   protected readonly categories = signal<Category[]>([]);
+  protected readonly counts = signal({ new: 0, active: 0, payments: 0 });
   protected readonly items = signal<Item[]>([]);
   protected readonly search = signal('');
   protected readonly categoryId = signal<string | null>(null);
@@ -128,6 +134,7 @@ export class ShopPage {
       const [shop, categories] = await Promise.all([this.shops.shop(this.shopId), this.shops.categories(this.shopId)]);
       this.shop.set(shop);
       this.categories.set(categories);
+      void this.shops.orderCounts(this.shopId).then((counts) => this.counts.set(counts)).catch(() => undefined);
       if (this.categoryId() && !categories.some((c) => c.id === this.categoryId())) this.categoryId.set(null);
       await this.loadItems();
     } catch (e) {

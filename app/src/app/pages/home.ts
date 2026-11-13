@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonSpinner, IonText, IonThumbnail, IonTitle, IonToolbar } from '@ionic/angular';
+import { IonBackButton, IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonSpinner, IonText, IonThumbnail, IonTitle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline, personCircleOutline, storefrontOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
@@ -8,19 +8,15 @@ import { AuthService } from '../core/auth.service';
 import { Shop } from '../core/shop.models';
 import { ShopService, fileUrl } from '../core/shop.service';
 
-/** Landing page: shop owners see their shops, customers a welcome until shop browsing is built. */
+/** The shops a shop owner manages. */
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonSpinner, IonText],
+  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-title>{{ auth.isShopOwner() ? 'My shops' : 'Small Mart' }}</ion-title>
-        <ion-buttons slot="end">
-          <ion-button routerLink="/account" aria-label="Account">
-            <ion-icon slot="icon-only" name="person-circle-outline" />
-          </ion-button>
-        </ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
+        <ion-title>My shops</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">

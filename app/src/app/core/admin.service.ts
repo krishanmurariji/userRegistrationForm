@@ -43,6 +43,9 @@ export interface AdminStats {
   items: number;
   signInsLast24Hours: number;
   failedSignInsLast24Hours: number;
+  orders: number;
+  ordersLast24Hours: number;
+  paymentsAwaitingVerification: number;
 }
 
 export interface AuditEntry {
@@ -54,6 +57,41 @@ export interface AuditEntry {
   targetId: string | null;
   summary: string;
   ipAddress: string | null;
+}
+
+export interface AdminUserDetail {
+  user: AdminUser;
+  hasPassword: boolean;
+  signInMethods: string[];
+  shops: { id: string; name: string; city: string; isActive: boolean }[];
+  orderCount: number;
+  recentActivity: AuditEntry[];
+}
+
+export interface AdminShopDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  phone: string;
+  addressLine: string;
+  city: string;
+  pincode: string;
+  upiId: string | null;
+  deliveryFee: number;
+  minimumOrder: number;
+  isActive: boolean;
+  isOpen: boolean;
+  logoUrl: string | null;
+  createdAt: string;
+  ownerId: string | null;
+  ownerName: string | null;
+  ownerEmail: string | null;
+  categoryCount: number;
+  itemCount: number;
+  orderCount: number;
+  openOrderCount: number;
+  deliveredSales: number;
+  recentActivity: AuditEntry[];
 }
 
 type Query = Record<string, string | number | boolean | null | undefined>;
@@ -98,6 +136,38 @@ export class AdminService {
 
   auditLogs(query: Query): Promise<Page<AuditEntry>> {
     return firstValueFrom(this.http.get<Page<AuditEntry>>(`${this.api}/audit-logs`, { params: this.params(query) }));
+  }
+
+  user(id: string): Promise<AdminUserDetail> {
+    return firstValueFrom(this.http.get<AdminUserDetail>(`${this.api}/users/${id}`));
+  }
+
+  updateUser(id: string, fullName: string, email: string): Promise<AdminUserDetail> {
+    return firstValueFrom(this.http.put<AdminUserDetail>(`${this.api}/users/${id}`, { fullName, email }));
+  }
+
+  sendPasswordReset(id: string): Promise<void> {
+    return firstValueFrom(this.http.post<void>(`${this.api}/users/${id}/send-password-reset`, null));
+  }
+
+  shop(id: string): Promise<AdminShopDetail> {
+    return firstValueFrom(this.http.get<AdminShopDetail>(`${this.api}/shops/${id}`));
+  }
+
+  /** Downloads a CSV export ("users", "shops" or "audit-logs") and hands it to the browser to save. */
+  async export(what: 'users' | 'shops' | 'audit-logs'): Promise<void> {
+    const response = await firstValueFrom(
+      this.http.get(`${this.api}/${what}/export`, { responseType: 'blob', observe: 'response' }),
+    );
+    const name = /filename="?([^";]+)"?/.exec(response.headers.get('Content-Disposition') ?? '')?.[1] ?? `smallmart-${what}.csv`;
+    const url = URL.createObjectURL(response.body!);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
   }
 
   private params(query: Query): HttpParams {

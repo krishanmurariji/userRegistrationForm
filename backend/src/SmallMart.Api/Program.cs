@@ -98,7 +98,9 @@ builder.Services.AddRateLimiter(o =>
 });
 
 var allowedOrigins = config.GetSection("App:AllowedOrigins").Get<string[]>() ?? [];
-builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()));
+builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()
+    // Lets the app read the file name of a download such as an export.
+    .WithExposedHeaders("Content-Disposition")));
 
 var app = builder.Build();
 

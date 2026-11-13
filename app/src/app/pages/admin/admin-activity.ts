@@ -2,12 +2,16 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { IonButton, IonItem, IonLabel, IonList, IonSearchbar, IonSegment, IonSegmentButton, IonSpinner, IonText } from '@ionic/angular';
 import { AdminService, AuditEntry } from '../../core/admin.service';
+import { toApiError } from '../../core/api-error';
 import { PagedList } from '../../core/paged-list';
 
 @Component({
   selector: 'app-admin-activity',
   imports: [DatePipe, IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonButton, IonSpinner, IonText],
   template: `
+    <ion-button fill="outline" [disabled]="exporting()" (click)="exportCsv()" class="ion-margin-bottom">
+      {{ exporting() ? 'Preparing…' : 'Export to Excel (CSV)' }}
+    </ion-button>
     <ion-searchbar placeholder="Search by email or description" [debounce]="300"
       (ionInput)="search.set($event.detail.value ?? ''); list.reload()" />
     <ion-segment [value]="action()" (ionChange)="action.set($any($event.detail.value)); list.reload()" [scrollable]="true">
@@ -57,6 +61,19 @@ export class AdminActivity {
 
   constructor() {
     void this.list.reload();
+  }
+
+  protected readonly exporting = signal(false);
+
+  protected async exportCsv(): Promise<void> {
+    this.exporting.set(true);
+    try {
+      await this.admin.export('audit-logs');
+    } catch (e) {
+      this.list.error.set(toApiError(e).message);
+    } finally {
+      this.exporting.set(false);
+    }
   }
 
   protected isFailure(entry: AuditEntry): boolean {
