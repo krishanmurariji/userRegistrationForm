@@ -29,6 +29,10 @@ public record CategoryRequest([Required, MaxLength(80)] string Name, int SortOrd
 
 public record CategoryDto(Guid Id, string Name, int SortOrder, int ItemCount);
 
+/// <param name="NewCategoryName">
+/// Puts the item in a category with this name, creating the category when the shop does not have it yet.
+/// Used instead of <c>CategoryId</c>, so an item and its category can be added in one step.
+/// </param>
 public record ItemRequest(
     [Required, MaxLength(150)] string Name,
     [MaxLength(2000)] string? Description,
@@ -40,7 +44,8 @@ public record ItemRequest(
     bool IsActive = true,
     bool TrackStock = false,
     [Range(0, 100000)] int LowStockThreshold = 5,
-    [Range(0, 1000000)] int? OpeningStock = null);
+    [Range(0, 1000000)] int? OpeningStock = null,
+    [MaxLength(80)] string? NewCategoryName = null);
 
 public record ItemDto(
     Guid Id, Guid? CategoryId, string Name, string? Description, decimal Price, decimal? Mrp,

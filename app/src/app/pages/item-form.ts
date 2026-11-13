@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonSelect, IonSelectOption, IonSpinner, IonText, IonTextarea, IonTitle, IonToggle, IonToolbar, NavController } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { Category } from '../core/shop.models';
@@ -47,7 +47,12 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
               @for (c of categories(); track c.id) {
                 <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
               }
+              <ion-select-option [value]="newCategory">+ New category…</ion-select-option>
             </ion-select>
+            @if (form.controls.categoryId.value === newCategory) {
+              <ion-input formControlName="newCategoryName" label="New category name" labelPlacement="stacked" fill="outline"
+                placeholder="For example Dairy" maxlength="80" errorText="Enter a name for the new category" />
+            }
             <div class="two-columns">
               <ion-input formControlName="price" type="number" inputmode="decimal" min="0" step="0.01"
                 label="Price (₹)" labelPlacement="stacked" fill="outline" errorText="Enter a price above 0" />
@@ -88,6 +93,9 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
               <p class="meta">Off: the item is always shown as available.</p>
             }
 
+            @if (copied()) {
+              <div class="notice info" role="status"><strong>This is a copy.</strong>Change the name, unit and price, then switch on "Visible to customers".</div>
+            }
             @if (error(); as message) {
               <ion-text color="danger" role="alert"><p class="message">{{ message }}</p></ion-text>
             }
@@ -97,6 +105,9 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
               @else { {{ itemId ? 'Save changes' : 'Add item' }} }
             </ion-button>
             @if (itemId) {
+              <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="duplicate()">
+                Duplicate (for another size or variant)
+              </ion-button>
               <ion-button expand="block" fill="clear" color="danger" [disabled]="busy()" (click)="remove()">
                 Delete item
               </ion-button>
@@ -111,6 +122,7 @@ export class ItemFormPage implements OnInit, OnDestroy {
   private readonly shops = inject(ShopService);
   private readonly nav = inject(NavController);
   private readonly alerts = inject(AlertController);
+  private readonly router = inject(Router);
   private readonly params = inject(ActivatedRoute).snapshot.paramMap;
 
   protected readonly shopId = this.params.get('shopId')!;
@@ -119,6 +131,7 @@ export class ItemFormPage implements OnInit, OnDestroy {
     {
       name: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(150)]],
       categoryId: [null as string | null],
+      newCategoryName: ['', Validators.maxLength(80)],
       price: [null as number | null, [Validators.required, Validators.min(0.01), Validators.max(1000000)]],
       mrp: [null as number | null, [Validators.min(0.01), Validators.max(1000000)]],
       unit: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(30)]],
@@ -135,6 +148,10 @@ export class ItemFormPage implements OnInit, OnDestroy {
   protected readonly loading = signal(true);
   protected readonly busy = signal(false);
   protected readonly error = signal('');
+  /** The value of the "+ New category…" choice in the category list. */
+  protected readonly newCategory = '__new__';
+  /** True when this page was opened on a freshly made copy. */
+  protected readonly copied = signal(inject(ActivatedRoute).snapshot.queryParamMap.has('copied'));
   protected readonly photoUrl = signal<string | null>(null);
   /** True when the saved item already counts stock; then the number changes only on the stock page. */
   protected readonly countedBefore = signal(false);
@@ -201,9 +218,17 @@ export class ItemFormPage implements OnInit, OnDestroy {
     this.error.set('');
     try {
       const v = this.form.getRawValue();
+      const wantsNewCategory = v.categoryId === this.newCategory;
+      const newCategoryName = wantsNewCategory ? v.newCategoryName?.trim() ?? '' : '';
+      if (wantsNewCategory && !newCategoryName) {
+        this.error.set('Enter a name for the new category.');
+        this.busy.set(false);
+        return;
+      }
       const input = {
         name: v.name!.trim(),
-        categoryId: v.categoryId,
+        categoryId: wantsNewCategory ? null : v.categoryId,
+        newCategoryName: newCategoryName || null,
         price: Number(v.price),
         mrp: v.mrp === null || (v.mrp as unknown) === '' ? null : Number(v.mrp),
         unit: v.unit!.trim(),
@@ -224,6 +249,20 @@ export class ItemFormPage implements OnInit, OnDestroy {
         this.pendingPhoto = null;
       }
       await this.nav.navigateBack(['/shops', this.shopId]);
+    } catch (e) {
+      this.error.set(toApiError(e).message);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  protected async duplicate(): Promise<void> {
+    if (!this.itemId || this.busy()) return;
+    this.busy.set(true);
+    this.error.set('');
+    try {
+      const copy = await this.shops.duplicateItem(this.shopId, this.itemId);
+      await this.router.navigate(['/shops', this.shopId, 'items', copy.id], { queryParams: { copied: 1 }, replaceUrl: true });
     } catch (e) {
       this.error.set(toApiError(e).message);
     } finally {

@@ -1,7 +1,8 @@
 import { CurrencyPipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, viewChild } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { IonBackButton, IonBadge, IonButton, IonButtons, IonChip, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonSearchbar, IonSpinner, IonText, IonThumbnail, IonTitle, IonToggle, IonToolbar } from '@ionic/angular';
+import { IonBackButton, IonBadge, IonButton, IonButtons, IonChip, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSearchbar, IonSpinner, IonText, IonThumbnail, IonTitle, IonToggle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline, createOutline, imageOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
@@ -12,7 +13,7 @@ import { ShopService, fileUrl } from '../core/shop.service';
 /** A shop's management page: open/closed switch, categories and the item list. */
 @Component({
   selector: 'app-shop',
-  imports: [CurrencyPipe, RouterLink, NotificationBell, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonToggle, IonSearchbar, IonChip, IonFab, IonFabButton, IonSpinner, IonText],
+  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, NotificationBell, IonInput, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonToggle, IonSearchbar, IonChip, IonFab, IonFabButton, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -55,7 +56,39 @@ import { ShopService, fileUrl } from '../core/shop.service';
             </ion-item>
           </ion-list>
 
-          <h2 class="section-title">Items</h2>
+          <div class="items-head">
+            <h2 class="section-title">Items</h2>
+            @if (s.isActive) {
+              <ion-button fill="clear" size="small" [attr.aria-expanded]="quickOpen()" (click)="quickOpen.set(!quickOpen())">
+                {{ quickOpen() ? 'Close quick add' : 'Quick add' }}
+              </ion-button>
+            }
+          </div>
+          @if (quickOpen() && s.isActive) {
+            <form class="panel quick-add" [formGroup]="quick" (ngSubmit)="quickAdd()" novalidate>
+              <strong>Add items one after another</strong>
+              <ion-input #quickName formControlName="name" label="Item name" labelPlacement="stacked" fill="outline" errorText="Enter the item name" />
+              <div class="two-columns">
+                <ion-input formControlName="price" type="number" inputmode="decimal" min="0" step="0.01"
+                  label="Price (₹)" labelPlacement="stacked" fill="outline" errorText="Above 0" />
+                <ion-input formControlName="unit" label="Unit" labelPlacement="stacked" fill="outline"
+                  placeholder="1 kg, 1 piece" errorText="Enter the unit" />
+              </div>
+              <ion-input formControlName="category" label="Category (optional)" labelPlacement="stacked" fill="outline"
+                placeholder="Existing or new, for example Dairy" maxlength="80" [attr.list]="'quick-categories'" />
+              <datalist id="quick-categories">
+                @for (c of categories(); track c.id) { <option [value]="c.name"></option> }
+              </datalist>
+              @if (quickError(); as message) {
+                <ion-text color="danger" role="alert"><p class="message">{{ message }}</p></ion-text>
+              }
+              @if (quickAdded(); as name) {
+                <ion-text color="success" role="status"><p class="message">Added {{ name }}. Type the next one.</p></ion-text>
+              }
+              <ion-button type="submit" expand="block" [disabled]="quickBusy()">Add and continue</ion-button>
+              <p class="meta">Photo, MRP, barcode and stock can be added later by opening the item.</p>
+            </form>
+          }
           <ion-searchbar placeholder="Search by name or barcode" [debounce]="300"
             (ionInput)="search.set($event.detail.value ?? ''); loadItems()" />
           @if (categories().length || lowStock()) {
@@ -132,6 +165,18 @@ export class ShopPage {
   /** How many counted items are at or below their warning level. */
   protected readonly lowStock = signal(0);
   protected readonly lowOnly = signal(false);
+  // Quick add: one small form that stays open so items can be typed one after another.
+  protected readonly quickOpen = signal(false);
+  protected readonly quickBusy = signal(false);
+  protected readonly quickError = signal('');
+  protected readonly quickAdded = signal('');
+  protected readonly quick = inject(FormBuilder).group({
+    name: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(150)]],
+    price: [null as number | null, [Validators.required, Validators.min(0.01), Validators.max(1000000)]],
+    unit: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(30)]],
+    category: ['', Validators.maxLength(80)],
+  });
+  private readonly quickName = viewChild<IonInput>('quickName');
   private latestItemsRequest = 0;
 
   constructor() {
@@ -178,6 +223,41 @@ export class ShopPage {
       if (request === this.latestItemsRequest) this.error.set(toApiError(e).message);
     } finally {
       if (request === this.latestItemsRequest) this.loadingItems.set(false);
+    }
+  }
+
+  protected async quickAdd(): Promise<void> {
+    this.quick.markAllAsTouched();
+    if (this.quick.invalid || this.quickBusy()) return;
+    this.quickBusy.set(true);
+    this.quickError.set('');
+    this.quickAdded.set('');
+    try {
+      const v = this.quick.getRawValue();
+      const item = await this.shops.createItem(this.shopId, {
+        name: v.name!.trim(),
+        categoryId: null,
+        newCategoryName: v.category?.trim() || null,
+        price: Number(v.price),
+        mrp: null,
+        unit: v.unit!.trim(),
+        barcode: null,
+        description: null,
+        isActive: true,
+        trackStock: false,
+        lowStockThreshold: 5,
+        openingStock: null,
+      });
+      this.quickAdded.set(item.name);
+      // Keep the unit and category: neighbouring items on a shelf usually share them.
+      this.quick.reset({ name: '', price: null, unit: v.unit, category: v.category });
+      this.categories.set(await this.shops.categories(this.shopId));
+      await this.loadItems();
+      await this.quickName()?.setFocus();
+    } catch (e) {
+      this.quickError.set(toApiError(e).message);
+    } finally {
+      this.quickBusy.set(false);
     }
   }
 

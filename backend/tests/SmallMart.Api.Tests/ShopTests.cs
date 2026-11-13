@@ -189,6 +189,56 @@ public class ShopTests(TestApp app)
     }
 
     [Fact]
+    public async Task An_item_can_name_a_new_category_which_is_created_once()
+    {
+        var (client, shop) = await OwnerWithShopAsync();
+        var url = $"/api/shops/{shop.Id}/items";
+
+        var first = await Read<ItemDto>(await client.PostAsJsonAsync(url, NewItem("Milk") with { NewCategoryName = "  Dairy " }));
+        var second = await Read<ItemDto>(await client.PostAsJsonAsync(url, NewItem("Curd") with { NewCategoryName = "dairy" }));
+        var third = await Read<ItemDto>(await client.PostAsJsonAsync(url, NewItem("Chips") with { NewCategoryName = "Snacks" }));
+
+        var categories = await client.GetFromJsonAsync<List<CategoryDto>>($"/api/shops/{shop.Id}/categories");
+        Assert.Equal([("Dairy", 2), ("Snacks", 1)], categories!.Select(c => (c.Name, c.ItemCount)));
+        Assert.Equal(first.CategoryId, second.CategoryId);
+        Assert.NotEqual(first.CategoryId, third.CategoryId);
+
+        // Editing can move an item into a brand-new category too.
+        var moved = await Read<ItemDto>(await client.PutAsJsonAsync($"{url}/{first.Id}", NewItem("Milk") with { NewCategoryName = "Beverages" }));
+        Assert.Equal(3, (await client.GetFromJsonAsync<List<CategoryDto>>($"/api/shops/{shop.Id}/categories"))!.Count);
+        Assert.NotEqual(first.CategoryId, moved.CategoryId);
+    }
+
+    [Fact]
+    public async Task Duplicating_an_item_makes_a_hidden_copy_with_its_own_photo()
+    {
+        var (client, shop) = await OwnerWithShopAsync();
+        var url = $"/api/shops/{shop.Id}/items";
+        var original = await Read<ItemDto>(await client.PostAsJsonAsync(url,
+            NewItem("Toor Dal") with { NewCategoryName = "Grains", TrackStock = true, OpeningStock = 9 }));
+        original = await Read<ItemDto>(await client.PostAsync($"{url}/{original.Id}/image", Upload(Png, "dal.png", "image/png")));
+
+        var copy = await Read<ItemDto>(await client.PostAsync($"{url}/{original.Id}/duplicate", null));
+
+        Assert.NotEqual(original.Id, copy.Id);
+        Assert.Equal("Toor Dal (copy)", copy.Name);
+        Assert.Equal((original.CategoryId, original.Price, original.Mrp, original.Unit), (copy.CategoryId, copy.Price, copy.Mrp, copy.Unit));
+        Assert.False(copy.IsActive);
+        Assert.Null(copy.Barcode);
+        Assert.True(copy.TrackStock);
+        Assert.Equal(0, copy.StockQuantity);
+        Assert.NotNull(copy.ImageUrl);
+        Assert.NotEqual(original.ImageUrl, copy.ImageUrl);
+
+        // The copy's photo is its own file: deleting the original leaves it in place.
+        await client.DeleteAsync($"{url}/{original.Id}");
+        Assert.Equal(HttpStatusCode.OK, (await app.CreateClient().GetAsync(copy.ImageUrl)).StatusCode);
+
+        var (stranger, _, _, _) = await app.SignedInOwnerAsync();
+        Assert.Equal(HttpStatusCode.NotFound, (await stranger.PostAsync($"{url}/{copy.Id}/duplicate", null)).StatusCode);
+    }
+
+    [Fact]
     public async Task Deleting_a_category_keeps_its_items()
     {
         var (client, shop) = await OwnerWithShopAsync();

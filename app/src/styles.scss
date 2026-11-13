@@ -460,6 +460,25 @@
   }
 }
 
+/* Quick add and copies. */
+.page-column {
+  .items-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .quick-add {
+    gap: 12px;
+  }
+
+  .notice.info {
+    border-color: var(--ion-color-primary);
+    background: rgba(var(--ion-color-primary-rgb), 0.08);
+  }
+}
+
 /* Stock and notifications. */
 .page-column {
   .only-left {

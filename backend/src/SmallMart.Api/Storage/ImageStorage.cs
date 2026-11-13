@@ -52,6 +52,18 @@ public class ImageStorage(IConfiguration config, IWebHostEnvironment env)
         return relative;
     }
 
+    /// <summary>Copies a public picture into a folder under a new name. Returns the new path, or null when there is nothing to copy.</summary>
+    public string? Copy(string? relativePath, string folder)
+    {
+        if (ResolveExisting(relativePath, isPrivate: false) is not { } source)
+            return null;
+        var relative = $"{folder}/{Guid.NewGuid():N}{Path.GetExtension(source)}";
+        var target = Path.Combine(Root, relative);
+        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+        File.Copy(source, target);
+        return relative;
+    }
+
     public void Delete(string? relativePath, bool isPrivate = false)
     {
         if (ResolveExisting(relativePath, isPrivate) is { } fullPath)

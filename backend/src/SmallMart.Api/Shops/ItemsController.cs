@@ -66,6 +66,7 @@ public class ItemsController(
         var now = clock.GetUtcNow();
         var item = new Item { Id = Guid.NewGuid(), ShopId = shopId, CreatedAt = now, UpdatedAt = now };
         Apply(item, request);
+        item.CategoryId = await ResolveCategoryAsync(shopId, request, ct);
         db.Items.Add(item);
         await db.SaveChangesAsync(ct);
         if (item.TrackStock)
@@ -88,6 +89,7 @@ public class ItemsController(
 
         var startsTracking = request.TrackStock && !item.TrackStock;
         Apply(item, request);
+        item.CategoryId = await ResolveCategoryAsync(shopId, request, ct);
         item.UpdatedAt = clock.GetUtcNow();
         await db.SaveChangesAsync(ct);
         // Switching stock counting on starts from the number the shop gives (or zero).
@@ -138,6 +140,48 @@ public class ItemsController(
         await db.SaveChangesAsync(ct);
         images.Delete(previous);
         return Ok(ItemDto.From(item));
+    }
+
+    /// <summary>
+    /// Makes a copy of an item, including its photo, to turn into a variant such as another pack size.
+    /// The copy is hidden from customers and has no stock until the shop edits it.
+    /// </summary>
+    [HttpPost("{id:guid}/duplicate")]
+    public async Task<IActionResult> Duplicate(Guid shopId, Guid id, CancellationToken ct)
+    {
+        if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
+            return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
+        var source = await db.Items.AsNoTracking().SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
+        if (source is null)
+            return NotFound();
+
+        var now = clock.GetUtcNow();
+        var name = source.Name + " (copy)";
+        var copy = new Item
+        {
+            Id = Guid.NewGuid(),
+            ShopId = shopId,
+            CategoryId = source.CategoryId,
+            Name = name.Length <= 150 ? name : source.Name,
+            Description = source.Description,
+            Price = source.Price,
+            Mrp = source.Mrp,
+            Unit = source.Unit,
+            Barcode = null, // a barcode belongs to one exact product
+            IsActive = false,
+            TrackStock = source.TrackStock,
+            LowStockThreshold = source.LowStockThreshold,
+            ImagePath = images.Copy(source.ImagePath, $"shops/{shopId:N}/items"),
+            CreatedAt = now,
+            UpdatedAt = now,
+        };
+        db.Items.Add(copy);
+        await db.SaveChangesAsync(ct);
+        if (copy.TrackStock)
+            await stock.SetToAsync(copy, 0, StockReason.Opening, null, User.GetUserId(), ct);
+        return CreatedAtAction(nameof(Get), new { shopId, id = copy.Id }, ItemDto.From(copy));
     }
 
     /// <summary>How many counted items are low (at or below their warning level) and how many have none left.</summary>
@@ -223,6 +267,24 @@ public class ItemsController(
             return this.ApiError(StatusCodes.Status400BadRequest, "unknown_category", "That category does not exist in this shop.");
 
         return null;
+    }
+
+    /// <summary>The category the item goes in: the given id, or the one with the given name, created if needed.</summary>
+    private async Task<Guid?> ResolveCategoryAsync(Guid shopId, ItemRequest request, CancellationToken ct)
+    {
+        var name = ShopsController.Clean(request.NewCategoryName);
+        if (name is null)
+            return request.CategoryId;
+
+        var existing = await db.Categories.Where(c => c.ShopId == shopId && c.Name.ToLower() == name.ToLower())
+            .Select(c => (Guid?)c.Id).FirstOrDefaultAsync(ct);
+        if (existing is not null)
+            return existing;
+
+        var last = await db.Categories.Where(c => c.ShopId == shopId).MaxAsync(c => (int?)c.SortOrder, ct) ?? 0;
+        var category = new Category { Id = Guid.NewGuid(), ShopId = shopId, Name = name, SortOrder = last + 1 };
+        db.Categories.Add(category);
+        return category.Id;
     }
 
     private static void Apply(Item item, ItemRequest r)

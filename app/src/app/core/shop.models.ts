@@ -45,6 +45,8 @@ export interface Item {
 export type ItemInput = Omit<Item, 'id' | 'imageUrl' | 'stockQuantity'> & {
   /** Used when the item is created with stock counting, or when counting is switched on. */
   openingStock: number | null;
+  /** Put the item in a category with this name, creating it if the shop does not have it yet. */
+  newCategoryName?: string | null;
 };
 
 export type StockReason = 'Opening' | 'Restock' | 'Sale' | 'OrderCancelled' | 'Damage' | 'Correction';

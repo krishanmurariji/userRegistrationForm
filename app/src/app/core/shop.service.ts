@@ -72,6 +72,11 @@ export class ShopService {
     return firstValueFrom(this.http.put<Item>(`${this.api}/${shopId}/items/${id}`, input));
   }
 
+  /** Makes a hidden copy of an item (with its photo) to turn into a variant. */
+  duplicateItem(shopId: string, id: string): Promise<Item> {
+    return firstValueFrom(this.http.post<Item>(`${this.api}/${shopId}/items/${id}/duplicate`, null));
+  }
+
   deleteItem(shopId: string, id: string): Promise<void> {
     return firstValueFrom(this.http.delete<void>(`${this.api}/${shopId}/items/${id}`));
   }
