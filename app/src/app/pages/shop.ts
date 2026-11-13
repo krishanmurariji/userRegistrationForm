@@ -30,9 +30,15 @@ import { ShopService, fileUrl } from '../core/shop.service';
           <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
         }
         @if (shop(); as s) {
+          @if (!s.isActive) {
+            <div class="notice" role="status">
+              <strong>This shop has been deactivated by the platform admin.</strong>
+              Customers cannot see it and it cannot be changed. Contact support to have it activated again.
+            </div>
+          }
           <ion-list inset class="summary">
             <ion-item>
-              <ion-toggle [checked]="s.isOpen" [disabled]="saving()" (ionChange)="setOpen($event.detail.checked)">
+              <ion-toggle [checked]="s.isOpen" [disabled]="saving() || !s.isActive" (ionChange)="setOpen($event.detail.checked)">
                 {{ s.isOpen ? 'Open for orders' : 'Closed' }}
               </ion-toggle>
             </ion-item>
@@ -87,7 +93,7 @@ import { ShopService, fileUrl } from '../core/shop.service';
         }
       </main>
 
-      @if (shop()) {
+      @if (shop()?.isActive) {
         <ion-fab slot="fixed" vertical="bottom" horizontal="end">
           <ion-fab-button [routerLink]="['/shops', shopId, 'items', 'new']" aria-label="Add item">
             <ion-icon name="add-outline" />
@@ -153,7 +159,7 @@ export class ShopPage {
     this.saving.set(true);
     this.error.set('');
     try {
-      const { id, logoUrl, myRole, ...input } = shop;
+      const { id, logoUrl, myRole, isActive, ...input } = shop;
       this.shop.set(await this.shops.updateShop(id, { ...input, isOpen }));
     } catch (e) {
       this.shop.set({ ...shop }); // put the switch back

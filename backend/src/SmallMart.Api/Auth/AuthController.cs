@@ -89,6 +89,8 @@ public class AuthController(
         if (user is null)
             return InvalidCredentials();
 
+        if (IsSuspended(user))
+            return Suspended();
         if (await users.IsLockedOutAsync(user))
             return LockedOut();
 
@@ -168,8 +170,12 @@ public class AuthController(
             user.EmailConfirmed = true;
             await users.UpdateAsync(user);
         }
-        await users.SetLockoutEndDateAsync(user, null);
-        await users.ResetAccessFailedCountAsync(user);
+        // A new password clears the wrong-password lock, but never a suspension set by the admin.
+        if (!IsSuspended(user))
+        {
+            await users.SetLockoutEndDateAsync(user, null);
+            await users.ResetAccessFailedCountAsync(user);
+        }
         await tokens.RevokeAllForUserAsync(user.Id, ct);
         await audit.WriteAsync("user.password_reset", "Set a new password", "user", user.Id, user.Id, user.Email, ct);
         return Ok(new MessageResponse("Password changed. Please sign in with your new password."));
@@ -230,6 +236,8 @@ public class AuthController(
                 return IdentityError("registration_failed", linked);
         }
 
+        if (IsSuspended(user))
+            return Suspended();
         if (await users.IsLockedOutAsync(user))
             return LockedOut();
 
@@ -271,6 +279,13 @@ public class AuthController(
 
     private ObjectResult InvalidCredentials() =>
         Error(StatusCodes.Status401Unauthorized, "invalid_credentials", "The email or password is incorrect.");
+
+    /// <summary>Blocked by the platform admin (a far-future lockout), as opposed to the 15-minute wrong-password lock.</summary>
+    private static bool IsSuspended(ApplicationUser user) =>
+        user.LockoutEnd is { } end && end > DateTimeOffset.UtcNow.AddYears(1);
+
+    private ObjectResult Suspended() =>
+        Error(StatusCodes.Status403Forbidden, "account_suspended", "This account has been suspended. Please contact support.");
 
     private ObjectResult LockedOut() =>
         Error(StatusCodes.Status423Locked, "locked_out", "Too many failed attempts. Please try again later or reset your password.");

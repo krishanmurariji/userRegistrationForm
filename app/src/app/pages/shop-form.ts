@@ -99,6 +99,7 @@ export class ShopFormPage implements OnInit {
     try {
       const shop = await this.shops.shop(this.shopId);
       this.form.patchValue({ ...shop, description: shop.description ?? '', upiId: shop.upiId ?? '' });
+      if (!shop.isActive) this.error.set('This shop has been deactivated by the platform admin and cannot be changed.');
       this.isOpen = shop.isOpen;
       this.logoUrl.set(fileUrl(shop.logoUrl));
     } catch (e) {

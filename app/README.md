@@ -24,7 +24,9 @@ or reset link from the API's log output.
 | `src/app/core/auth.interceptor.ts` | Adds the access token to API calls, refreshes it when expired |
 | `src/app/core/auth.guard.ts` | Route guards for signed-in and signed-out pages |
 | `src/app/core/shop.service.ts` | Shop, category and item API calls |
-| `src/app/pages/` | Sign-in screens, my shops, shop page, shop form, categories, item form, account |
+| `src/app/core/admin.service.ts` | Admin section API calls |
+| `src/app/pages/` | Sign-in screens, home, shop page, shop form, categories, item form, account |
+| `src/app/pages/admin/` | Admin section: overview, users, shops, activity, add shop owner |
 
 ## Not done yet
 

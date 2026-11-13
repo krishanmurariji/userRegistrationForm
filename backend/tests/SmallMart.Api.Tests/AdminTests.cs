@@ -160,12 +160,38 @@ public class AdminTests(TestApp app)
         Assert.Single(list!.Items);
 
         client.DefaultRequestHeaders.Authorization = null;
-        Assert.Equal(HttpStatusCode.Locked, (await client.PostAsJsonAsync("/api/auth/login", new LoginRequest(email, password))).StatusCode);
+        var refused = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest(email, password));
+        Assert.Equal(HttpStatusCode.Forbidden, refused.StatusCode);
+        Assert.Equal("account_suspended", await ErrorCode(refused));
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.PostAsJsonAsync("/api/auth/refresh", new RefreshRequest(auth.RefreshToken))).StatusCode);
+
+        // Resetting the password must not lift the suspension.
+        await client.PostAsJsonAsync("/api/auth/forgot-password", new EmailRequest(email));
+        var link = app.Emails.LinkFor(email);
+        (await client.PostAsJsonAsync("/api/auth/reset-password", new ResetPasswordRequest(link.UserId, link.Token, "Sneaky12345"))).EnsureSuccessStatusCode();
+        var stillRefused = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest(email, "Sneaky12345"));
+        Assert.Equal("account_suspended", await ErrorCode(stillRefused));
+        password = "Sneaky12345";
 
         var restored = await Read<AdminUserDto>(await admin.PostAsync($"/api/admin/users/{auth.User.Id}/unsuspend", null));
         Assert.False(restored.Suspended);
         await TestApp.LoginAsync(client, email, password);
+    }
+
+    [Fact]
+    public async Task A_suspended_user_cannot_get_in_through_Google_or_Microsoft()
+    {
+        var client = app.CreateClient();
+        var idToken = $"{Guid.NewGuid():N}|{TestApp.NewEmail()}|true|Social User";
+        var first = await Read<AuthResponse>(await client.PostAsJsonAsync("/api/auth/external/google", new ExternalLoginRequest(idToken)));
+        Assert.Equal([Roles.Customer], first.User.Roles);
+
+        var admin = await app.AdminClientAsync();
+        await admin.PostAsync($"/api/admin/users/{first.User.Id}/suspend", null);
+
+        var refused = await client.PostAsJsonAsync("/api/auth/external/google", new ExternalLoginRequest(idToken));
+        Assert.Equal(HttpStatusCode.Forbidden, refused.StatusCode);
+        Assert.Equal("account_suspended", await ErrorCode(refused));
     }
 
     [Fact]

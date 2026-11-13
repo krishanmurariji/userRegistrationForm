@@ -12,7 +12,23 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | 1 | App: Google and Microsoft sign-in buttons (web) | Built; real sign-in not yet confirmed end to end |
 | 2 | Shops, categories, items with photos (API and app screens) | Done, tested |
 | 2 | Item variants, staff invites, opening hours, Excel import | Not started |
+| Admin | Roles (customer, shop owner, admin), admin section: users, shops, activity log | Done, tested |
 | 3+ | Customer browsing, cart, payments, orders, inventory | Not started |
+
+## Who can do what
+
+| Role | How the account is created | What it can do |
+|---|---|---|
+| Customer | Signing up in the app (email, Google or Microsoft) | Shop and order (coming in phase 3) |
+| Shop owner | Only by the platform admin: a new account, or by promoting a customer | Open shops and manage their items |
+| Platform admin | Only by the startup seed (`Seed:AdminEmail`, `Seed:AdminPassword`) | The admin section |
+
+The admin section (`/admin` in the app) has an overview with headline numbers, a user list (add shop owner,
+make or remove shop owner, suspend, reactivate), a shop list (deactivate, activate) and an activity log of
+sign-ins and admin actions. A deactivated shop is read-only for its owner. A suspended user is signed out
+and cannot sign in, including through Google, Microsoft or a password reset.
+
+A role change reaches a signed-in user within 15 minutes, or at once if they sign out and in again.
 
 ## App (`app/`)
 
@@ -72,15 +88,26 @@ Tests run the real API against a throwaway PostgreSQL database. Set `SMALLMART_T
 | `POST /api/auth/external/google` | Sign in with a Google ID token |
 | `POST /api/auth/external/microsoft` | Sign in with a Microsoft ID token |
 | `GET /api/auth/me` | Current user (needs access token) |
-| `GET /api/admin/users` | List/search users (platform admin) |
-| `POST /api/admin/users/{id}/suspend`, `/unsuspend` | Block or unblock an account (platform admin) |
+
+Platform admin only:
+
+| Method and path | Purpose |
+|---|---|
+| `GET /api/admin/stats` | Dashboard numbers |
+| `GET /api/admin/users` | Users (`?search=`, `?role=`, `?suspended=`, `?skip=`, `?take=`) |
+| `POST /api/admin/users/shop-owners` | Create a shop owner (optional starting password, otherwise an email invite) |
+| `POST/DELETE /api/admin/users/{id}/shop-owner` | Give or take away the shop owner role |
+| `POST /api/admin/users/{id}/suspend`, `/unsuspend` | Block or unblock an account |
+| `GET /api/admin/shops` | All shops (`?search=`, `?active=`) |
+| `POST /api/admin/shops/{id}/deactivate`, `/activate` | Freeze or restore a shop |
+| `GET /api/admin/audit-logs` | Activity log (`?search=`, `?action=` prefix such as `shop.`) |
 
 Shop management (signed-in members of the shop only; others get 404):
 
 | Method and path | Purpose |
 |---|---|
 | `GET /api/shops/mine` | Shops the user owns or works in |
-| `POST /api/shops`, `GET/PUT /api/shops/{id}` | Create, read, update a shop |
+| `POST /api/shops`, `GET/PUT /api/shops/{id}` | Create (shop owners only), read, update a shop |
 | `POST /api/shops/{id}/logo` | Upload the logo (form field `file`) |
 | `GET/POST /api/shops/{id}/categories`, `PUT/DELETE .../{categoryId}` | Categories |
 | `GET/POST /api/shops/{id}/items`, `GET/PUT/DELETE .../{itemId}` | Items (`?search=`, `?categoryId=`) |

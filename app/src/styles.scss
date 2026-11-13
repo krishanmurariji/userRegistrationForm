@@ -200,3 +200,76 @@
     }
   }
 }
+
+/* Admin section and notices. */
+.page-column.wide {
+  max-width: 880px;
+}
+
+.page-column {
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    border-radius: 12px;
+    background: var(--ion-color-light);
+
+    .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .label {
+      font-size: 0.85rem;
+      color: var(--ion-color-medium-shade);
+    }
+
+    &.alert .value {
+      color: var(--ion-color-danger);
+    }
+  }
+
+  .count {
+    margin: 12px 4px 0;
+    font-size: 0.85rem;
+    color: var(--ion-color-medium-shade);
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .meta {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+
+  .failed {
+    color: var(--ion-color-danger);
+  }
+
+  .notice {
+    margin: 4px 0 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--ion-color-danger);
+    background: rgba(var(--ion-color-danger-rgb), 0.08);
+    font-size: 0.95rem;
+
+    strong {
+      display: block;
+      margin-bottom: 2px;
+    }
+  }
+}

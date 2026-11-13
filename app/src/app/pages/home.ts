@@ -4,17 +4,18 @@ import { IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonIte
 import { addIcons } from 'ionicons';
 import { addOutline, personCircleOutline, storefrontOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
+import { AuthService } from '../core/auth.service';
 import { Shop } from '../core/shop.models';
 import { ShopService, fileUrl } from '../core/shop.service';
 
-/** Landing page for signed-in users: the shops they own or work in. */
+/** Landing page: shop owners see their shops, customers a welcome until shop browsing is built. */
 @Component({
   selector: 'app-home',
   imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-title>My shops</ion-title>
+        <ion-title>{{ auth.isShopOwner() ? 'My shops' : 'Small Mart' }}</ion-title>
         <ion-buttons slot="end">
           <ion-button routerLink="/account" aria-label="Account">
             <ion-icon slot="icon-only" name="person-circle-outline" />
@@ -24,7 +25,13 @@ import { ShopService, fileUrl } from '../core/shop.service';
     </ion-header>
     <ion-content class="ion-padding">
       <main class="page-column">
-        @if (loading()) {
+        @if (!auth.isShopOwner()) {
+          <div class="empty">
+            <ion-icon name="storefront-outline" aria-hidden="true" />
+            <h2>Welcome, {{ auth.user()?.fullName }}</h2>
+            <p>Browsing shops and ordering is coming soon.</p>
+          </div>
+        } @else if (loading()) {
           <div class="centered"><ion-spinner name="crescent" aria-label="Loading shops" /></div>
         } @else if (error(); as message) {
           <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
@@ -48,7 +55,11 @@ import { ShopService, fileUrl } from '../core/shop.service';
                   <h2>{{ shop.name }}</h2>
                   <p>{{ shop.addressLine }}, {{ shop.city }}</p>
                 </ion-label>
-                <ion-badge slot="end" [color]="shop.isOpen ? 'success' : 'medium'">{{ shop.isOpen ? 'Open' : 'Closed' }}</ion-badge>
+                @if (!shop.isActive) {
+                  <ion-badge slot="end" color="danger">Deactivated</ion-badge>
+                } @else {
+                  <ion-badge slot="end" [color]="shop.isOpen ? 'success' : 'medium'">{{ shop.isOpen ? 'Open' : 'Closed' }}</ion-badge>
+                }
               </ion-item>
             }
           </ion-list>
@@ -62,6 +73,7 @@ import { ShopService, fileUrl } from '../core/shop.service';
 })
 export class HomePage {
   private readonly shopService = inject(ShopService);
+  protected readonly auth = inject(AuthService);
 
   protected readonly shops = signal<Shop[]>([]);
   protected readonly loading = signal(true);
@@ -78,6 +90,7 @@ export class HomePage {
   }
 
   protected async load(): Promise<void> {
+    if (!this.auth.isShopOwner()) return;
     this.error.set('');
     try {
       this.shops.set(await this.shopService.myShops());
