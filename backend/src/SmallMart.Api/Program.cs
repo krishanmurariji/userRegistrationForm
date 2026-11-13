@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SmallMart.Api.Audit;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
@@ -72,6 +73,8 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<ShopAccess>();
+builder.Services.AddScoped<AuditLog>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ImageStorage>();
 
 builder.Services.Configure<ExternalAuthOptions>(config.GetSection(ExternalAuthOptions.Section));

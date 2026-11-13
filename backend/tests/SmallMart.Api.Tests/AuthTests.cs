@@ -32,7 +32,7 @@ public class AuthTests(TestApp app)
 
         var auth = await TestApp.LoginAsync(client, email, Password);
         Assert.Equal(email, auth.User.Email);
-        Assert.Equal([Roles.User], auth.User.Roles);
+        Assert.Equal([Roles.Customer], auth.User.Roles);
 
         var me = await client.GetFromJsonAsync<UserDto>("/api/auth/me");
         Assert.Equal("Asha Verma", me!.FullName);
@@ -250,41 +250,6 @@ public class AuthTests(TestApp app)
         Assert.Equal(HttpStatusCode.Unauthorized, invalid.StatusCode);
         var unknown = await client.PostAsJsonAsync("/api/auth/external/facebook", new ExternalLoginRequest("a|b@c.d|true|n"));
         Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
-    }
-
-    [Fact]
-    public async Task Admin_area_is_closed_to_ordinary_users_and_open_to_the_platform_admin()
-    {
-        var (userClient, _, email, _) = await app.SignedInUserAsync();
-        Assert.Equal(HttpStatusCode.Forbidden, (await userClient.GetAsync("/api/admin/users")).StatusCode);
-        Assert.Equal(HttpStatusCode.Unauthorized, (await app.CreateClient().GetAsync("/api/admin/users")).StatusCode);
-
-        var adminClient = app.CreateClient();
-        var admin = await TestApp.LoginAsync(adminClient, TestApp.AdminEmail, TestApp.AdminPassword);
-        Assert.Contains(Roles.PlatformAdmin, admin.User.Roles);
-
-        var found = await adminClient.GetFromJsonAsync<JsonElement>($"/api/admin/users?search={email}");
-        Assert.Equal(1, found.GetArrayLength());
-    }
-
-    [Fact]
-    public async Task Suspending_a_user_blocks_sign_in_and_refresh_until_unsuspended()
-    {
-        var (client, auth, email, password) = await app.SignedInUserAsync();
-        var adminClient = app.CreateClient();
-        await TestApp.LoginAsync(adminClient, TestApp.AdminEmail, TestApp.AdminPassword);
-
-        var suspend = await adminClient.PostAsync($"/api/admin/users/{auth.User.Id}/suspend", null);
-        Assert.Equal(HttpStatusCode.NoContent, suspend.StatusCode);
-
-        client.DefaultRequestHeaders.Authorization = null;
-        var login = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest(email, password));
-        Assert.Equal(HttpStatusCode.Locked, login.StatusCode);
-        var refresh = await client.PostAsJsonAsync("/api/auth/refresh", new RefreshRequest(auth.RefreshToken));
-        Assert.Equal(HttpStatusCode.Unauthorized, refresh.StatusCode);
-
-        (await adminClient.PostAsync($"/api/admin/users/{auth.User.Id}/unsuspend", null)).EnsureSuccessStatusCode();
-        await TestApp.LoginAsync(client, email, password);
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SmallMart.Api.Audit;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
@@ -12,7 +13,8 @@ namespace SmallMart.Api.Shops;
 [ApiController]
 [Route("api/shops")]
 [Authorize]
-public class ShopsController(AppDbContext db, ShopAccess access, ImageStorage images, TimeProvider clock) : ControllerBase
+public class ShopsController(
+    AppDbContext db, ShopAccess access, ImageStorage images, AuditLog audit, TimeProvider clock) : ControllerBase
 {
     private const int MaxShopsPerOwner = 10;
 
@@ -39,7 +41,9 @@ public class ShopsController(AppDbContext db, ShopAccess access, ImageStorage im
         return Ok(ShopDto.From(shop, role.Value));
     }
 
+    /// <summary>Only shop owners (accounts set up by the platform admin) can open a shop.</summary>
     [HttpPost]
+    [Authorize(Roles = Roles.ShopOwner)]
     public async Task<IActionResult> Create(ShopRequest request, CancellationToken ct)
     {
         var userId = User.GetUserId();
@@ -53,6 +57,7 @@ public class ShopsController(AppDbContext db, ShopAccess access, ImageStorage im
         shop.Members.Add(new ShopMember { UserId = userId, Role = ShopRole.Owner });
         db.Shops.Add(shop);
         await db.SaveChangesAsync(ct);
+        await audit.WriteAsync("shop.created", $"Opened shop \"{shop.Name}\"", "shop", shop.Id, ct: ct);
         return CreatedAtAction(nameof(Get), new { id = shop.Id }, ShopDto.From(shop, ShopRole.Owner));
     }
 
@@ -64,6 +69,8 @@ public class ShopsController(AppDbContext db, ShopAccess access, ImageStorage im
             return NotFound();
         if (role < ShopRole.Manager)
             return Forbid();
+        if (!await access.IsActiveAsync(id, ct))
+            return this.ShopDeactivated();
 
         var shop = await db.Shops.SingleAsync(s => s.Id == id, ct);
         Apply(shop, request);
@@ -81,6 +88,8 @@ public class ShopsController(AppDbContext db, ShopAccess access, ImageStorage im
             return NotFound();
         if (role < ShopRole.Manager)
             return Forbid();
+        if (!await access.IsActiveAsync(id, ct))
+            return this.ShopDeactivated();
 
         var path = await images.SaveAsync(file, $"shops/{id:N}", ct);
         if (path is null)

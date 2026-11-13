@@ -51,6 +51,8 @@ public class ItemsController(AppDbContext db, ShopAccess access, ImageStorage im
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
         if (await ValidateAsync(shopId, request, ct) is { } error)
             return error;
 
@@ -67,6 +69,8 @@ public class ItemsController(AppDbContext db, ShopAccess access, ImageStorage im
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
         var item = await db.Items.SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
         if (item is null)
             return NotFound();
@@ -84,6 +88,8 @@ public class ItemsController(AppDbContext db, ShopAccess access, ImageStorage im
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
         var item = await db.Items.SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
         if (item is null)
             return NotFound();
@@ -101,6 +107,8 @@ public class ItemsController(AppDbContext db, ShopAccess access, ImageStorage im
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
         var item = await db.Items.SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
         if (item is null)
             return NotFound();

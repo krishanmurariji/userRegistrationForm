@@ -15,6 +15,11 @@ public class Shop
     public decimal MinimumOrder { get; set; }
     /// <summary>Whether the shop is taking orders right now.</summary>
     public bool IsOpen { get; set; } = true;
+    /// <summary>
+    /// Controlled by the platform admin. A deactivated shop is hidden from customers and cannot be changed
+    /// by its owner until it is activated again.
+    /// </summary>
+    public bool IsActive { get; set; } = true;
     public string? LogoPath { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 

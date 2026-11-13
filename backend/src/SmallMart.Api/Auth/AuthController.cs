@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.WebUtilities;
+using SmallMart.Api.Audit;
 using SmallMart.Api.Domain;
 using SmallMart.Api.Email;
 
@@ -18,6 +19,7 @@ public class AuthController(
     UserManager<ApplicationUser> users,
     TokenService tokens,
     IEmailSender email,
+    AuditLog audit,
     IEnumerable<IExternalTokenValidator> externalValidators,
     IConfiguration config,
     ILogger<AuthController> logger) : ControllerBase
@@ -54,7 +56,8 @@ public class AuthController(
         if (!result.Succeeded)
             return IdentityError("registration_failed", result);
 
-        await users.AddToRoleAsync(user, Roles.User);
+        await users.AddToRoleAsync(user, Roles.Customer);
+        await audit.WriteAsync("user.registered", "Signed up with email", "user", user.Id, user.Id, user.Email, ct);
         await SendConfirmationEmailAsync(user, ct);
         return Ok(new MessageResponse(CheckEmailMessage));
     }
@@ -92,7 +95,12 @@ public class AuthController(
         if (!await users.CheckPasswordAsync(user, request.Password))
         {
             await users.AccessFailedAsync(user);
-            return await users.IsLockedOutAsync(user) ? LockedOut() : InvalidCredentials();
+            var lockedNow = await users.IsLockedOutAsync(user);
+            await audit.WriteAsync(
+                lockedNow ? "user.locked_out" : "user.sign_in_failed",
+                lockedNow ? "Locked after too many wrong passwords" : "Wrong password",
+                "user", user.Id, user.Id, user.Email, ct);
+            return lockedNow ? LockedOut() : InvalidCredentials();
         }
 
         await users.ResetAccessFailedCountAsync(user);
@@ -102,6 +110,7 @@ public class AuthController(
             return Error(StatusCodes.Status403Forbidden, "email_not_confirmed",
                 "Please confirm your email address before signing in.");
 
+        await audit.WriteAsync("user.signed_in", "Signed in with password", "user", user.Id, user.Id, user.Email, ct);
         return Ok(await tokens.IssueAsync(user, ct: ct));
     }
 
@@ -162,6 +171,7 @@ public class AuthController(
         await users.SetLockoutEndDateAsync(user, null);
         await users.ResetAccessFailedCountAsync(user);
         await tokens.RevokeAllForUserAsync(user.Id, ct);
+        await audit.WriteAsync("user.password_reset", "Set a new password", "user", user.Id, user.Id, user.Email, ct);
         return Ok(new MessageResponse("Password changed. Please sign in with your new password."));
     }
 
@@ -209,7 +219,8 @@ public class AuthController(
                 var created = await users.CreateAsync(user);
                 if (!created.Succeeded)
                     return IdentityError("registration_failed", created);
-                await users.AddToRoleAsync(user, Roles.User);
+                await users.AddToRoleAsync(user, Roles.Customer);
+                await audit.WriteAsync("user.registered", $"Signed up with {validator.Provider}", "user", user.Id, user.Id, user.Email, ct);
                 if (!user.EmailConfirmed)
                     await SendConfirmationEmailAsync(user, ct);
             }
@@ -222,6 +233,7 @@ public class AuthController(
         if (await users.IsLockedOutAsync(user))
             return LockedOut();
 
+        await audit.WriteAsync("user.signed_in", $"Signed in with {validator.Provider}", "user", user.Id, user.Id, user.Email, ct);
         return Ok(await tokens.IssueAsync(user, ct: ct));
     }
 

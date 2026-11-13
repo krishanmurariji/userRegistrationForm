@@ -16,10 +16,32 @@ public static class DbSeeder
             await db.Database.MigrateAsync();
 
         var roles = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+        // Earlier versions called the customer role "User".
+        if (await roles.FindByNameAsync("User") is { } legacy && !await roles.RoleExistsAsync(Roles.Customer))
+        {
+            await roles.SetRoleNameAsync(legacy, Roles.Customer);
+            await roles.UpdateAsync(legacy);
+        }
+
         foreach (var role in Roles.All)
         {
             if (!await roles.RoleExistsAsync(role))
                 await roles.CreateAsync(new IdentityRole<Guid>(role) { Id = Guid.NewGuid() });
+        }
+
+        var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        // Shops opened before shop owners became an admin-granted role keep working for their owners.
+        var ownersWithoutRole = await db.ShopMembers
+            .Where(m => m.Role == ShopRole.Owner)
+            .Select(m => m.User)
+            .Distinct()
+            .ToListAsync();
+        foreach (var owner in ownersWithoutRole)
+        {
+            if (!await users.IsInRoleAsync(owner, Roles.ShopOwner))
+                await users.AddToRoleAsync(owner, Roles.ShopOwner);
         }
 
         var adminEmail = config["Seed:AdminEmail"];
@@ -27,7 +49,6 @@ public static class DbSeeder
         if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
             return;
 
-        var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         if (await users.FindByEmailAsync(adminEmail) is not null)
             return;
 
@@ -43,6 +64,6 @@ public static class DbSeeder
         if (!result.Succeeded)
             throw new InvalidOperationException(
                 "Could not create the seed admin: " + string.Join(" ", result.Errors.Select(e => e.Description)));
-        await users.AddToRolesAsync(admin, [Roles.PlatformAdmin, Roles.User]);
+        await users.AddToRoleAsync(admin, Roles.PlatformAdmin);
     }
 }

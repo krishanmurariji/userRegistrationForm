@@ -15,4 +15,8 @@ public static class ApiExtensions
         problem.Extensions["code"] = code;
         return controller.StatusCode(status, problem);
     }
+
+    public static ObjectResult ShopDeactivated(this ControllerBase controller) => controller.ApiError(
+        StatusCodes.Status403Forbidden, "shop_deactivated",
+        "This shop has been deactivated by the platform admin and cannot be changed.");
 }

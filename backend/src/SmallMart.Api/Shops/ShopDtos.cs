@@ -18,11 +18,11 @@ public record ShopRequest(
 
 public record ShopDto(
     Guid Id, string Name, string? Description, string Phone, string AddressLine, string City, string Pincode,
-    string? UpiId, decimal DeliveryFee, decimal MinimumOrder, bool IsOpen, string? LogoUrl, string MyRole)
+    string? UpiId, decimal DeliveryFee, decimal MinimumOrder, bool IsOpen, bool IsActive, string? LogoUrl, string MyRole)
 {
     public static ShopDto From(Shop s, ShopRole role) => new(
         s.Id, s.Name, s.Description, s.Phone, s.AddressLine, s.City, s.Pincode,
-        s.UpiId, s.DeliveryFee, s.MinimumOrder, s.IsOpen, ImageStorage.Url(s.LogoPath), role.ToString());
+        s.UpiId, s.DeliveryFee, s.MinimumOrder, s.IsOpen, s.IsActive, ImageStorage.Url(s.LogoPath), role.ToString());
 }
 
 public record CategoryRequest([Required, MaxLength(80)] string Name, int SortOrder = 0);

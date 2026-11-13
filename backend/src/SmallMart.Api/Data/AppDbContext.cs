@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SmallMart.Api.Audit;
 using SmallMart.Api.Domain;
 
 namespace SmallMart.Api.Data;
@@ -15,6 +16,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ShopMember> ShopMembers => Set<ShopMember>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Item> Items => Set<Item>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -45,6 +47,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             b.Property(s => s.DeliveryFee).HasPrecision(10, 2);
             b.Property(s => s.MinimumOrder).HasPrecision(10, 2);
             b.Property(s => s.LogoPath).HasMaxLength(300);
+            b.Property(s => s.IsActive).HasDefaultValue(true);
+        });
+
+        builder.Entity<AuditEntry>(b =>
+        {
+            b.Property(a => a.ActorEmail).HasMaxLength(256);
+            b.Property(a => a.Action).HasMaxLength(60);
+            b.Property(a => a.TargetType).HasMaxLength(30);
+            b.Property(a => a.TargetId).HasMaxLength(64);
+            b.Property(a => a.Summary).HasMaxLength(500);
+            b.Property(a => a.IpAddress).HasMaxLength(45);
+            b.HasIndex(a => a.At);
+            b.HasIndex(a => a.Action);
         });
 
         builder.Entity<ShopMember>(b =>

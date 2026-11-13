@@ -31,7 +31,7 @@ public class ShopTests(TestApp app)
 
     private async Task<(HttpClient Client, ShopDto Shop)> OwnerWithShopAsync()
     {
-        var (client, _, _, _) = await app.SignedInUserAsync();
+        var (client, _, _, _) = await app.SignedInOwnerAsync();
         var shop = await Read<ShopDto>(await client.PostAsJsonAsync("/api/shops", NewShop()));
         return (client, shop);
     }
@@ -58,6 +58,15 @@ public class ShopTests(TestApp app)
     }
 
     [Fact]
+    public async Task A_customer_cannot_open_a_shop()
+    {
+        var (customer, _, _, _) = await app.SignedInUserAsync();
+        var response = await customer.PostAsJsonAsync("/api/shops", NewShop());
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Empty((await customer.GetFromJsonAsync<List<ShopDto>>("/api/shops/mine"))!);
+    }
+
+    [Fact]
     public async Task Shop_endpoints_need_a_signed_in_user()
     {
         var client = app.CreateClient();
@@ -71,7 +80,7 @@ public class ShopTests(TestApp app)
     [InlineData("302001", "verma@okaxis", "call me")]          // phone
     public async Task Shop_details_are_validated(string pincode, string upiId, string phone)
     {
-        var (client, _, _, _) = await app.SignedInUserAsync();
+        var (client, _, _, _) = await app.SignedInOwnerAsync();
         var response = await client.PostAsJsonAsync("/api/shops", NewShop() with { Pincode = pincode, UpiId = upiId, Phone = phone });
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }

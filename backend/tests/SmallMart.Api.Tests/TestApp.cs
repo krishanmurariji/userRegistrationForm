@@ -3,12 +3,14 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
+using SmallMart.Api.Domain;
 using SmallMart.Api.Email;
 
 namespace SmallMart.Api.Tests;
@@ -75,6 +77,26 @@ public class TestApp : WebApplicationFactory<Program>
         (await client.PostAsJsonAsync("/api/auth/confirm-email", Emails.LinkFor(email))).EnsureSuccessStatusCode();
         var auth = await LoginAsync(client, email, password);
         return (client, auth, email, password);
+    }
+
+    /// <summary>A signed-in user the platform admin has made a shop owner.</summary>
+    public async Task<(HttpClient Client, AuthResponse Auth, string Email, string Password)> SignedInOwnerAsync()
+    {
+        var (client, _, email, password) = await SignedInUserAsync();
+        using (var scope = Services.CreateScope())
+        {
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            await users.AddToRoleAsync((await users.FindByEmailAsync(email))!, Roles.ShopOwner);
+        }
+        var auth = await LoginAsync(client, email, password); // new token that carries the role
+        return (client, auth, email, password);
+    }
+
+    public async Task<HttpClient> AdminClientAsync()
+    {
+        var client = CreateClient();
+        await LoginAsync(client, AdminEmail, AdminPassword);
+        return client;
     }
 
     public static async Task<AuthResponse> LoginAsync(HttpClient client, string email, string password)

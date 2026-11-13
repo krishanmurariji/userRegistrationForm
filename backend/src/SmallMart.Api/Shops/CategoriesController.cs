@@ -31,6 +31,8 @@ public class CategoriesController(AppDbContext db, ShopAccess access) : Controll
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
 
         var name = request.Name.Trim();
         if (await NameTakenAsync(shopId, name, null, ct))
@@ -47,6 +49,8 @@ public class CategoriesController(AppDbContext db, ShopAccess access) : Controll
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
         var category = await db.Categories.SingleOrDefaultAsync(c => c.Id == id && c.ShopId == shopId, ct);
         if (category is null)
             return NotFound();
@@ -68,6 +72,8 @@ public class CategoriesController(AppDbContext db, ShopAccess access) : Controll
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
         var category = await db.Categories.SingleOrDefaultAsync(c => c.Id == id && c.ShopId == shopId, ct);
         if (category is null)
             return NotFound();
