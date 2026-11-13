@@ -13,7 +13,9 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | 2 | Shops, categories, items with photos (API and app screens) | Done, tested |
 | 2 | Item variants, staff invites, opening hours, Excel import | Not started |
 | Admin | Roles (customer, shop owner, admin), admin section: users, shops, activity log | Done, tested |
-| 3+ | Customer browsing, cart, payments, orders, inventory | Not started |
+| 3-5 | Customer browsing, cart, checkout, cash on delivery, UPI with manual verification, orders | Done, tested |
+| Admin | User and shop detail pages, user editing, password reset links, CSV exports | Done, tested |
+| Later | Offers and coupons, inventory, push notifications, saved addresses, support tickets, mobile packaging | Not started |
 
 ## Who can do what
 
@@ -89,6 +91,32 @@ Tests run the real API against a throwaway PostgreSQL database. Set `SMALLMART_T
 | `POST /api/auth/external/microsoft` | Sign in with a Microsoft ID token |
 | `GET /api/auth/me` | Current user (needs access token) |
 
+Customers (any signed-in user):
+
+| Method and path | Purpose |
+|---|---|
+| `GET /api/store/shops`, `GET /api/store/shops/{id}`, `GET /api/store/shops/{id}/items` | Browse active shops and visible items |
+| `POST /api/orders` | Place an order (`paymentMethod` is `CashOnDelivery` or `Upi`); prices come from the database |
+| `GET /api/orders/mine`, `GET /api/orders/{id}`, `GET /api/orders/last-address` | Own orders and the last delivery address |
+| `POST /api/orders/{id}/upi-proof` | Send the UPI transaction ID (`reference`) and screenshot (`file`) |
+| `POST /api/orders/{id}/cancel` | Cancel while the shop has not accepted yet |
+
+Shop members:
+
+| Method and path | Purpose |
+|---|---|
+| `GET /api/shops/{id}/orders` (`?view=new|payments|active|done`), `/counts`, `/{orderId}` | The shop's orders |
+| `GET /api/shops/{id}/orders/{orderId}/upi-proof` | The customer's payment screenshot (private) |
+| `POST .../payment/verify`, `POST .../payment/reject` | Confirm or reject a UPI payment |
+| `POST .../status` | Next step: `Accepted`, `Packed`, `OutForDelivery`, `Delivered` |
+| `POST .../cancel` | Cancel or decline with a reason |
+
+How UPI works: the order page shows the shop's UPI ID, a QR code and an "Open UPI app" link with the amount
+filled in. After paying, the customer sends the transaction ID and a screenshot. The shop checks its own bank
+or UPI app and confirms or rejects. A UPI order cannot be accepted until the payment is confirmed, one
+transaction ID can pay for one order only, and every confirmation is in the activity log. There are no
+gateway fees and no automatic refunds: a cancelled paid order tells the shop to refund by hand.
+
 Platform admin only:
 
 | Method and path | Purpose |
@@ -101,6 +129,9 @@ Platform admin only:
 | `GET /api/admin/shops` | All shops (`?search=`, `?active=`) |
 | `POST /api/admin/shops/{id}/deactivate`, `/activate` | Freeze or restore a shop |
 | `GET /api/admin/audit-logs` | Activity log (`?search=`, `?action=` prefix such as `shop.`) |
+| `GET/PUT /api/admin/users/{id}`, `POST .../send-password-reset` | One user: details, correct name or email, email a reset link |
+| `GET /api/admin/shops/{id}` | One shop: details, owner, counts, delivered sales, activity |
+| `GET /api/admin/users/export`, `/shops/export`, `/audit-logs/export` | CSV files that open in Excel |
 
 Shop management (signed-in members of the shop only; others get 404):
 
@@ -114,7 +145,8 @@ Shop management (signed-in members of the shop only; others get 404):
 | `POST /api/shops/{id}/items/{itemId}/image` | Upload the item photo (form field `file`) |
 
 Pictures must be JPEG, PNG or WebP up to 5 MB. They are stored under `App_Data/uploads` (set `Storage__Root`
-to a persistent folder in production) and served from `/files/...`.
+to a persistent folder in production) and served from `/files/...`. Payment screenshots are kept apart in
+`App_Data/private` (`Storage__PrivateRoot`) and are only sent to the customer and the shop of that order.
 
 Errors are `application/problem+json` with a machine-readable `code` (for example `invalid_credentials`,
 `email_not_confirmed`, `locked_out`, `account_exists`).
