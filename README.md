@@ -17,7 +17,14 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | Admin | User and shop detail pages, user editing, password reset links, CSV exports | Done, tested |
 | 6 | Inventory: stock counting, adjustments with history, low-stock warnings, stock checks on orders | Done, tested |
 | 6 | In-app notifications for shops and customers | Done, tested |
-| Later | Customer redesign, offers and coupons, push and email notifications, saved addresses, support tickets, mobile packaging | Not started |
+| Design | Customer redesign: search header, category tiles, product grid, cart bar, bottom navigation, order tracker | Done, tested |
+| Later | Easier item entry (quick add, catalog, AI from photos), offers and coupons, push and email notifications, saved addresses, support tickets, mobile packaging | Not started |
+
+## What the customer screens look like
+
+Screenshots of the current design are in [docs/design](docs/design): home, shop page, search, cart, checkout
+and order tracking on a phone, plus the home and shop pages on a desktop and the home page in dark mode.
+The product pictures in them are generated placeholders.
 
 ## Who can do what
 

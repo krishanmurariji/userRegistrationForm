@@ -277,13 +277,16 @@
 /* Ordering. */
 .cart-button {
   position: relative;
+  overflow: visible;
 
   ion-badge {
     position: absolute;
-    top: 0;
-    right: -2px;
-    font-size: 0.65rem;
-    padding: 3px 5px;
+    top: 2px;
+    right: 0;
+    min-width: 16px;
+    font-size: 0.6rem;
+    padding: 2px 4px;
+    border-radius: 999px;
   }
 }
 
@@ -511,6 +514,7 @@
   --sm-soft: #eef6f1;
   --sm-deal: #b93d07;
   --sm-deal-soft: #fff1e8;
+  --sm-accent: #0b7a4b;
   --sm-radius: 14px;
   --sm-shadow: 0 1px 2px rgba(16, 32, 24, 0.06), 0 2px 8px rgba(16, 32, 24, 0.05);
 }
@@ -523,6 +527,7 @@
     --sm-text: #eef2f0;
     --sm-muted: #a2ada8;
     --sm-soft: #1d2a23;
+    --sm-accent: #62d6a0;
     --sm-deal: #ffb38a;
     --sm-deal-soft: #33211a;
     --sm-shadow: none;
@@ -549,8 +554,12 @@ ion-content.shop-bg {
     --min-height: 52px;
     padding: 0 8px 8px;
 
-    form {
+    form,
+    > ion-searchbar {
+      display: block;
       width: 100%;
+      max-width: 1096px;
+      margin: 0 auto;
     }
 
     ion-searchbar {
@@ -604,7 +613,7 @@ ion-content.shop-bg {
   }
 
   a {
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
   }
 
   .hello {
@@ -645,7 +654,7 @@ ion-content.shop-bg {
     padding: 0;
     border: 0;
     background: none;
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
     font: inherit;
     font-weight: 700;
     cursor: pointer;
@@ -741,7 +750,7 @@ ion-content.shop-bg {
   > ion-icon:first-child {
     flex: none;
     font-size: 26px;
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
   }
 
   > span {
@@ -759,7 +768,7 @@ ion-content.shop-bg {
     margin-left: auto;
     flex-direction: row;
     align-items: center;
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
     font-weight: 700;
     white-space: nowrap;
   }
@@ -777,7 +786,7 @@ ion-content.shop-bg {
 
   > ion-icon {
     font-size: 44px;
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
   }
 
   strong {
@@ -822,7 +831,7 @@ ion-content.shop-bg {
 
   &.open {
     background: var(--sm-soft);
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
   }
 }
 
@@ -838,7 +847,7 @@ ion-content.shop-bg {
 
   &[data-color='success'] {
     background: var(--sm-soft);
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
   }
 
   &[data-color='warning'] {
@@ -853,7 +862,7 @@ ion-content.shop-bg {
 
   &[data-color='primary'] {
     background: rgba(var(--ion-color-primary-rgb), 0.12);
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
   }
 }
 
@@ -870,7 +879,8 @@ ion-content.shop-bg {
   gap: 10px;
 
   @media (min-width: 720px) {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, 112px);
+    gap: 16px;
   }
 }
 
@@ -892,7 +902,7 @@ ion-content.shop-bg {
     justify-content: center;
     background: var(--sm-soft);
     box-shadow: var(--sm-shadow);
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
     font-size: 1.6rem;
     font-weight: 800;
 
@@ -943,7 +953,7 @@ ion-content.shop-bg {
     align-items: center;
     justify-content: center;
     background: var(--sm-soft);
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
     font-size: 30px;
 
     img {
@@ -996,7 +1006,7 @@ ion-content.shop-bg {
     align-items: center;
     justify-content: center;
     background: var(--sm-soft);
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
     font-size: 34px;
 
     img {
@@ -1180,7 +1190,7 @@ app-product-card {
     font-size: 0.78rem;
     font-weight: 600;
     text-decoration: none;
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1231,9 +1241,9 @@ app-product-card {
 .product .add {
   min-width: 68px;
   padding: 0 14px;
-  border: 1.5px solid var(--ion-color-primary);
+  border: 1.5px solid var(--sm-accent);
   background: var(--sm-soft);
-  color: var(--ion-color-primary);
+  color: var(--sm-accent);
   font-size: 0.85rem;
   letter-spacing: 0.03em;
   cursor: pointer;
@@ -1391,7 +1401,7 @@ app-product-card {
     padding: 8px 10px;
     border-radius: 9px;
     background: var(--sm-soft);
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
     font-size: 0.88rem;
     font-weight: 700;
   }
@@ -1503,7 +1513,7 @@ app-product-card {
   }
 
   .view {
-    color: var(--ion-color-primary);
+    color: var(--sm-accent);
     font-weight: 700;
   }
 }
@@ -1590,7 +1600,7 @@ app-product-card {
 
     strong {
       font-weight: 800;
-      color: var(--ion-color-primary);
+      color: var(--sm-accent);
     }
   }
 }
@@ -1677,7 +1687,9 @@ app-product-card {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 8px 10px;
+  width: calc(100% - 20px);
+  max-width: 660px;
+  margin: 8px auto;
   padding: 10px 14px;
   border-radius: 12px;
   background: var(--ion-color-primary);
@@ -1777,7 +1789,7 @@ app-product-card {
     }
 
     &.active {
-      color: var(--ion-color-primary);
+      color: var(--sm-accent);
       font-weight: 800;
     }
 
