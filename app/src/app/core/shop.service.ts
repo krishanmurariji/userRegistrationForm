@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Category, Item, ItemInput, Shop, ShopInput } from './shop.models';
+import { Category, Item, ItemInput, Shop, ShopInput, StockMovement } from './shop.models';
 import { Order, OrderStatus, OrderSummary } from './store.models';
 
 /** Full address of a picture path returned by the API, or null when there is no picture. */
@@ -52,8 +52,9 @@ export class ShopService {
     return firstValueFrom(this.http.delete<void>(`${this.api}/${shopId}/categories/${id}`));
   }
 
-  items(shopId: string, filter: { categoryId?: string | null; search?: string } = {}): Promise<Item[]> {
+  items(shopId: string, filter: { categoryId?: string | null; search?: string; stock?: 'low' | null } = {}): Promise<Item[]> {
     let params = new HttpParams().set('take', 200);
+    if (filter.stock) params = params.set('stock', filter.stock);
     if (filter.categoryId) params = params.set('categoryId', filter.categoryId);
     if (filter.search?.trim()) params = params.set('search', filter.search.trim());
     return firstValueFrom(this.http.get<Item[]>(`${this.api}/${shopId}/items`, { params }));
@@ -77,6 +78,24 @@ export class ShopService {
 
   uploadItemImage(shopId: string, id: string, file: File): Promise<Item> {
     return firstValueFrom(this.http.post<Item>(`${this.api}/${shopId}/items/${id}/image`, this.form(file)));
+  }
+
+  // ----- Stock -----
+
+  stockSummary(shopId: string): Promise<{ low: number; out: number }> {
+    return firstValueFrom(this.http.get<{ low: number; out: number }>(`${this.api}/${shopId}/items/stock-summary`));
+  }
+
+  stockHistory(shopId: string, itemId: string): Promise<StockMovement[]> {
+    return firstValueFrom(this.http.get<StockMovement[]>(`${this.api}/${shopId}/items/${itemId}/stock`));
+  }
+
+  /** Give either `change` (add or remove this many) or `setTo` (the counted number). */
+  adjustStock(
+    shopId: string, itemId: string,
+    adjustment: { change?: number; setTo?: number; reason: 'Restock' | 'Damage' | 'Correction'; note: string | null },
+  ): Promise<Item> {
+    return firstValueFrom(this.http.post<Item>(`${this.api}/${shopId}/items/${itemId}/stock`, adjustment));
   }
 
   // ----- Orders, as handled by the shop -----

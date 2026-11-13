@@ -11,6 +11,8 @@ export interface CartLine {
   price: number;
   imageUrl: string | null;
   quantity: number;
+  /** The most that can be ordered, or null when the shop does not count stock. */
+  available: number | null;
 }
 
 export interface Cart {
@@ -22,6 +24,11 @@ export interface Cart {
 
 const KEY = 'smallmart.cart';
 export const MAX_QUANTITY = 99;
+
+/** The most of an item one order may contain: 99, or fewer when the shop has fewer left. */
+export function maxFor(available: number | null | undefined): number {
+  return available === null || available === undefined ? MAX_QUANTITY : Math.max(0, Math.min(MAX_QUANTITY, available));
+}
 
 /**
  * The shopping cart. It holds items from one shop at a time and is kept on this device.
@@ -73,12 +80,12 @@ export class CartService {
   setQuantity(shop: StoreShop, item: StoreItem, quantity: number): void {
     const userId = this.auth.user()?.id;
     if (!userId) return;
-    quantity = Math.max(0, Math.min(MAX_QUANTITY, Math.floor(quantity)));
+    quantity = Math.max(0, Math.min(maxFor(item.available), Math.floor(quantity)));
 
     const current = this.state();
     const lines = current && current.shop.id === shop.id ? current.lines.filter((line) => line.itemId !== item.id) : [];
     if (quantity > 0) {
-      lines.push({ itemId: item.id, name: item.name, unit: item.unit, price: item.price, imageUrl: item.imageUrl, quantity });
+      lines.push({ itemId: item.id, name: item.name, unit: item.unit, price: item.price, imageUrl: item.imageUrl, quantity, available: item.available });
       lines.sort((a, b) => a.name.localeCompare(b.name));
     }
     this.set(lines.length ? { userId, shop, lines } : null);
@@ -87,9 +94,8 @@ export class CartService {
   changeLine(itemId: string, quantity: number): void {
     const cart = this.state();
     if (!cart) return;
-    quantity = Math.max(0, Math.min(MAX_QUANTITY, Math.floor(quantity)));
     const lines = cart.lines
-      .map((line) => (line.itemId === itemId ? { ...line, quantity } : line))
+      .map((line) => (line.itemId === itemId ? { ...line, quantity: Math.max(0, Math.min(maxFor(line.available), Math.floor(quantity))) } : line))
       .filter((line) => line.quantity > 0);
     this.set(lines.length ? { ...cart, lines } : null);
   }
@@ -119,20 +125,24 @@ export class CartService {
     }
 
     const byId = new Map(items.map((item) => [item.id, item]));
-    const removed = cart.lines.filter((line) => !byId.has(line.itemId)).map((line) => line.name);
+    // Gone from the shop, or sold out.
+    const stillSold = (line: CartLine) => byId.has(line.itemId) && maxFor(byId.get(line.itemId)!.available) > 0;
+    const removed = cart.lines.filter((line) => !stillSold(line)).map((line) => line.name);
     let priceChanged = false;
-    const lines = cart.lines
-      .filter((line) => byId.has(line.itemId))
-      .map((line) => {
-        const item = byId.get(line.itemId)!;
-        if (item.price !== line.price) priceChanged = true;
-        return { ...line, name: item.name, unit: item.unit, price: item.price, imageUrl: item.imageUrl };
-      });
+    const reduced: string[] = [];
+    const lines = cart.lines.filter(stillSold).map((line) => {
+      const item = byId.get(line.itemId)!;
+      if (item.price !== line.price) priceChanged = true;
+      const quantity = Math.min(line.quantity, maxFor(item.available));
+      if (quantity < line.quantity) reduced.push(`${item.name} (only ${quantity} left)`);
+      return { ...line, name: item.name, unit: item.unit, price: item.price, imageUrl: item.imageUrl, available: item.available, quantity };
+    });
     const feeChanged = shop.deliveryFee !== cart.shop.deliveryFee;
     this.set(lines.length ? { ...cart, shop, lines } : null);
 
     const notes: string[] = [];
     if (removed.length) notes.push(`No longer available and removed: ${removed.join(', ')}.`);
+    if (reduced.length) notes.push(`Quantity reduced: ${reduced.join(', ')}.`);
     if (priceChanged) notes.push('Some prices have changed.');
     if (feeChanged) notes.push('The delivery fee has changed.');
     return notes.join(' ');

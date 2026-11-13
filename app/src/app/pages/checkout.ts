@@ -137,7 +137,7 @@ export class CheckoutPage {
       const { code, message } = toApiError(e);
       this.error.set(message);
       // The shop changed something since the cart was last checked: bring the cart up to date.
-      if (['cart_changed', 'items_unavailable', 'below_minimum', 'shop_closed', 'upi_unavailable', 'shop_unavailable'].includes(code)) {
+      if (['cart_changed', 'items_unavailable', 'insufficient_stock', 'below_minimum', 'shop_closed', 'upi_unavailable', 'shop_unavailable'].includes(code)) {
         await this.cart.refresh().catch(() => undefined);
       }
     } finally {

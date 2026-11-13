@@ -5,7 +5,7 @@ import { AlertController, IonBackButton, IonBadge, IonButton, IonButtons, IonChi
 import { addIcons } from 'ionicons';
 import { addOutline, cartOutline, imageOutline, removeOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
-import { CartService, MAX_QUANTITY } from '../core/cart.service';
+import { CartService, maxFor } from '../core/cart.service';
 import { fileUrl } from '../core/shop.service';
 import { StoreCategory, StoreItem, StoreShop } from '../core/store.models';
 import { StoreService } from '../core/store.service';
@@ -76,8 +76,13 @@ import { StoreService } from '../core/store.service';
                       }
                     </p>
                     @if (item.description) { <p class="meta">{{ item.description }}</p> }
+                    @if (item.available !== null && item.available > 0 && item.available <= 5) {
+                      <p class="only-left">Only {{ item.available }} left</p>
+                    }
                   </ion-label>
-                  @if (!s.isOpen) {
+                  @if (item.available === 0) {
+                    <ion-badge slot="end" color="medium">Out of stock</ion-badge>
+                  } @else if (!s.isOpen) {
                     <!-- no ordering while closed -->
                   } @else if (cart.quantityOf(item.id); as quantity) {
                     <div slot="end" class="stepper">
@@ -85,7 +90,7 @@ import { StoreService } from '../core/store.service';
                         <ion-icon slot="icon-only" name="remove-outline" />
                       </ion-button>
                       <span aria-live="polite">{{ quantity }}</span>
-                      <ion-button fill="outline" size="small" [disabled]="quantity >= max" [attr.aria-label]="'Add one more ' + item.name" (click)="set(item, quantity + 1)">
+                      <ion-button fill="outline" size="small" [disabled]="quantity >= maxFor(item.available)" [attr.aria-label]="'Add one more ' + item.name" (click)="set(item, quantity + 1)">
                         <ion-icon slot="icon-only" name="add-outline" />
                       </ion-button>
                     </div>
@@ -118,7 +123,7 @@ export class StorePage {
   protected readonly cart = inject(CartService);
 
   protected readonly shopId = inject(ActivatedRoute).snapshot.paramMap.get('shopId')!;
-  protected readonly max = MAX_QUANTITY;
+  protected readonly maxFor = maxFor;
   protected readonly shop = signal<StoreShop | null>(null);
   protected readonly categories = signal<StoreCategory[]>([]);
   protected readonly items = signal<StoreItem[]>([]);

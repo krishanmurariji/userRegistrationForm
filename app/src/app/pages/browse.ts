@@ -6,6 +6,7 @@ import { cartOutline, personCircleOutline, receiptOutline, storefrontOutline } f
 import { toApiError } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
 import { CartService } from '../core/cart.service';
+import { NotificationBell } from '../core/notification-bell';
 import { fileUrl } from '../core/shop.service';
 import { StoreShop } from '../core/store.models';
 import { StoreService } from '../core/store.service';
@@ -13,7 +14,7 @@ import { StoreService } from '../core/store.service';
 /** The customer home page: shops to order from. */
 @Component({
   selector: 'app-browse',
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonBadge, IonContent, IonSearchbar, IonList, IonItem, IonLabel, IonThumbnail, IonSpinner, IonText],
+  imports: [RouterLink, NotificationBell, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonBadge, IonContent, IonSearchbar, IonList, IonItem, IonLabel, IonThumbnail, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -24,6 +25,7 @@ import { StoreService } from '../core/store.service';
             <ion-icon slot="icon-only" name="cart-outline" />
             @if (cart.count()) { <ion-badge color="warning">{{ cart.count() }}</ion-badge> }
           </ion-button>
+          <app-notification-bell />
           <ion-button routerLink="/account" aria-label="Account"><ion-icon slot="icon-only" name="person-circle-outline" /></ion-button>
         </ion-buttons>
       </ion-toolbar>

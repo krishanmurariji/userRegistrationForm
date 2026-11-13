@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonSelect, IonSelectOption, IonSpinner, IonText, IonTextarea, IonTitle, IonToggle, IonToolbar, NavController } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { Category } from '../core/shop.models';
@@ -15,7 +15,7 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
 /** Adds an item (/shops/:shopId/items/new) or edits one (/shops/:shopId/items/:itemId). */
 @Component({
   selector: 'app-item-form',
-  imports: [ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonToggle, IonItem, IonButton, IonSpinner, IonText],
+  imports: [ReactiveFormsModule, RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonToggle, IonItem, IonButton, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -67,6 +67,27 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
               <ion-toggle formControlName="isActive">Visible to customers</ion-toggle>
             </ion-item>
 
+            <h2 class="section-title">Stock</h2>
+            <ion-item lines="none" class="plain-item">
+              <ion-toggle formControlName="trackStock">Count stock for this item</ion-toggle>
+            </ion-item>
+            @if (form.controls.trackStock.value) {
+              @if (countedBefore()) {
+                <div class="panel">
+                  <strong>{{ stockQuantity() }} in stock</strong>
+                  <ion-button fill="outline" [routerLink]="['/shops', shopId, 'items', itemId, 'stock']">Add, remove or correct stock</ion-button>
+                </div>
+              } @else {
+                <ion-input formControlName="openingStock" type="number" inputmode="numeric" min="0" step="1"
+                  label="How many do you have now?" labelPlacement="stacked" fill="outline" errorText="Enter 0 or more" />
+              }
+              <ion-input formControlName="lowStockThreshold" type="number" inputmode="numeric" min="0" step="1"
+                label="Warn me when stock falls to" labelPlacement="stacked" fill="outline" errorText="Enter 0 or more" />
+              <p class="meta">Customers cannot order more than you have. Orders reduce the stock, and cancelled orders put it back.</p>
+            } @else {
+              <p class="meta">Off: the item is always shown as available.</p>
+            }
+
             @if (error(); as message) {
               <ion-text color="danger" role="alert"><p class="message">{{ message }}</p></ion-text>
             }
@@ -104,6 +125,9 @@ export class ItemFormPage implements OnInit, OnDestroy {
       barcode: ['', Validators.maxLength(64)],
       description: ['', Validators.maxLength(2000)],
       isActive: [true],
+      trackStock: [false],
+      openingStock: [0 as number | null, [Validators.min(0), Validators.max(1000000)]],
+      lowStockThreshold: [5 as number | null, [Validators.required, Validators.min(0), Validators.max(100000)]],
     },
     { validators: priceNotAboveMrp },
   );
@@ -112,6 +136,9 @@ export class ItemFormPage implements OnInit, OnDestroy {
   protected readonly busy = signal(false);
   protected readonly error = signal('');
   protected readonly photoUrl = signal<string | null>(null);
+  /** True when the saved item already counts stock; then the number changes only on the stock page. */
+  protected readonly countedBefore = signal(false);
+  protected readonly stockQuantity = signal(0);
   /** A photo chosen on screen but not uploaded yet. */
   private pendingPhoto: File | null = null;
   private previewUrl: string | null = null;
@@ -126,11 +153,23 @@ export class ItemFormPage implements OnInit, OnDestroy {
       if (item) {
         this.form.patchValue({ ...item, barcode: item.barcode ?? '', description: item.description ?? '' });
         this.photoUrl.set(fileUrl(item.imageUrl));
+        this.countedBefore.set(item.trackStock);
+        this.stockQuantity.set(item.stockQuantity);
       }
     } catch (e) {
       this.error.set(toApiError(e).message);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /** Coming back from the stock page: show the new number. */
+  async ionViewWillEnter(): Promise<void> {
+    if (!this.itemId || this.loading()) return;
+    try {
+      this.stockQuantity.set((await this.shops.item(this.shopId, this.itemId)).stockQuantity);
+    } catch {
+      // The number on screen is only a reminder; the stock page has the real one.
     }
   }
 
@@ -171,6 +210,9 @@ export class ItemFormPage implements OnInit, OnDestroy {
         barcode: v.barcode?.trim() || null,
         description: v.description?.trim() || null,
         isActive: v.isActive ?? true,
+        trackStock: v.trackStock ?? false,
+        lowStockThreshold: Math.floor(Number(v.lowStockThreshold ?? 5)),
+        openingStock: v.trackStock && !this.countedBefore() ? Math.floor(Number(v.openingStock ?? 0)) : null,
       };
       const item = this.itemId
         ? await this.shops.updateItem(this.shopId, this.itemId, input)

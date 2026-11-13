@@ -27,6 +27,8 @@ export interface StoreItem {
   mrp: number | null;
   unit: string;
   imageUrl: string | null;
+  /** How many can be ordered, or null when the shop does not count stock for this item. */
+  available: number | null;
 }
 
 export interface StoreShopDetail {

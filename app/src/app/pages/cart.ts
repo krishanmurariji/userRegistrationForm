@@ -5,7 +5,7 @@ import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, I
 import { addIcons } from 'ionicons';
 import { addOutline, cartOutline, imageOutline, removeOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
-import { CartService, MAX_QUANTITY } from '../core/cart.service';
+import { CartService, maxFor } from '../core/cart.service';
 import { fileUrl } from '../core/shop.service';
 
 @Component({
@@ -39,13 +39,14 @@ import { fileUrl } from '../core/shop.service';
                   <h2>{{ line.name }}</h2>
                   <p>{{ line.unit }} · {{ line.price | currency: 'INR' : 'symbol' : '1.0-2' }}</p>
                   <p><strong>{{ line.price * line.quantity | currency: 'INR' : 'symbol' : '1.0-2' }}</strong></p>
+                  @if (line.available !== null && line.quantity >= line.available) { <p class="meta">That is all the shop has left.</p> }
                 </ion-label>
                 <div slot="end" class="stepper">
                   <ion-button fill="outline" size="small" [attr.aria-label]="'Remove one ' + line.name" (click)="cart.changeLine(line.itemId, line.quantity - 1)">
                     <ion-icon slot="icon-only" name="remove-outline" />
                   </ion-button>
                   <span aria-live="polite">{{ line.quantity }}</span>
-                  <ion-button fill="outline" size="small" [disabled]="line.quantity >= max" [attr.aria-label]="'Add one more ' + line.name" (click)="cart.changeLine(line.itemId, line.quantity + 1)">
+                  <ion-button fill="outline" size="small" [disabled]="line.quantity >= maxFor(line.available)" [attr.aria-label]="'Add one more ' + line.name" (click)="cart.changeLine(line.itemId, line.quantity + 1)">
                     <ion-icon slot="icon-only" name="add-outline" />
                   </ion-button>
                 </div>
@@ -85,7 +86,7 @@ import { fileUrl } from '../core/shop.service';
 })
 export class CartPage {
   protected readonly cart = inject(CartService);
-  protected readonly max = MAX_QUANTITY;
+  protected readonly maxFor = maxFor;
   protected readonly notice = signal('');
   protected readonly error = signal('');
   protected readonly image = fileUrl;

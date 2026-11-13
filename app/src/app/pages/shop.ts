@@ -5,19 +5,21 @@ import { IonBackButton, IonBadge, IonButton, IonButtons, IonChip, IonContent, Io
 import { addIcons } from 'ionicons';
 import { addOutline, createOutline, imageOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
-import { Category, Item, Shop } from '../core/shop.models';
+import { Category, Item, Shop, stockState } from '../core/shop.models';
+import { NotificationBell } from '../core/notification-bell';
 import { ShopService, fileUrl } from '../core/shop.service';
 
 /** A shop's management page: open/closed switch, categories and the item list. */
 @Component({
   selector: 'app-shop',
-  imports: [CurrencyPipe, RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonToggle, IonSearchbar, IonChip, IonFab, IonFabButton, IonSpinner, IonText],
+  imports: [CurrencyPipe, RouterLink, NotificationBell, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonToggle, IonSearchbar, IonChip, IonFab, IonFabButton, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start"><ion-back-button defaultHref="/my-shops" /></ion-buttons>
         <ion-title>{{ shop()?.name ?? 'Shop' }}</ion-title>
         <ion-buttons slot="end">
+          <app-notification-bell />
           <ion-button [routerLink]="['/shops', shopId, 'edit']" aria-label="Edit shop details">
             <ion-icon slot="icon-only" name="create-outline" />
           </ion-button>
@@ -56,9 +58,12 @@ import { ShopService, fileUrl } from '../core/shop.service';
           <h2 class="section-title">Items</h2>
           <ion-searchbar placeholder="Search by name or barcode" [debounce]="300"
             (ionInput)="search.set($event.detail.value ?? ''); loadItems()" />
-          @if (categories().length) {
-            <div class="chips" role="group" aria-label="Filter by category">
-              <ion-chip [outline]="categoryId() !== null" color="primary" (click)="filter(null)">All</ion-chip>
+          @if (categories().length || lowStock()) {
+            <div class="chips" role="group" aria-label="Filter items">
+              <ion-chip [outline]="categoryId() !== null || lowOnly()" color="primary" (click)="filter(null)">All</ion-chip>
+              @if (lowStock()) {
+                <ion-chip [outline]="!lowOnly()" color="danger" (click)="showLow()">Low stock ({{ lowStock() }})</ion-chip>
+              }
               @for (c of categories(); track c.id) {
                 <ion-chip [outline]="categoryId() !== c.id" color="primary" (click)="filter(c.id)">{{ c.name }}</ion-chip>
               }
@@ -69,7 +74,7 @@ import { ShopService, fileUrl } from '../core/shop.service';
             <div class="centered"><ion-spinner name="crescent" aria-label="Loading items" /></div>
           } @else if (items().length === 0) {
             <p class="muted">
-              {{ search() || categoryId() ? 'No items match.' : 'No items yet. Tap + to add your first item.' }}
+              {{ search() || categoryId() || lowOnly() ? 'No items match.' : 'No items yet. Tap + to add your first item.' }}
             </p>
           } @else {
             <ion-list>
@@ -88,6 +93,7 @@ import { ShopService, fileUrl } from '../core/shop.service';
                       }
                     </p>
                   </ion-label>
+                  @if (stock(item); as st) { <ion-badge slot="end" [color]="st.color">{{ st.label }}</ion-badge> }
                   @if (!item.isActive) { <ion-badge slot="end" color="medium">Hidden</ion-badge> }
                 </ion-item>
               }
@@ -122,6 +128,10 @@ export class ShopPage {
   protected readonly saving = signal(false);
   protected readonly error = signal('');
   protected readonly image = (item: Item) => fileUrl(item.imageUrl);
+  protected readonly stock = stockState;
+  /** How many counted items are at or below their warning level. */
+  protected readonly lowStock = signal(0);
+  protected readonly lowOnly = signal(false);
   private latestItemsRequest = 0;
 
   constructor() {
@@ -135,6 +145,10 @@ export class ShopPage {
       this.shop.set(shop);
       this.categories.set(categories);
       void this.shops.orderCounts(this.shopId).then((counts) => this.counts.set(counts)).catch(() => undefined);
+      void this.shops.stockSummary(this.shopId).then((summary) => {
+        this.lowStock.set(summary.low);
+        if (!summary.low) this.lowOnly.set(false);
+      }).catch(() => undefined);
       if (this.categoryId() && !categories.some((c) => c.id === this.categoryId())) this.categoryId.set(null);
       await this.loadItems();
     } catch (e) {
@@ -144,6 +158,13 @@ export class ShopPage {
 
   protected filter(categoryId: string | null): void {
     this.categoryId.set(categoryId);
+    this.lowOnly.set(false);
+    void this.loadItems();
+  }
+
+  protected showLow(): void {
+    this.categoryId.set(null);
+    this.lowOnly.set(true);
     void this.loadItems();
   }
 
@@ -151,7 +172,7 @@ export class ShopPage {
     // Typing fast starts several searches; only the newest result may be shown.
     const request = ++this.latestItemsRequest;
     try {
-      const items = await this.shops.items(this.shopId, { categoryId: this.categoryId(), search: this.search() });
+      const items = await this.shops.items(this.shopId, { categoryId: this.categoryId(), search: this.search(), stock: this.lowOnly() ? 'low' : null });
       if (request === this.latestItemsRequest) this.items.set(items);
     } catch (e) {
       if (request === this.latestItemsRequest) this.error.set(toApiError(e).message);

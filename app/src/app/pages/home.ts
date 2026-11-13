@@ -4,6 +4,7 @@ import { IonBackButton, IonBadge, IonButton, IonButtons, IonContent, IonHeader, 
 import { addIcons } from 'ionicons';
 import { addOutline, personCircleOutline, storefrontOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
+import { NotificationBell } from '../core/notification-bell';
 import { AuthService } from '../core/auth.service';
 import { Shop } from '../core/shop.models';
 import { ShopService, fileUrl } from '../core/shop.service';
@@ -11,12 +12,13 @@ import { ShopService, fileUrl } from '../core/shop.service';
 /** The shops a shop owner manages. */
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonSpinner, IonText],
+  imports: [RouterLink, NotificationBell, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
         <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
         <ion-title>My shops</ion-title>
+        <ion-buttons slot="end"><app-notification-bell /></ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">

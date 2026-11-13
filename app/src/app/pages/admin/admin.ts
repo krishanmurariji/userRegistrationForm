@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonLabel, IonSegment, IonSegmentButton, IonTitle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { personCircleOutline } from 'ionicons/icons';
+import { NotificationBell } from '../../core/notification-bell';
 import { AdminActivity } from './admin-activity';
 import { AdminOverview } from './admin-overview';
 import { AdminShops } from './admin-shops';
@@ -13,12 +14,13 @@ type Tab = 'overview' | 'users' | 'shops' | 'activity';
 /** The platform admin's home: overview numbers, users, shops and the activity log. */
 @Component({
   selector: 'app-admin',
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonSegment, IonSegmentButton, IonLabel, IonContent, AdminOverview, AdminUsers, AdminShops, AdminActivity],
+  imports: [RouterLink, NotificationBell, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonSegment, IonSegmentButton, IonLabel, IonContent, AdminOverview, AdminUsers, AdminShops, AdminActivity],
   template: `
     <ion-header>
       <ion-toolbar color="dark">
         <ion-title>Small Mart Admin</ion-title>
         <ion-buttons slot="end">
+          <app-notification-bell />
           <ion-button routerLink="/account" aria-label="Account">
             <ion-icon slot="icon-only" name="person-circle-outline" />
           </ion-button>

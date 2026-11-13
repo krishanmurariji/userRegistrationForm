@@ -456,3 +456,44 @@
     text-decoration-color: var(--ion-color-medium);
   }
 }
+
+/* Stock and notifications. */
+.page-column {
+  .only-left {
+    color: var(--ion-color-danger);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .stock-now {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 4px 0;
+
+    .value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+  }
+
+  .unread {
+    --background: rgba(var(--ion-color-primary-rgb), 0.07);
+
+    h2 {
+      font-weight: 700;
+    }
+  }
+
+  .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 8px;
+    border-radius: 50%;
+    background: var(--ion-color-primary);
+    vertical-align: middle;
+  }
+}
