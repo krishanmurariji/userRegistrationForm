@@ -104,6 +104,47 @@ public class OrderTests(TestApp app)
         Assert.Equal("shop_unavailable", await ErrorCode(await customer.PostAsJsonAsync("/api/orders", Cart(f))));
     }
 
+    [Fact]
+    public async Task Customers_can_search_items_across_shops_and_browse_by_category()
+    {
+        var word = $"zq{Guid.NewGuid():N}"[..10];
+        var (ownerA, _, _, _) = await app.SignedInOwnerAsync();
+        var (ownerB, _, _, _) = await app.SignedInOwnerAsync();
+        async Task<(ShopDto Shop, ItemDto Item)> Shop(HttpClient owner, string name, string item, bool visible = true, bool open = true)
+        {
+            var shop = await Read<ShopDto>(await owner.PostAsJsonAsync("/api/shops", new ShopRequest(name, null, "9876543210", "1 Road", "Pune", "411001", null, 0, 0, open)));
+            var category = await Read<CategoryDto>(await owner.PostAsJsonAsync($"/api/shops/{shop.Id}/categories", new CategoryRequest($"Cat {word}")));
+            var created = await Read<ItemDto>(await owner.PostAsJsonAsync($"/api/shops/{shop.Id}/items", new ItemRequest(item, null, category.Id, 10, null, "1 piece", null, visible)));
+            return (shop, created);
+        }
+        var a = await Shop(ownerA, $"Alpha {word}", $"{word} biscuit", open: false);
+        var b = await Shop(ownerB, $"Beta {word}", $"{word} BISCUIT large");
+        var hidden = await Shop(ownerB, $"Gamma {word}", $"{word} biscuit hidden", visible: false);
+        var frozen = await Shop(ownerA, $"Delta {word}", $"{word} biscuit frozen");
+        await (await app.AdminClientAsync()).PostAsync($"/api/admin/shops/{frozen.Shop.Id}/deactivate", null);
+        var (customer, _, _, _) = await app.SignedInUserAsync();
+
+        var found = await customer.GetFromJsonAsync<StoreSearchDto>($"/api/store/search?search={word} bisc");
+        // Open shop first; hidden items and deactivated shops never appear.
+        Assert.Equal([b.Item.Id, a.Item.Id], found!.Items.Select(i => i.Item.Id));
+        Assert.Equal([b.Shop.Id, a.Shop.Id], found.Shops.Select(s => s.Id));
+        Assert.Equal(b.Shop.Id, found.Items[0].ShopId);
+
+        // A shop name matches too, even when none of its items do.
+        var byShop = await customer.GetFromJsonAsync<StoreSearchDto>($"/api/store/search?search=gamma {word}");
+        Assert.Empty(byShop!.Items);
+        Assert.Equal(hidden.Shop.Id, Assert.Single(byShop.Shops).Id);
+
+        var byCategory = await customer.GetFromJsonAsync<StoreSearchDto>($"/api/store/search?category=cat {word}");
+        Assert.Equal(2, byCategory!.Items.Count);
+
+        var tiles = await customer.GetFromJsonAsync<List<StoreCategoryTileDto>>("/api/store/categories?take=50");
+        Assert.Equal(2, tiles!.Single(t => t.Name == $"Cat {word}").ItemCount);
+
+        Assert.Equal(HttpStatusCode.BadRequest, (await customer.GetAsync("/api/store/search")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await app.CreateClient().GetAsync($"/api/store/search?search={word}")).StatusCode);
+    }
+
     // ---------- Placing
 
     [Fact]

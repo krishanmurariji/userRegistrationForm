@@ -29,6 +29,15 @@ public record StoreItemDto(
 
 public record StoreShopDetailDto(StoreShopDto Shop, IReadOnlyList<StoreCategoryDto> Categories);
 
+/// <summary>A category name used by one or more shops, for the tiles on the customer home page.</summary>
+public record StoreCategoryTileDto(string Name, int ItemCount, string? ImageUrl);
+
+/// <summary>An item found by searching across shops, with the shop it belongs to.</summary>
+public record StoreSearchItemDto(StoreItemDto Item, Guid ShopId);
+
+/// <summary>Search results: matching items, and every shop those items (or the shop names) matched.</summary>
+public record StoreSearchDto(IReadOnlyList<StoreSearchItemDto> Items, IReadOnlyList<StoreShopDto> Shops);
+
 // ----- Placing an order -----
 
 public record PlaceOrderLine([Required] Guid ItemId, [Range(1, 99)] int Quantity);
