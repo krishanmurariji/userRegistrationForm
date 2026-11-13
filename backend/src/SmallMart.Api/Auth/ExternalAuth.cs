@@ -61,6 +61,13 @@ public class GoogleTokenValidator(IOptions<ExternalAuthOptions> options, ILogger
             logger.LogInformation("Rejected Google ID token: {Reason}", ex.Message);
             return null;
         }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Text that is not a token at all fails while being parsed, and Google's signing keys may be
+            // unreachable. Either way nothing was verified, so the sign-in is refused instead of crashing.
+            logger.LogWarning(ex, "Could not verify a Google ID token.");
+            return null;
+        }
     }
 }
 
@@ -85,7 +92,18 @@ public class MicrosoftTokenValidator(IOptions<ExternalAuthOptions> options, ILog
             return null;
         }
 
-        var config = await Metadata.GetConfigurationAsync(ct);
+        OpenIdConnectConfiguration config;
+        try
+        {
+            config = await Metadata.GetConfigurationAsync(ct);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException or IOException)
+        {
+            // Microsoft's signing keys could not be downloaded, so nothing can be verified right now.
+            logger.LogError(ex, "Could not reach Microsoft to verify an ID token.");
+            return null;
+        }
+
         var result = await new JsonWebTokenHandler().ValidateTokenAsync(idToken, new TokenValidationParameters
         {
             ValidAudiences = clientIds,

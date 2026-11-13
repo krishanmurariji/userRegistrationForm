@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Uploaded pictures in development
 App_Data/
+
+# Personal settings for one machine (database password and so on)
+appsettings.Local.json

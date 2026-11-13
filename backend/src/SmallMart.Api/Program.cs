@@ -16,6 +16,10 @@ using SmallMart.Api.Storage;
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
 
+// Personal settings for this machine only (for example your database password). The file is not committed.
+config.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false);
+config.AddEnvironmentVariables();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();

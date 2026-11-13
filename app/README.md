@@ -28,7 +28,8 @@ or reset link from the API's log output.
 
 ## Not done yet
 
-- Google and Microsoft sign-in buttons (the API side exists; the app side needs OAuth client ids).
+- Google and Microsoft sign-in work in the browser only. The Android and iOS apps need native sign-in
+  plugins, planned for the mobile packaging phase.
 - Android and iOS projects (`npx cap add android`), planned for the mobile packaging phase.
 - On phones the session is kept in app-private storage. Moving it to the device keystore/keychain is
   planned for the mobile packaging phase.

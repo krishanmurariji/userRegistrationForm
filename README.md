@@ -9,7 +9,7 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 |---|---|---|
 | 1 | Backend: accounts, sign-in, Google/Microsoft sign-in, roles | Done, tested |
 | 1 | App: sign-in, register, password reset and email confirmation screens | Done, tested in a browser |
-| 1 | App: Google and Microsoft sign-in buttons | Not started (needs OAuth client ids) |
+| 1 | App: Google and Microsoft sign-in buttons (web) | Built; real sign-in not yet confirmed end to end |
 | 2 | Shops, categories, items with photos (API and app screens) | Done, tested |
 | 2 | Item variants, staff invites, opening hours, Excel import | Not started |
 | 3+ | Customer browsing, cart, payments, orders, inventory | Not started |
@@ -24,8 +24,18 @@ ASP.NET Core 10 Web API, EF Core, PostgreSQL, ASP.NET Core Identity.
 
 ### Run it
 
-Needs the .NET 10 SDK and PostgreSQL 14+ on `localhost:5432` (user `postgres`, password `postgres`;
-change the connection string in `appsettings.Development.json` if yours differs).
+Needs the .NET 10 SDK and PostgreSQL 14+ on `localhost:5432` (user `postgres`, password `postgres`).
+
+If your PostgreSQL password differs, do not edit the committed settings files. Create
+`backend/src/SmallMart.Api/appsettings.Local.json` (ignored by Git) with your own connection string:
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "Host=localhost;Database=smallmart_dev;Username=postgres;Password=YOUR_PASSWORD"
+  }
+}
+```
 
 ```bash
 cd backend
@@ -112,9 +122,22 @@ Set these with environment variables or a secret store, never in committed files
 
 Behind a reverse proxy, add forwarded-headers handling so the rate limiter sees the real client IP.
 
+### Google and Microsoft sign-in setup
+
+The client ids are in `appsettings.json` (API) and `app/src/environments/` (app). They are public
+identifiers; no client secret is used. Each provider must also know the app's address:
+
+- **Google Cloud console** → the OAuth client → *Authorized JavaScript origins*: add `http://localhost:8100`
+  and later the production address.
+- **Microsoft Entra admin center** → the app registration → *Authentication* → add a
+  *Single-page application* redirect URI: `http://localhost:8100/msal-redirect` (and later the production one).
+  If the registration is limited to one organisation, set `microsoftTenant` in `app/src/environments/`
+  to that tenant id instead of `common`.
+
 ### Not yet verified
 
-Google and Microsoft token validation (`Auth/ExternalAuth.cs`) compiles and follows each provider's
-documented checks, but has not been exercised with real tokens: that needs OAuth client ids from the
-Google Cloud and Microsoft Entra consoles. The tests cover the account-linking rules with a fake validator.
+A complete sign-in with a real Google or Microsoft account has not been run: it needs a person to sign in
+on a machine whose address is registered with the provider. Checked so far: both buttons render,
+Microsoft's window opens with the right client id and return address, invalid tokens are refused by the
+API, and the account-linking rules are covered by tests with a fake validator.
 Real SMTP delivery is likewise untested.

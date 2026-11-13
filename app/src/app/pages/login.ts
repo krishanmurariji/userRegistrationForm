@@ -4,10 +4,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IonButton, IonContent, IonInput, IonInputPasswordToggle, IonSpinner, IonText } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
+import { SocialButtons } from '../core/social-buttons';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
+  imports: [ReactiveFormsModule, RouterLink, SocialButtons, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
   template: `
     <ion-content class="ion-padding">
       <main class="auth-card">
@@ -42,6 +43,8 @@ import { AuthService } from '../core/auth.service';
             @if (busy()) { <ion-spinner name="crescent" aria-label="Signing in" /> } @else { Sign in }
           </ion-button>
         </form>
+
+        <app-social-buttons />
 
         <div class="links">
           <a routerLink="/forgot-password">Forgot password?</a>

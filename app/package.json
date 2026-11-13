@@ -17,6 +17,7 @@
     "@angular/forms": "^22.2.0",
     "@angular/platform-browser": "^22.2.0",
     "@angular/router": "^22.2.0",
+    "@azure/msal-browser": "^5.29.0",
     "@capacitor/core": "^8.6.0",
     "@capacitor/preferences": "^8.0.1",
     "@ionic/angular": "^9.0.11",

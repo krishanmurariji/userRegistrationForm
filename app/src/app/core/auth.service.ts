@@ -45,6 +45,11 @@ export class AuthService {
     await this.start(await firstValueFrom(this.http.post<AuthResponse>(`${this.api}/login`, { email, password })));
   }
 
+  /** Signs in with an ID token from Google or Microsoft. Creates the account on first use. */
+  async externalLogin(provider: 'google' | 'microsoft', idToken: string): Promise<void> {
+    await this.start(await firstValueFrom(this.http.post<AuthResponse>(`${this.api}/external/${provider}`, { idToken })));
+  }
+
   register(email: string, password: string, fullName: string): Promise<Message> {
     return firstValueFrom(this.http.post<Message>(`${this.api}/register`, { email, password, fullName }));
   }

@@ -15,5 +15,6 @@ export const routes: Routes = [
   { path: 'forgot-password', loadComponent: () => import('./pages/forgot-password').then((m) => m.ForgotPasswordPage) },
   { path: 'reset-password', loadComponent: () => import('./pages/reset-password').then((m) => m.ResetPasswordPage) },
   { path: 'confirm-email', loadComponent: () => import('./pages/confirm-email').then((m) => m.ConfirmEmailPage) },
+  { path: 'msal-redirect', loadComponent: () => import('./pages/msal-redirect').then((m) => m.MsalRedirectPage) },
   { path: '**', redirectTo: '' },
 ];

@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { IonButton, IonContent, IonInput, IonInputPasswordToggle, IonSpinner, IonText } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
+import { SocialButtons } from '../core/social-buttons';
 
 /** Mirrors the server's password rule: at least 8 characters with a lowercase letter and a digit. */
 export const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*\d).{8,}$/;
@@ -11,7 +12,7 @@ export const PASSWORD_HINT = 'At least 8 characters, with a lowercase letter and
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
+  imports: [ReactiveFormsModule, RouterLink, SocialButtons, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
   template: `
     <ion-content class="ion-padding">
       <main class="auth-card">
@@ -49,6 +50,8 @@ export const PASSWORD_HINT = 'At least 8 characters, with a lowercase letter and
               @if (busy()) { <ion-spinner name="crescent" aria-label="Creating account" /> } @else { Create account }
             </ion-button>
           </form>
+
+          <app-social-buttons />
 
           <div class="links">
             <span>Already have an account? <a routerLink="/login">Sign in</a></span>
