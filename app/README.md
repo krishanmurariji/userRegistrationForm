@@ -25,6 +25,7 @@ or reset link from the API's log output.
 | `src/app/core/auth.guard.ts` | Route guards for signed-in and signed-out pages |
 | `src/app/core/shop.service.ts` | Shop, category and item API calls |
 | `src/app/core/store.service.ts`, `cart.service.ts` | Customer browsing, orders and the cart (kept on the device) |
+| `src/app/core/notification.service.ts`, `notification-bell.ts` | Unread count (checked every 30 seconds) and the header bell |
 | `src/app/core/admin.service.ts` | Admin section API calls |
 | `src/app/pages/` | Sign-in screens, home, shop page, shop form, categories, item form, account |
 | `src/app/pages/admin/` | Admin section: overview, users, shops, activity, add shop owner |

@@ -15,7 +15,9 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | Admin | Roles (customer, shop owner, admin), admin section: users, shops, activity log | Done, tested |
 | 3-5 | Customer browsing, cart, checkout, cash on delivery, UPI with manual verification, orders | Done, tested |
 | Admin | User and shop detail pages, user editing, password reset links, CSV exports | Done, tested |
-| Later | Offers and coupons, inventory, push notifications, saved addresses, support tickets, mobile packaging | Not started |
+| 6 | Inventory: stock counting, adjustments with history, low-stock warnings, stock checks on orders | Done, tested |
+| 6 | In-app notifications for shops and customers | Done, tested |
+| Later | Customer redesign, offers and coupons, push and email notifications, saved addresses, support tickets, mobile packaging | Not started |
 
 ## Who can do what
 
@@ -116,6 +118,24 @@ filled in. After paying, the customer sends the transaction ID and a screenshot.
 or UPI app and confirms or rejects. A UPI order cannot be accepted until the payment is confirmed, one
 transaction ID can pay for one order only, and every confirmation is in the activity log. There are no
 gateway fees and no automatic refunds: a cancelled paid order tells the shop to refund by hand.
+
+Stock and notifications:
+
+| Method and path | Purpose |
+|---|---|
+| `POST /api/shops/{id}/items/{itemId}/stock` | Receive (`Restock`), write off (`Damage`) or recount (`Correction`) stock: give `change` or `setTo` |
+| `GET /api/shops/{id}/items/{itemId}/stock` | The item's stock history |
+| `GET /api/shops/{id}/items/stock-summary`, `GET .../items?stock=low` | Low and out-of-stock items |
+| `GET /api/notifications`, `GET /api/notifications/unread-count` | The signed-in user's notifications |
+| `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all` | Mark as read |
+
+Stock is counted only for items where the shop switches it on (`trackStock`). An order takes stock in the same
+database transaction that saves the order, so the last units cannot be sold twice; cancelling an order puts
+the stock back. The quantity never changes by editing an item, only through orders and stock adjustments,
+and each change is a row in the history.
+
+Notifications are stored in the database and shown in the app, which checks for new ones every 30 seconds.
+There is no push or email notification yet.
 
 Platform admin only:
 
