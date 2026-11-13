@@ -22,8 +22,26 @@ public record AdminShopDto(
 
 public record AdminStatsDto(
     int TotalUsers, int Customers, int ShopOwners, int SuspendedUsers, int NewUsersLast7Days,
-    int ActiveShops, int DeactivatedShops, int Items, int SignInsLast24Hours, int FailedSignInsLast24Hours);
+    int ActiveShops, int DeactivatedShops, int Items, int SignInsLast24Hours, int FailedSignInsLast24Hours,
+    int Orders, int OrdersLast24Hours, int PaymentsAwaitingVerification);
 
 public record AuditEntryDto(
     long Id, DateTimeOffset At, string? ActorEmail, string Action, string? TargetType, string? TargetId,
     string Summary, string? IpAddress);
+
+public record AdminUserShopDto(Guid Id, string Name, string City, bool IsActive);
+
+public record AdminUserDetailDto(
+    AdminUserDto User, bool HasPassword, IReadOnlyList<string> SignInMethods, IReadOnlyList<AdminUserShopDto> Shops,
+    int OrderCount, IReadOnlyList<AuditEntryDto> RecentActivity);
+
+public record UpdateUserRequest(
+    [Required, MaxLength(200)] string FullName,
+    [Required, EmailAddress, MaxLength(256)] string Email);
+
+public record AdminShopDetailDto(
+    Guid Id, string Name, string? Description, string Phone, string AddressLine, string City, string Pincode,
+    string? UpiId, decimal DeliveryFee, decimal MinimumOrder, bool IsActive, bool IsOpen, string? LogoUrl,
+    DateTimeOffset CreatedAt, Guid? OwnerId, string? OwnerName, string? OwnerEmail,
+    int CategoryCount, int ItemCount, int OrderCount, int OpenOrderCount, decimal DeliveredSales,
+    IReadOnlyList<AuditEntryDto> RecentActivity);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
+using SmallMart.Api.Domain;
 
 namespace SmallMart.Api.Admin;
 
@@ -34,7 +35,11 @@ public class AdminOverviewController(AppDbContext db, TimeProvider clock) : Cont
             Items: await db.Items.CountAsync(ct),
             SignInsLast24Hours: await db.AuditEntries.CountAsync(a => a.Action == "user.signed_in" && a.At >= dayAgo, ct),
             FailedSignInsLast24Hours: await db.AuditEntries.CountAsync(
-                a => (a.Action == "user.sign_in_failed" || a.Action == "user.locked_out") && a.At >= dayAgo, ct));
+                a => (a.Action == "user.sign_in_failed" || a.Action == "user.locked_out") && a.At >= dayAgo, ct),
+            Orders: await db.Orders.CountAsync(ct),
+            OrdersLast24Hours: await db.Orders.CountAsync(o => o.CreatedAt >= dayAgo, ct),
+            PaymentsAwaitingVerification: await db.Orders.CountAsync(
+                o => o.PaymentStatus == PaymentStatus.AwaitingVerification && o.Status != OrderStatus.Cancelled, ct));
     }
 
     /// <summary>
