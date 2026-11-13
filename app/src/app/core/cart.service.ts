@@ -9,6 +9,8 @@ export interface CartLine {
   name: string;
   unit: string;
   price: number;
+  /** Printed maximum retail price, when it is above the price. Used to show the saving. */
+  mrp: number | null;
   imageUrl: string | null;
   quantity: number;
   /** The most that can be ordered, or null when the shop does not count stock. */
@@ -44,6 +46,10 @@ export class CartService {
   readonly count = computed(() => this.state()?.lines.reduce((sum, line) => sum + line.quantity, 0) ?? 0);
   readonly subtotal = computed(() => this.state()?.lines.reduce((sum, line) => sum + line.price * line.quantity, 0) ?? 0);
   readonly total = computed(() => this.subtotal() + (this.state()?.shop.deliveryFee ?? 0));
+  /** What the customer saves against the printed MRPs. */
+  readonly savings = computed(
+    () => this.state()?.lines.reduce((sum, line) => sum + Math.max(0, (line.mrp ?? line.price) - line.price) * line.quantity, 0) ?? 0,
+  );
   readonly belowMinimum = computed(() => this.subtotal() < (this.state()?.shop.minimumOrder ?? 0));
 
   constructor() {
@@ -85,7 +91,7 @@ export class CartService {
     const current = this.state();
     const lines = current && current.shop.id === shop.id ? current.lines.filter((line) => line.itemId !== item.id) : [];
     if (quantity > 0) {
-      lines.push({ itemId: item.id, name: item.name, unit: item.unit, price: item.price, imageUrl: item.imageUrl, quantity, available: item.available });
+      lines.push({ itemId: item.id, name: item.name, unit: item.unit, price: item.price, mrp: item.mrp, imageUrl: item.imageUrl, quantity, available: item.available });
       lines.sort((a, b) => a.name.localeCompare(b.name));
     }
     this.set(lines.length ? { userId, shop, lines } : null);
@@ -135,7 +141,7 @@ export class CartService {
       if (item.price !== line.price) priceChanged = true;
       const quantity = Math.min(line.quantity, maxFor(item.available));
       if (quantity < line.quantity) reduced.push(`${item.name} (only ${quantity} left)`);
-      return { ...line, name: item.name, unit: item.unit, price: item.price, imageUrl: item.imageUrl, available: item.available, quantity };
+      return { ...line, name: item.name, unit: item.unit, price: item.price, mrp: item.mrp, imageUrl: item.imageUrl, available: item.available, quantity };
     });
     const feeChanged = shop.deliveryFee !== cart.shop.deliveryFee;
     this.set(lines.length ? { ...cart, shop, lines } : null);

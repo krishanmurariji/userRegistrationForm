@@ -3,6 +3,7 @@ import { adminGuard, notAdminGuard, shopOwnerGuard, signedInGuard, signedOutGuar
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/browse').then((m) => m.BrowsePage) },
+  { path: 'search', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/search').then((m) => m.SearchPage) },
   { path: 'store/:shopId', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/store').then((m) => m.StorePage) },
   { path: 'cart', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/cart').then((m) => m.CartPage) },
   { path: 'checkout', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/checkout').then((m) => m.CheckoutPage) },

@@ -36,6 +36,22 @@ export interface StoreShopDetail {
   categories: StoreCategory[];
 }
 
+export interface StoreCategoryTile {
+  name: string;
+  itemCount: number;
+  imageUrl: string | null;
+}
+
+export interface StoreSearchResult {
+  items: { item: StoreItem; shopId: string }[];
+  shops: StoreShop[];
+}
+
+/** Whole-number discount percentage when the price is below the MRP, otherwise 0. */
+export function discountPercent(item: Pick<StoreItem, 'price' | 'mrp'>): number {
+  return item.mrp && item.mrp > item.price ? Math.round(((item.mrp - item.price) / item.mrp) * 100) : 0;
+}
+
 export type OrderStatus = 'Placed' | 'Accepted' | 'Packed' | 'OutForDelivery' | 'Delivered' | 'Cancelled';
 export type PaymentMethod = 'CashOnDelivery' | 'Upi';
 export type PaymentStatus = 'Pending' | 'AwaitingVerification' | 'Paid' | 'Rejected';

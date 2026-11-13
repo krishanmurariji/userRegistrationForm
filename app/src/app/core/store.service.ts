@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { DeliveryAddress, Order, OrderSummary, PlaceOrderInput, StoreItem, StoreShop, StoreShopDetail } from './store.models';
+import { DeliveryAddress, Order, OrderSummary, PlaceOrderInput, StoreCategoryTile, StoreItem, StoreSearchResult, StoreShop, StoreShopDetail } from './store.models';
 
 /** What customers do: browse shops, place orders, pay and follow them. */
 @Injectable({ providedIn: 'root' })
@@ -14,6 +14,19 @@ export class StoreService {
   shops(search = ''): Promise<StoreShop[]> {
     const params = search.trim() ? new HttpParams().set('search', search.trim()) : undefined;
     return firstValueFrom(this.http.get<StoreShop[]>(`${this.store}/shops`, { params }));
+  }
+
+  /** Category names across all shops, for the home page tiles. */
+  categories(): Promise<StoreCategoryTile[]> {
+    return firstValueFrom(this.http.get<StoreCategoryTile[]>(`${this.store}/categories`));
+  }
+
+  /** Items across all shops, by name or by category name, plus matching shops. */
+  search(query: { search?: string; category?: string }): Promise<StoreSearchResult> {
+    let params = new HttpParams();
+    if (query.search?.trim()) params = params.set('search', query.search.trim());
+    if (query.category?.trim()) params = params.set('category', query.category.trim());
+    return firstValueFrom(this.http.get<StoreSearchResult>(`${this.store}/search`, { params }));
   }
 
   shop(id: string): Promise<StoreShopDetail> {

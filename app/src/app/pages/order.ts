@@ -2,81 +2,80 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, IonBackButton, IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSpinner, IonText, IonTitle, IonToolbar } from '@ionic/angular';
+import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSpinner, IonTitle, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
-import { OrderView } from '../core/order-view';
-import { Order, paymentColor, paymentLabel, statusColor, statusLabel } from '../core/store.models';
+import { CartActions } from '../core/cart-actions';
+import { OrderTracker } from '../core/order-tracker';
+import { Order, paymentColor, paymentLabel } from '../core/store.models';
 import { StoreService } from '../core/store.service';
 
 /** A customer's view of one order: where it is, how to pay by UPI, and what was ordered. */
 @Component({
   selector: 'app-order',
-  imports: [CurrencyPipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonBadge, IonInput, IonButton, IonSpinner, IonText, OrderView],
+  imports: [CurrencyPipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonButton, IonSpinner, OrderTracker],
   template: `
-    <ion-header>
+    <ion-header class="shop-header">
       <ion-toolbar color="primary">
         <ion-buttons slot="start"><ion-back-button defaultHref="/orders" /></ion-buttons>
         <ion-title>{{ order()?.number ?? 'Order' }}</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column">
+
+    <ion-content class="shop-bg">
+      <main class="shop-column narrow">
         @if (error(); as message) {
-          <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
+          <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         }
         @if (order(); as o) {
-          <h1>{{ o.shopName }}</h1>
-          <div class="badges" aria-live="polite">
-            <ion-badge [color]="statusColor(o.status)">{{ statusLabel(o.status) }}</ion-badge>
-            <ion-badge [color]="paymentColor(o)">{{ paymentLabel(o) }}</ion-badge>
-          </div>
-          @if (o.status === 'Cancelled' && o.cancelReason) {
-            <div class="notice" role="status"><strong>This order was cancelled.</strong>{{ o.cancelReason }}</div>
-          }
+          <section class="card">
+            <header class="card-head">
+              <h1>{{ o.shopName }}</h1>
+              <span class="status" [attr.data-color]="paymentColor(o)">{{ paymentLabel(o) }}</span>
+            </header>
+            <app-order-tracker [order]="o" />
+          </section>
 
           @if (o.paymentMethod === 'Upi' && o.status !== 'Cancelled') {
-            <section class="panel">
+            <section class="card pay-card">
               @switch (o.paymentStatus) {
                 @case ('Paid') {
-                  <strong>Payment confirmed</strong>
+                  <h2>Payment confirmed</h2>
                   <p>The shop received {{ o.total | currency: 'INR' : 'symbol' : '1.0-2' }} by UPI (transaction ID {{ o.upiReference }}).</p>
                 }
                 @case ('AwaitingVerification') {
-                  <strong>The shop is checking your payment</strong>
+                  <h2>The shop is checking your payment</h2>
                   <p>You sent transaction ID {{ o.upiReference }}. You will see the result here once the shop has checked.</p>
                 }
                 @default {
                   @if (o.paymentStatus === 'Rejected') {
-                    <div class="notice" role="alert">
-                      <strong>The shop could not find your payment.</strong>{{ o.paymentRejectReason }}
+                    <div class="closed-note" role="alert">
+                      <strong>The shop could not find your payment.</strong> {{ o.paymentRejectReason }}
                       Check the transaction ID and send it again, or call the shop on {{ o.shopPhone }}.
                     </div>
                   }
                   @if (o.upi; as upi) {
-                    <strong>Step 1: pay {{ upi.amount | currency: 'INR' : 'symbol' : '1.0-2' }} by UPI</strong>
+                    <h2><span class="step">1</span>Pay {{ upi.amount | currency: 'INR' : 'symbol' : '1.0-2' }} by UPI</h2>
                     <p>Pay to <strong class="selectable">{{ upi.upiId }}</strong> ({{ upi.payeeName }}).</p>
                     <div class="upi-pay">
                       @if (qr(); as src) { <img [src]="src" width="180" height="180" alt="UPI QR code for this payment" /> }
                       <div>
                         <ion-button [href]="upi.payUri">Open UPI app</ion-button>
-                        <p class="meta">On a computer, scan the QR code with your phone's UPI app. The amount is filled in for you.</p>
+                        <p class="hint">On a computer, scan the QR code with your phone's UPI app. The amount is filled in for you.</p>
                       </div>
                     </div>
-                    <strong>Step 2: tell the shop you paid</strong>
+                    <h2><span class="step">2</span>Tell the shop you paid</h2>
                     <form [formGroup]="proof" (ngSubmit)="submitProof()" novalidate class="stack">
                       <ion-input formControlName="reference" label="UPI transaction ID (UTR)" labelPlacement="stacked" fill="outline"
                         autocapitalize="characters" helperText="Shown in your UPI app after paying, usually 12 digits"
                         errorText="Enter the transaction ID from your UPI app" />
-                      <div class="photo-row">
+                      <div class="attach">
                         <ion-button fill="outline" [disabled]="busy()" (click)="picker.click()">
                           {{ screenshot() ? 'Change screenshot' : 'Attach payment screenshot' }}
                         </ion-button>
-                        <span class="meta">{{ screenshot()?.name ?? 'No screenshot attached' }}</span>
+                        <span class="hint">{{ screenshot()?.name ?? 'No screenshot attached' }}</span>
                         <input #picker type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="pick($event)" />
                       </div>
-                      @if (proofError(); as message) {
-                        <ion-text color="danger" role="alert"><p class="message">{{ message }}</p></ion-text>
-                      }
+                      @if (proofError(); as message) { <p role="alert" class="error-text">{{ message }}</p> }
                       <ion-button type="submit" expand="block" [disabled]="busy()">
                         @if (busy()) { <ion-spinner name="crescent" aria-label="Sending" /> } @else { I have paid }
                       </ion-button>
@@ -89,12 +88,47 @@ import { StoreService } from '../core/store.service';
             </section>
           }
 
-          <app-order-view [order]="o" />
+          <section class="card">
+            <h2>{{ o.items.length }} {{ o.items.length === 1 ? 'item' : 'items' }}</h2>
+            <ul class="order-lines">
+              @for (line of o.items; track $index) {
+                <li>
+                  <span class="count">{{ line.quantity }} ×</span>
+                  <span class="what"><strong>{{ line.name }}</strong><small>{{ line.unit }} · {{ line.unitPrice | currency: 'INR' : 'symbol' : '1.0-2' }} each</small></span>
+                  <strong>{{ line.lineTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
+                </li>
+              }
+            </ul>
+          </section>
 
-          <p class="meta">Questions about this order? Call {{ o.shopName }} on <a [href]="'tel:' + o.shopPhone">{{ o.shopPhone }}</a>.</p>
-          @if (o.status === 'Placed') {
-            <ion-button expand="block" fill="outline" color="danger" [disabled]="busy()" (click)="cancel()">Cancel order</ion-button>
-          }
+          <section class="card bill">
+            <h2>Bill details</h2>
+            <dl>
+              <dt>Items total</dt><dd>{{ o.subtotal | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
+              <dt>Delivery fee</dt><dd>{{ o.deliveryFee ? (o.deliveryFee | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}</dd>
+              <dt class="grand">{{ o.paymentStatus === 'Paid' ? 'Paid' : 'To pay' }}</dt><dd class="grand">{{ o.total | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
+            </dl>
+          </section>
+
+          <section class="card">
+            <h2>Delivering to</h2>
+            <p class="address"><strong>{{ o.customerName }}</strong><br />{{ o.addressLine }}, {{ o.city }} {{ o.pincode }}<br />{{ o.phone }}</p>
+            @if (o.note) { <p class="hint">Note: {{ o.note }}</p> }
+          </section>
+
+          <section class="card">
+            <h2>Need help?</h2>
+            <p>Call {{ o.shopName }} on <a [href]="'tel:' + o.shopPhone">{{ o.shopPhone }}</a>.</p>
+            @if (notice(); as message) { <p role="status" class="hint">{{ message }}</p> }
+            <div class="actions">
+              @if (o.status === 'Delivered' || o.status === 'Cancelled') {
+                <ion-button fill="outline" [disabled]="busy()" (click)="again()">Order again</ion-button>
+              }
+              @if (o.status === 'Placed') {
+                <ion-button fill="outline" color="danger" [disabled]="busy()" (click)="cancel()">Cancel order</ion-button>
+              }
+            </div>
+          </section>
         } @else if (!error()) {
           <div class="centered"><ion-spinner name="crescent" aria-label="Loading order" /></div>
         }
@@ -105,6 +139,7 @@ import { StoreService } from '../core/store.service';
 export class OrderPage {
   private readonly store = inject(StoreService);
   private readonly alerts = inject(AlertController);
+  private readonly cartActions = inject(CartActions);
   private readonly orderId = inject(ActivatedRoute).snapshot.paramMap.get('orderId')!;
 
   protected readonly order = signal<Order | null>(null);
@@ -113,11 +148,10 @@ export class OrderPage {
   protected readonly busy = signal(false);
   protected readonly error = signal('');
   protected readonly proofError = signal('');
+  protected readonly notice = signal('');
   protected readonly proof = inject(FormBuilder).nonNullable.group({
     reference: ['', [Validators.required, Validators.pattern(/^\s*[A-Za-z0-9]{8,35}\s*$/)]],
   });
-  protected readonly statusLabel = statusLabel;
-  protected readonly statusColor = statusColor;
   protected readonly paymentLabel = paymentLabel;
   protected readonly paymentColor = paymentColor;
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -182,6 +216,21 @@ export class OrderPage {
       this.proof.reset();
     } catch (e) {
       this.proofError.set(toApiError(e).message);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  /** Puts the same items in the cart again, at today's prices. */
+  protected async again(): Promise<void> {
+    const order = this.order();
+    if (!order) return;
+    this.busy.set(true);
+    this.error.set('');
+    try {
+      this.notice.set(await this.cartActions.orderAgain(order));
+    } catch (e) {
+      this.error.set(toApiError(e).message);
     } finally {
       this.busy.set(false);
     }
