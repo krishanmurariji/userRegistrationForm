@@ -460,6 +460,55 @@
   }
 }
 
+/* Adding items from a photo. */
+.page-column {
+  .tips {
+    margin: 0 0 12px;
+    padding-left: 20px;
+    color: var(--ion-color-medium-shade);
+    line-height: 1.5;
+  }
+
+  .scan-photo {
+    aspect-ratio: 4 / 3;
+    max-height: 320px;
+    margin: 0 auto 12px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ion-color-light);
+    color: var(--ion-color-medium-shade);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
+  .draft {
+    gap: 14px;
+
+    &.off {
+      opacity: 0.6;
+    }
+
+    /* A guessed value: amber outline, and the note under it in the same colour. */
+    ion-input.review {
+      --border-color: var(--ion-color-warning-shade);
+      --border-width: 2px;
+      --highlight-color-focused: var(--ion-color-warning-shade);
+
+      &::part(helper-text) {
+        color: var(--ion-color-warning-shade);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
 /* Quick add and copies. */
 .page-column {
   .items-head {

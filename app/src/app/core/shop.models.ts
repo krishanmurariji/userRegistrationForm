@@ -68,3 +68,29 @@ export function stockState(item: Pick<Item, 'trackStock' | 'stockQuantity' | 'lo
   if (item.stockQuantity <= item.lowStockThreshold) return { label: `Low: ${item.stockQuantity} left`, color: 'warning' };
   return { label: `${item.stockQuantity} in stock`, color: 'light' };
 }
+
+/** One value pre-filled from a photo scan, and where it came from. */
+export interface ScanField<T> {
+  value: T | null;
+  /** "photo", "barcode" (public product database), "catalog" (saved by a shop before), "web", or null when empty. */
+  source: 'photo' | 'barcode' | 'catalog' | 'web' | null;
+  /** True when the value is a guess or could not be confirmed. */
+  needsReview: boolean;
+}
+
+/** A draft item read from a photo. There is no selling price: the shop sets that. */
+export interface ScanProduct {
+  name: ScanField<string>;
+  brand: ScanField<string>;
+  unit: ScanField<string>;
+  mrp: ScanField<number>;
+  barcode: ScanField<string>;
+  category: ScanField<string>;
+  description: ScanField<string>;
+}
+
+export interface ScanStatus {
+  enabled: boolean;
+  remainingToday: number;
+  dailyLimit: number;
+}

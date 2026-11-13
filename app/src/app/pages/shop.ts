@@ -59,9 +59,12 @@ import { ShopService, fileUrl } from '../core/shop.service';
           <div class="items-head">
             <h2 class="section-title">Items</h2>
             @if (s.isActive) {
-              <ion-button fill="clear" size="small" [attr.aria-expanded]="quickOpen()" (click)="quickOpen.set(!quickOpen())">
-                {{ quickOpen() ? 'Close quick add' : 'Quick add' }}
-              </ion-button>
+              <span>
+                <ion-button fill="clear" size="small" [routerLink]="['/shops', shopId, 'scan']">From a photo</ion-button>
+                <ion-button fill="clear" size="small" [attr.aria-expanded]="quickOpen()" (click)="quickOpen.set(!quickOpen())">
+                  {{ quickOpen() ? 'Close quick add' : 'Quick add' }}
+                </ion-button>
+              </span>
             }
           </div>
           @if (quickOpen() && s.isActive) {

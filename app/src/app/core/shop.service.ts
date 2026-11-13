@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Category, Item, ItemInput, Shop, ShopInput, StockMovement } from './shop.models';
+import { Category, Item, ItemInput, ScanProduct, ScanStatus, Shop, ShopInput, StockMovement } from './shop.models';
 import { Order, OrderStatus, OrderSummary } from './store.models';
 
 /** Full address of a picture path returned by the API, or null when there is no picture. */
@@ -83,6 +83,19 @@ export class ShopService {
 
   uploadItemImage(shopId: string, id: string, file: File): Promise<Item> {
     return firstValueFrom(this.http.post<Item>(`${this.api}/${shopId}/items/${id}/image`, this.form(file)));
+  }
+
+  // ----- Reading items from photos -----
+
+  scanStatus(shopId: string): Promise<ScanStatus> {
+    return firstValueFrom(this.http.get<ScanStatus>(`${this.api}/${shopId}/items/scan/status`));
+  }
+
+  /** Sends a photo to be read. Returns drafts to review; nothing is added to the shop yet. */
+  scanPhoto(shopId: string, photo: File): Promise<{ products: ScanProduct[]; remainingToday: number }> {
+    return firstValueFrom(
+      this.http.post<{ products: ScanProduct[]; remainingToday: number }>(`${this.api}/${shopId}/items/scan`, this.form(photo)),
+    );
   }
 
   // ----- Stock -----

@@ -18,6 +18,7 @@ export const routes: Routes = [
   { path: 'shops/:shopId/orders', canActivate: [signedInGuard, shopOwnerGuard], loadComponent: () => import('./pages/shop-orders').then((m) => m.ShopOrdersPage) },
   { path: 'shops/:shopId/orders/:orderId', canActivate: [signedInGuard, shopOwnerGuard], loadComponent: () => import('./pages/shop-order').then((m) => m.ShopOrderPage) },
   { path: 'shops/:shopId/categories', canActivate: [signedInGuard, shopOwnerGuard], loadComponent: () => import('./pages/categories').then((m) => m.CategoriesPage) },
+  { path: 'shops/:shopId/scan', canActivate: [signedInGuard, shopOwnerGuard], loadComponent: () => import('./pages/item-scan').then((m) => m.ItemScanPage) },
   { path: 'shops/:shopId/items/new', canActivate: [signedInGuard, shopOwnerGuard], loadComponent: () => import('./pages/item-form').then((m) => m.ItemFormPage) },
   { path: 'shops/:shopId/items/:itemId/stock', canActivate: [signedInGuard, shopOwnerGuard], loadComponent: () => import('./pages/item-stock').then((m) => m.ItemStockPage) },
   { path: 'shops/:shopId/items/:itemId', canActivate: [signedInGuard, shopOwnerGuard], loadComponent: () => import('./pages/item-form').then((m) => m.ItemFormPage) },
