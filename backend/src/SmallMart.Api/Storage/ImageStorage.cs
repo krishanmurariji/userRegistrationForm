@@ -95,6 +95,15 @@ public class ImageStorage(IConfiguration config, IWebHostEnvironment env)
             : null;
     }
 
+    /// <summary>The picture's real type judged from its first bytes ("image/jpeg", "image/png", "image/webp"), or null when it is not one of those.</summary>
+    public static string? ContentTypeOf(ReadOnlySpan<byte> content) => DetectExtension(content[..Math.Min(content.Length, 12)]) switch
+    {
+        ".jpg" => "image/jpeg",
+        ".png" => "image/png",
+        ".webp" => "image/webp",
+        _ => null,
+    };
+
     private static string? DetectExtension(ReadOnlySpan<byte> h)
     {
         if (h.Length >= 3 && h[0] == 0xFF && h[1] == 0xD8 && h[2] == 0xFF)

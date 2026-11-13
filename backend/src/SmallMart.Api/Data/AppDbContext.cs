@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SmallMart.Api.Ai;
 using SmallMart.Api.Audit;
 using SmallMart.Api.Domain;
 
@@ -22,6 +23,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<CatalogProduct> CatalogProducts => Set<CatalogProduct>();
+    public DbSet<AiScan> AiScans => Set<AiScan>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -111,6 +114,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             b.Property(e => e.Title).HasMaxLength(100);
             b.Property(e => e.Note).HasMaxLength(500);
         });
+
+        builder.Entity<CatalogProduct>(b =>
+        {
+            b.HasKey(c => c.Barcode);
+            b.Property(c => c.Barcode).HasMaxLength(14);
+            b.Property(c => c.Name).HasMaxLength(150);
+            b.Property(c => c.Brand).HasMaxLength(100);
+            b.Property(c => c.Unit).HasMaxLength(30);
+            b.Property(c => c.Mrp).HasPrecision(10, 2);
+            b.Property(c => c.CategoryName).HasMaxLength(80);
+            b.Property(c => c.Description).HasMaxLength(2000);
+            b.Property(c => c.Source).HasMaxLength(20);
+        });
+
+        builder.Entity<AiScan>(b => b.HasIndex(s => new { s.ShopId, s.At }));
 
         builder.Entity<StockMovement>(b =>
         {

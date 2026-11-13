@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SmallMart.Api.Ai;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
@@ -31,6 +32,7 @@ public class TestApp : WebApplicationFactory<Program>
     private readonly string _uploads = Path.Combine(Path.GetTempPath(), $"smallmart-test-{Guid.NewGuid():N}");
 
     public FakeEmailSender Emails { get; } = new();
+    public FakeAi Ai { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -43,11 +45,20 @@ public class TestApp : WebApplicationFactory<Program>
         builder.UseSetting("Seed:AdminPassword", AdminPassword);
         builder.UseSetting("App:ClientUrl", "https://app.test");
         builder.UseSetting("Storage:Root", _uploads);
+        builder.UseSetting("Ai:OpenAiApiKey", "test-key");
+        builder.UseSetting("Ai:DailyScansPerShop", "4");
+        builder.UseSetting("Ai:WebSearchFallback", "true");
 
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<IEmailSender>();
             services.AddSingleton<IEmailSender>(Emails);
+            services.RemoveAll<IProductVision>();
+            services.RemoveAll<IBarcodeLookup>();
+            services.RemoveAll<IWebProductSearch>();
+            services.AddSingleton<IProductVision>(Ai);
+            services.AddSingleton<IBarcodeLookup>(Ai);
+            services.AddSingleton<IWebProductSearch>(Ai);
             services.RemoveAll<IExternalTokenValidator>();
             services.AddSingleton<IExternalTokenValidator>(new FakeExternalValidator("google"));
             services.AddSingleton<IExternalTokenValidator>(new FakeExternalValidator("microsoft"));
@@ -132,6 +143,50 @@ public partial class FakeEmailSender : IEmailSender
 
     [GeneratedRegex(@"userId=([0-9a-f-]+)&token=([A-Za-z0-9_-]+)")]
     private static partial Regex LinkPattern();
+}
+
+/// <summary>
+/// Stands in for the vision model, the barcode database and the web search. A test says what a photo "shows"
+/// by keying on the photo's bytes, so tests running side by side do not disturb each other.
+/// </summary>
+public class FakeAi : IProductVision, IBarcodeLookup, IWebProductSearch
+{
+    private readonly ConcurrentDictionary<string, Func<IReadOnlyList<string>, IReadOnlyList<SeenProduct>>> _photos = new();
+    public ConcurrentDictionary<string, FoundProduct> BarcodeDatabase { get; } = new();
+    public ConcurrentDictionary<string, FoundProduct> Web { get; } = new();
+    public ConcurrentQueue<string> WebQueries { get; } = new();
+
+    private static string Key(byte[] image) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(image));
+
+    /// <summary>Makes a unique "photo" that the fake model will read as the given products.</summary>
+    public byte[] Photo(params SeenProduct[] products) => Photo(_ => products);
+
+    public byte[] Photo(Func<IReadOnlyList<string>, IReadOnlyList<SeenProduct>> read)
+    {
+        // A real PNG header followed by unique bytes.
+        byte[] image = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, .. Guid.NewGuid().ToByteArray()];
+        _photos[Key(image)] = read;
+        return image;
+    }
+
+    public byte[] BrokenPhoto()
+    {
+        byte[] image = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, .. Guid.NewGuid().ToByteArray()];
+        _photos[Key(image)] = _ => throw new AiUnavailableException("ai_busy", "The AI service is busy or out of quota. Please try again later.");
+        return image;
+    }
+
+    Task<IReadOnlyList<SeenProduct>> IProductVision.ReadAsync(byte[] image, string contentType, IReadOnlyList<string> categories, CancellationToken ct) =>
+        Task.FromResult(_photos.TryGetValue(Key(image), out var read) ? read(categories) : []);
+
+    Task<FoundProduct?> IBarcodeLookup.FindAsync(string barcode, CancellationToken ct) =>
+        Task.FromResult(BarcodeDatabase.GetValueOrDefault(barcode));
+
+    Task<FoundProduct?> IWebProductSearch.FindAsync(string description, CancellationToken ct)
+    {
+        WebQueries.Enqueue(description);
+        return Task.FromResult(Web.FirstOrDefault(pair => description.Contains(pair.Key)).Value);
+    }
 }
 
 /// <summary>Accepts tokens shaped like "subject|email|verified|name"; anything else is rejected.</summary>

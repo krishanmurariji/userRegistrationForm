@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SmallMart.Api.Ai;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
@@ -13,7 +14,7 @@ namespace SmallMart.Api.Shops;
 [Route("api/shops/{shopId:guid}/items")]
 [Authorize]
 public class ItemsController(
-    AppDbContext db, ShopAccess access, ImageStorage images, StockService stock, TimeProvider clock) : ControllerBase
+    AppDbContext db, ShopAccess access, ImageStorage images, StockService stock, ProductScanner catalog, TimeProvider clock) : ControllerBase
 {
     /// <summary>Items of the shop, including inactive ones, sorted by name. <c>stock</c> can be "low" or "out".</summary>
     [HttpGet]
@@ -71,6 +72,7 @@ public class ItemsController(
         await db.SaveChangesAsync(ct);
         if (item.TrackStock)
             item.StockQuantity = await stock.SetToAsync(item, request.OpeningStock ?? 0, StockReason.Opening, null, User.GetUserId(), ct);
+        await ShareWithCatalogAsync(item, ct);
         return CreatedAtAction(nameof(Get), new { shopId, id = item.Id }, ItemDto.From(item));
     }
 
@@ -96,6 +98,7 @@ public class ItemsController(
         if (startsTracking)
             await stock.SetToAsync(item, request.OpeningStock ?? 0, StockReason.Opening, null, User.GetUserId(), ct);
         await db.Entry(item).ReloadAsync(ct);
+        await ShareWithCatalogAsync(item, ct);
         return Ok(ItemDto.From(item));
     }
 
@@ -267,6 +270,20 @@ public class ItemsController(
             return this.ApiError(StatusCodes.Status400BadRequest, "unknown_category", "That category does not exist in this shop.");
 
         return null;
+    }
+
+    /// <summary>
+    /// An item saved with a valid barcode teaches the shared catalog, so the next shop that scans the same
+    /// product gets its details at once. The shop's price is never shared, only the printed MRP.
+    /// </summary>
+    private async Task ShareWithCatalogAsync(Item item, CancellationToken ct)
+    {
+        if (Barcodes.Normalize(item.Barcode) is not { } barcode)
+            return;
+        var categoryName = item.CategoryId is { } categoryId
+            ? await db.Categories.Where(c => c.Id == categoryId).Select(c => c.Name).FirstOrDefaultAsync(ct)
+            : null;
+        await catalog.RememberAsync(barcode, new FoundProduct(item.Name, null, item.Unit, item.Mrp, categoryName, item.Description), "shop", ct);
     }
 
     /// <summary>The category the item goes in: the given id, or the one with the given name, created if needed.</summary>

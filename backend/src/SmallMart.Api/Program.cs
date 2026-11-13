@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using SmallMart.Api.Ai;
 using SmallMart.Api.Audit;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
@@ -78,6 +79,26 @@ builder.Services.AddScoped<ShopAccess>();
 builder.Services.AddScoped<AuditLog>();
 builder.Services.AddScoped<Notifier>();
 builder.Services.AddScoped<StockService>();
+
+// Reading items from photos. The key stays on the server; the app never sees it.
+builder.Services.Configure<AiOptions>(config.GetSection(AiOptions.Section));
+builder.Services.AddScoped<ProductScanner>();
+builder.Services.AddHttpClient<IProductVision, OpenAiProductVision>(c =>
+{
+    c.BaseAddress = new Uri("https://api.openai.com/");
+    c.Timeout = TimeSpan.FromSeconds(90);
+});
+builder.Services.AddHttpClient<IWebProductSearch, OpenAiWebProductSearch>(c =>
+{
+    c.BaseAddress = new Uri("https://api.openai.com/");
+    c.Timeout = TimeSpan.FromSeconds(90);
+});
+builder.Services.AddHttpClient<IBarcodeLookup, OpenFoodFactsLookup>(c =>
+{
+    c.BaseAddress = new Uri("https://world.openfoodfacts.org/");
+    c.Timeout = TimeSpan.FromSeconds(8);
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("SmallMart/1.0");
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ImageStorage>();
 
