@@ -17,6 +17,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Item> Items => Set<Item>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+    public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -60,6 +63,51 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             b.Property(a => a.IpAddress).HasMaxLength(45);
             b.HasIndex(a => a.At);
             b.HasIndex(a => a.Action);
+        });
+
+        builder.Entity<Order>(b =>
+        {
+            b.Property(o => o.Number).UseIdentityByDefaultColumn();
+            b.HasIndex(o => o.Number).IsUnique();
+            b.Property(o => o.Subtotal).HasPrecision(12, 2);
+            b.Property(o => o.DeliveryFee).HasPrecision(10, 2);
+            b.Property(o => o.Total).HasPrecision(12, 2);
+            b.Property(o => o.CustomerName).HasMaxLength(200);
+            b.Property(o => o.Phone).HasMaxLength(20);
+            b.Property(o => o.AddressLine).HasMaxLength(300);
+            b.Property(o => o.City).HasMaxLength(100);
+            b.Property(o => o.Pincode).HasMaxLength(6);
+            b.Property(o => o.Note).HasMaxLength(500);
+            b.Property(o => o.CancelReason).HasMaxLength(300);
+            b.Property(o => o.UpiReference).HasMaxLength(35);
+            b.Property(o => o.UpiScreenshotPath).HasMaxLength(300);
+            b.Property(o => o.PaymentRejectReason).HasMaxLength(300);
+            b.Property(o => o.Version).IsRowVersion();
+            b.Ignore(o => o.DisplayNumber);
+            // The same UPI reference can never be used to pay for two orders.
+            b.HasIndex(o => o.UpiReference).IsUnique();
+            b.HasIndex(o => new { o.ShopId, o.CreatedAt });
+            b.HasIndex(o => new { o.CustomerId, o.CreatedAt });
+            // Orders are business records: a shop or customer with orders cannot simply be deleted.
+            b.HasOne(o => o.Shop).WithMany().HasForeignKey(o => o.ShopId).OnDelete(DeleteBehavior.Restrict);
+            b.HasOne(o => o.Customer).WithMany().HasForeignKey(o => o.CustomerId).OnDelete(DeleteBehavior.Restrict);
+            b.HasMany(o => o.Items).WithOne().HasForeignKey(i => i.OrderId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(o => o.Events).WithOne().HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<OrderItem>(b =>
+        {
+            b.Property(i => i.Name).HasMaxLength(150);
+            b.Property(i => i.Unit).HasMaxLength(30);
+            b.Property(i => i.UnitPrice).HasPrecision(10, 2);
+            b.Property(i => i.LineTotal).HasPrecision(12, 2);
+            b.HasOne<Item>().WithMany().HasForeignKey(i => i.ItemId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        builder.Entity<OrderEvent>(b =>
+        {
+            b.Property(e => e.Title).HasMaxLength(100);
+            b.Property(e => e.Note).HasMaxLength(500);
         });
 
         builder.Entity<ShopMember>(b =>

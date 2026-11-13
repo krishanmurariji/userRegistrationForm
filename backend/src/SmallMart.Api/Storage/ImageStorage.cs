@@ -12,6 +12,17 @@ public class ImageStorage(IConfiguration config, IWebHostEnvironment env)
     public string Root { get; } = Path.GetFullPath(
         config["Storage:Root"] is { Length: > 0 } root ? root : Path.Combine(env.ContentRootPath, "App_Data", "uploads"));
 
+    /// <summary>
+    /// Pictures that must not be public, such as payment screenshots. Never served as static files;
+    /// an endpoint checks who is asking and then streams the file.
+    /// </summary>
+    public string PrivateRoot { get; } = Path.GetFullPath(
+        config["Storage:PrivateRoot"] is { Length: > 0 } privateRoot
+            ? privateRoot
+            : config["Storage:Root"] is { Length: > 0 } publicRoot
+                ? publicRoot.TrimEnd('/', '\\') + "-private"
+                : Path.Combine(env.ContentRootPath, "App_Data", "private"));
+
     /// <summary>Public URL path for a stored picture, or null when there is none.</summary>
     public static string? Url(string? relativePath) => relativePath is null ? null : $"{RequestPath}/{relativePath}";
 
@@ -20,7 +31,7 @@ public class ImageStorage(IConfiguration config, IWebHostEnvironment env)
     /// Returns null when the file is empty, too large or not one of those formats.
     /// The type is decided from the file's content, never from its name.
     /// </summary>
-    public async Task<string?> SaveAsync(IFormFile file, string folder, CancellationToken ct)
+    public async Task<string?> SaveAsync(IFormFile file, string folder, CancellationToken ct, bool isPrivate = false)
     {
         if (file.Length is 0 or > MaxBytes)
             return null;
@@ -33,7 +44,7 @@ public class ImageStorage(IConfiguration config, IWebHostEnvironment env)
             return null;
 
         var relative = $"{folder}/{Guid.NewGuid():N}{extension}";
-        var fullPath = Path.Combine(Root, relative);
+        var fullPath = Path.Combine(isPrivate ? PrivateRoot : Root, relative);
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
         input.Position = 0;
         await using var output = File.Create(fullPath);
@@ -41,13 +52,35 @@ public class ImageStorage(IConfiguration config, IWebHostEnvironment env)
         return relative;
     }
 
-    public void Delete(string? relativePath)
+    public void Delete(string? relativePath, bool isPrivate = false)
+    {
+        if (ResolveExisting(relativePath, isPrivate) is { } fullPath)
+            File.Delete(fullPath);
+    }
+
+    /// <summary>Opens a private picture for an endpoint to stream, or returns null when it is missing.</summary>
+    public (Stream Content, string ContentType)? OpenPrivate(string? relativePath)
+    {
+        if (ResolveExisting(relativePath, isPrivate: true) is not { } fullPath)
+            return null;
+        var contentType = Path.GetExtension(fullPath) switch
+        {
+            ".png" => "image/png",
+            ".webp" => "image/webp",
+            _ => "image/jpeg",
+        };
+        return (File.OpenRead(fullPath), contentType);
+    }
+
+    private string? ResolveExisting(string? relativePath, bool isPrivate)
     {
         if (relativePath is null)
-            return;
-        var fullPath = Path.GetFullPath(Path.Combine(Root, relativePath));
-        if (fullPath.StartsWith(Root + Path.DirectorySeparatorChar, StringComparison.Ordinal) && File.Exists(fullPath))
-            File.Delete(fullPath);
+            return null;
+        var root = isPrivate ? PrivateRoot : Root;
+        var fullPath = Path.GetFullPath(Path.Combine(root, relativePath));
+        return fullPath.StartsWith(root + Path.DirectorySeparatorChar, StringComparison.Ordinal) && File.Exists(fullPath)
+            ? fullPath
+            : null;
     }
 
     private static string? DetectExtension(ReadOnlySpan<byte> h)
