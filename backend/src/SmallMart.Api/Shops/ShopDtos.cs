@@ -37,12 +37,32 @@ public record ItemRequest(
     [Range(0.01, 1000000)] decimal? Mrp,
     [Required, MaxLength(30)] string Unit,
     [MaxLength(64)] string? Barcode,
-    bool IsActive = true);
+    bool IsActive = true,
+    bool TrackStock = false,
+    [Range(0, 100000)] int LowStockThreshold = 5,
+    [Range(0, 1000000)] int? OpeningStock = null);
 
 public record ItemDto(
     Guid Id, Guid? CategoryId, string Name, string? Description, decimal Price, decimal? Mrp,
-    string Unit, string? Barcode, bool IsActive, string? ImageUrl)
+    string Unit, string? Barcode, bool IsActive, string? ImageUrl,
+    bool TrackStock, int StockQuantity, int LowStockThreshold)
 {
     public static ItemDto From(Item i) => new(
-        i.Id, i.CategoryId, i.Name, i.Description, i.Price, i.Mrp, i.Unit, i.Barcode, i.IsActive, ImageStorage.Url(i.ImagePath));
+        i.Id, i.CategoryId, i.Name, i.Description, i.Price, i.Mrp, i.Unit, i.Barcode, i.IsActive, ImageStorage.Url(i.ImagePath),
+        i.TrackStock, i.StockQuantity, i.LowStockThreshold);
 }
+
+/// <summary>
+/// A stock change made by hand. Give exactly one of <paramref name="Change"/> (add or remove this many)
+/// or <paramref name="SetTo"/> (the shelf was counted and this is the real number).
+/// </summary>
+/// <param name="Reason">"Restock", "Damage" or "Correction".</param>
+public record StockAdjustRequest(
+    [Range(-1000000, 1000000)] int? Change,
+    [Range(0, 1000000)] int? SetTo,
+    [Required] string Reason,
+    [MaxLength(300)] string? Note);
+
+public record StockMovementDto(long Id, DateTimeOffset At, int Change, int QuantityAfter, string Reason, string? Note, string? OrderNumber);
+
+public record StockSummaryDto(int Low, int Out);

@@ -10,6 +10,7 @@ using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
 using SmallMart.Api.Email;
+using SmallMart.Api.Notifications;
 
 namespace SmallMart.Api.Admin;
 
@@ -22,6 +23,7 @@ public class AdminUsersController(
     TokenService tokens,
     IEmailSender email,
     AuditLog audit,
+    Notifier notifier,
     IConfiguration config,
     TimeProvider clock) : ControllerBase
 {
@@ -126,6 +128,8 @@ public class AdminUsersController(
         {
             await users.AddToRoleAsync(user, Roles.ShopOwner);
             await audit.WriteAsync("user.made_shop_owner", $"Made {user.Email} a shop owner", "user", user.Id, ct: ct);
+            await notifier.ToUserAsync(user.Id, "You can now open a shop",
+                "Your account is a shop owner account. Sign out and in again, then choose \"Manage my shops\".", "/my-shops", ct);
         }
         return Ok(await ToDtoAsync(user));
     }

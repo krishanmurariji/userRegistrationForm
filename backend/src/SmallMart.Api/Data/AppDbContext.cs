@@ -20,6 +20,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
     public DbSet<OrderEvent> OrderEvents => Set<OrderEvent>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -108,6 +110,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             b.Property(e => e.Title).HasMaxLength(100);
             b.Property(e => e.Note).HasMaxLength(500);
+        });
+
+        builder.Entity<StockMovement>(b =>
+        {
+            b.Property(m => m.Note).HasMaxLength(300);
+            b.HasIndex(m => new { m.ItemId, m.Id });
+            b.HasOne(m => m.Item).WithMany().HasForeignKey(m => m.ItemId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<Notification>(b =>
+        {
+            b.Property(n => n.Title).HasMaxLength(120);
+            b.Property(n => n.Body).HasMaxLength(400);
+            b.Property(n => n.Link).HasMaxLength(200);
+            b.HasIndex(n => new { n.UserId, n.Id });
+            b.HasOne(n => n.User).WithMany().HasForeignKey(n => n.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<ShopMember>(b =>

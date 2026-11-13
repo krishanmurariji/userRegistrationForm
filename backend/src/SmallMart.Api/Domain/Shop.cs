@@ -75,6 +75,59 @@ public class Item
     /// <summary>Inactive items are hidden from customers.</summary>
     public bool IsActive { get; set; } = true;
     public string? ImagePath { get; set; }
+    /// <summary>When false the item is treated as always available and <see cref="StockQuantity"/> is ignored.</summary>
+    public bool TrackStock { get; set; }
+    /// <summary>Units on hand. Changes only through orders and stock adjustments, each recorded as a <see cref="StockMovement"/>.</summary>
+    public int StockQuantity { get; set; }
+    /// <summary>The shop is warned when stock falls to this number or below.</summary>
+    public int LowStockThreshold { get; set; } = 5;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+}
+
+public enum StockReason
+{
+    /// <summary>The count entered when stock tracking was switched on.</summary>
+    Opening = 0,
+    /// <summary>New stock received from a supplier.</summary>
+    Restock = 1,
+    /// <summary>Sold through an order.</summary>
+    Sale = 2,
+    /// <summary>Put back because an order was cancelled.</summary>
+    OrderCancelled = 3,
+    /// <summary>Damaged, expired or lost.</summary>
+    Damage = 4,
+    /// <summary>The count was corrected after checking the shelf.</summary>
+    Correction = 5,
+}
+
+/// <summary>One change to an item's stock, kept forever so the shop can see where stock went.</summary>
+public class StockMovement
+{
+    public long Id { get; set; }
+    public Guid ShopId { get; set; }
+    public Guid ItemId { get; set; }
+    public Item Item { get; set; } = null!;
+    /// <summary>Positive when stock came in, negative when it went out.</summary>
+    public int Change { get; set; }
+    public int QuantityAfter { get; set; }
+    public StockReason Reason { get; set; }
+    public string? Note { get; set; }
+    public Guid? OrderId { get; set; }
+    public Guid? ActorUserId { get; set; }
+    public DateTimeOffset At { get; set; }
+}
+
+/// <summary>A message shown in the app's notification list.</summary>
+public class Notification
+{
+    public long Id { get; set; }
+    public Guid UserId { get; set; }
+    public ApplicationUser User { get; set; } = null!;
+    public string Title { get; set; } = string.Empty;
+    public string Body { get; set; } = string.Empty;
+    /// <summary>The page in the app this is about, for example "/orders/…".</summary>
+    public string? Link { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? ReadAt { get; set; }
 }

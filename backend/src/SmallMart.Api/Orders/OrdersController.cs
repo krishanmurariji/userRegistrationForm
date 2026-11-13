@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
+using SmallMart.Api.Inventory;
+using SmallMart.Api.Notifications;
 using SmallMart.Api.Storage;
 
 namespace SmallMart.Api.Orders;
@@ -13,7 +15,8 @@ namespace SmallMart.Api.Orders;
 [ApiController]
 [Route("api/orders")]
 [Authorize]
-public partial class OrdersController(AppDbContext db, ImageStorage images, TimeProvider clock) : ControllerBase
+public partial class OrdersController(
+    AppDbContext db, ImageStorage images, StockService stock, Notifier notifier, TimeProvider clock) : ControllerBase
 {
     [HttpGet("mine")]
     public async Task<IReadOnlyList<OrderSummaryDto>> Mine(
@@ -75,6 +78,10 @@ public partial class OrdersController(AppDbContext db, ImageStorage images, Time
             return this.ApiError(StatusCodes.Status409Conflict, "items_unavailable",
                 "Some items in your cart are no longer available. Please review your cart.");
 
+        var short_ = items.Where(i => i.TrackStock && i.StockQuantity < quantities[i.Id]).ToList();
+        if (short_.Count > 0)
+            return OutOfStock(short_.Select(i => i.StockQuantity <= 0 ? $"{i.Name} is out of stock" : $"only {i.StockQuantity} left of {i.Name}"));
+
         var now = clock.GetUtcNow();
         var order = new Order
         {
@@ -125,10 +132,27 @@ public partial class OrdersController(AppDbContext db, ImageStorage images, Time
             Note = method == PaymentMethod.Upi ? "Waiting for UPI payment" : "Pay cash on delivery",
             ActorUserId = order.CustomerId,
         });
-        db.Orders.Add(order);
-        await db.SaveChangesAsync(ct);
+        // The order and its stock are saved together or not at all.
+        var lines = items.Select(i => new StockService.Line(i.Id, i.Name, quantities[i.Id])).ToList();
+        await using (var transaction = await db.Database.BeginTransactionAsync(ct))
+        {
+            db.Orders.Add(order);
+            await db.SaveChangesAsync(ct);
+            if (await stock.TakeForOrderAsync(shop.Id, order.Id, order.CustomerId, lines, ct) is { } soldOut)
+            {
+                await transaction.RollbackAsync(ct);
+                return OutOfStock([$"{soldOut} has just sold out or has too few left"]);
+            }
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+        }
 
         order.Shop = shop;
+        await notifier.ToShopAsync(shop.Id, $"New order {order.DisplayNumber}",
+            $"{order.CustomerName} ordered {order.Items.Sum(i => i.Quantity)} item(s) for ₹{order.Total:0.##}" +
+            (method == PaymentMethod.Upi ? ", paying by UPI." : ", cash on delivery."),
+            $"/shops/{shop.Id}/orders/{order.Id}", ct);
+        await stock.WarnIfLowAsync(shop.Id, lines, ct);
         return CreatedAtAction(nameof(Get), new { id = order.Id }, OrderDto.From(order));
     }
 
@@ -184,6 +208,9 @@ public partial class OrdersController(AppDbContext db, ImageStorage images, Time
             return this.ApiError(StatusCodes.Status409Conflict, "order_changed", "This order has just changed. Please reload and try again.");
         }
         images.Delete(previous, isPrivate: true);
+        await notifier.ToShopAsync(order.ShopId, $"Check UPI payment for {order.DisplayNumber}",
+            $"{order.CustomerName} says they paid ₹{order.Total:0.##} (transaction ID {reference}).",
+            $"/shops/{order.ShopId}/orders/{order.Id}", ct);
         return Ok(OrderDto.From(order));
     }
 
@@ -228,8 +255,15 @@ public partial class OrdersController(AppDbContext db, ImageStorage images, Time
         {
             return this.ApiError(StatusCodes.Status409Conflict, "order_changed", "This order has just changed. Please reload and try again.");
         }
+        await stock.ReturnForOrderAsync(order, order.CustomerId, ct);
+        await notifier.ToShopAsync(order.ShopId, $"Order {order.DisplayNumber} cancelled",
+            $"{order.CustomerName} cancelled the order.", $"/shops/{order.ShopId}/orders/{order.Id}", ct);
         return Ok(OrderDto.From(order));
     }
+
+    private ObjectResult OutOfStock(IEnumerable<string> problems) =>
+        this.ApiError(StatusCodes.Status409Conflict, "insufficient_stock",
+            $"Not enough stock: {string.Join("; ", problems)}. Please review your cart.");
 
     private Task<Order?> LoadAsync(Guid id, bool tracking, CancellationToken ct)
     {

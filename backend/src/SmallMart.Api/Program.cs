@@ -11,6 +11,8 @@ using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
 using Microsoft.Extensions.FileProviders;
 using SmallMart.Api.Email;
+using SmallMart.Api.Inventory;
+using SmallMart.Api.Notifications;
 using SmallMart.Api.Shops;
 using SmallMart.Api.Storage;
 
@@ -74,6 +76,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<ShopAccess>();
 builder.Services.AddScoped<AuditLog>();
+builder.Services.AddScoped<Notifier>();
+builder.Services.AddScoped<StockService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<ImageStorage>();
 

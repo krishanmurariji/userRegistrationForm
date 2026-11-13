@@ -5,6 +5,8 @@ using SmallMart.Api.Audit;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
+using SmallMart.Api.Inventory;
+using SmallMart.Api.Notifications;
 using SmallMart.Api.Shops;
 using SmallMart.Api.Storage;
 
@@ -15,7 +17,8 @@ namespace SmallMart.Api.Orders;
 [Route("api/shops/{shopId:guid}/orders")]
 [Authorize]
 public class ShopOrdersController(
-    AppDbContext db, ShopAccess access, ImageStorage images, AuditLog audit, TimeProvider clock) : ControllerBase
+    AppDbContext db, ShopAccess access, ImageStorage images, AuditLog audit, StockService stock, Notifier notifier,
+    TimeProvider clock) : ControllerBase
 {
     private static readonly Dictionary<OrderStatus, (OrderStatus Next, string Title)> Steps = new()
     {
@@ -112,7 +115,13 @@ public class ShopOrdersController(
             }
             order.Events.Add(new OrderEvent { At = now, Title = step.Title, Note = note, ActorUserId = userId });
             return null;
-        });
+        }, order => ToCustomerAsync(order, order.Status switch
+        {
+            OrderStatus.Accepted => "The shop accepted your order and is preparing it.",
+            OrderStatus.Packed => "Your order is packed.",
+            OrderStatus.OutForDelivery => "Your order is on its way.",
+            _ => "Your order was delivered. Thank you!",
+        }, ct));
 
     /// <summary>Cancels (or refuses) the order with a reason the customer can read. Not possible once delivered.</summary>
     [HttpPost("{id:guid}/cancel")]
@@ -134,6 +143,10 @@ public class ShopOrdersController(
                 ActorUserId = userId,
             });
             return null;
+        }, async order =>
+        {
+            await stock.ReturnForOrderAsync(order, User.GetUserId(), ct);
+            await ToCustomerAsync(order, $"The shop cancelled your order: {order.CancelReason}", ct);
         });
 
     /// <summary>The shop found the money in its bank or UPI app.</summary>
@@ -149,8 +162,12 @@ public class ShopOrdersController(
             order.PaymentVerifiedAt = now;
             order.Events.Add(new OrderEvent { At = now, Title = "Payment confirmed", Note = $"₹{order.Total:0.##} received by UPI", ActorUserId = userId });
             return null;
-        }, order => audit.WriteAsync("order.payment_verified",
-            $"Confirmed UPI payment of ₹{order.Total:0.##} for order {order.DisplayNumber} (ref {order.UpiReference})", "order", order.Id, ct: ct));
+        }, async order =>
+        {
+            await audit.WriteAsync("order.payment_verified",
+                $"Confirmed UPI payment of ₹{order.Total:0.##} for order {order.DisplayNumber} (ref {order.UpiReference})", "order", order.Id, ct: ct);
+            await ToCustomerAsync(order, $"The shop confirmed your UPI payment of ₹{order.Total:0.##}.", ct);
+        });
 
     /// <summary>The shop could not find the money. The customer can send proof again.</summary>
     [HttpPost("{id:guid}/payment/reject")]
@@ -164,8 +181,15 @@ public class ShopOrdersController(
             order.PaymentRejectReason = request.Reason.Trim();
             order.Events.Add(new OrderEvent { At = now, Title = "Payment not found", Note = order.PaymentRejectReason, ActorUserId = userId });
             return null;
-        }, order => audit.WriteAsync("order.payment_rejected",
-            $"Rejected UPI payment for order {order.DisplayNumber} (ref {order.UpiReference}): {order.PaymentRejectReason}", "order", order.Id, ct: ct));
+        }, async order =>
+        {
+            await audit.WriteAsync("order.payment_rejected",
+                $"Rejected UPI payment for order {order.DisplayNumber} (ref {order.UpiReference}): {order.PaymentRejectReason}", "order", order.Id, ct: ct);
+            await ToCustomerAsync(order, $"The shop could not find your UPI payment: {order.PaymentRejectReason}. Please check and send it again.", ct);
+        });
+
+    private Task ToCustomerAsync(Order order, string body, CancellationToken ct) =>
+        notifier.ToUserAsync(order.CustomerId, $"Order {order.DisplayNumber} from {order.Shop.Name}", body, $"/orders/{order.Id}", ct);
 
     /// <summary>Shared checks and saving for every change a shop makes to an order.</summary>
     private async Task<IActionResult> ChangeAsync(

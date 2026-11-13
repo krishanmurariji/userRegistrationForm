@@ -18,10 +18,13 @@ public record StoreShopDto(
 public record StoreCategoryDto(Guid Id, string Name);
 
 public record StoreItemDto(
-    Guid Id, Guid? CategoryId, string Name, string? Description, decimal Price, decimal? Mrp, string Unit, string? ImageUrl)
+    Guid Id, Guid? CategoryId, string Name, string? Description, decimal Price, decimal? Mrp, string Unit, string? ImageUrl,
+    int? Available)
 {
+    /// <summary><c>Available</c> is how many can be ordered, or null when the shop does not count stock for this item.</summary>
     public static StoreItemDto From(Item i) => new(
-        i.Id, i.CategoryId, i.Name, i.Description, i.Price, i.Mrp, i.Unit, ImageStorage.Url(i.ImagePath));
+        i.Id, i.CategoryId, i.Name, i.Description, i.Price, i.Mrp, i.Unit, ImageStorage.Url(i.ImagePath),
+        i.TrackStock ? Math.Max(i.StockQuantity, 0) : null);
 }
 
 public record StoreShopDetailDto(StoreShopDto Shop, IReadOnlyList<StoreCategoryDto> Categories);

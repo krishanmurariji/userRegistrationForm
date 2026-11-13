@@ -5,13 +5,14 @@ using SmallMart.Api.Audit;
 using SmallMart.Api.Auth;
 using SmallMart.Api.Data;
 using SmallMart.Api.Domain;
+using SmallMart.Api.Notifications;
 
 namespace SmallMart.Api.Admin;
 
 [ApiController]
 [Route("api/admin/shops")]
 [Authorize(Roles = Roles.PlatformAdmin)]
-public class AdminShopsController(AppDbContext db, AuditLog audit) : ControllerBase
+public class AdminShopsController(AppDbContext db, AuditLog audit, Notifier notifier) : ControllerBase
 {
     /// <summary>All shops, newest first. Filter with <c>search</c> (shop name, city or owner email) and <c>active</c>.</summary>
     [HttpGet]
@@ -63,6 +64,10 @@ public class AdminShopsController(AppDbContext db, AuditLog audit) : ControllerB
             await audit.WriteAsync(
                 active ? "shop.activated" : "shop.deactivated",
                 $"{(active ? "Activated" : "Deactivated")} shop \"{shop.Name}\"", "shop", shop.Id, ct: ct);
+            await notifier.ToShopAsync(shop.Id,
+                active ? $"{shop.Name} is active again" : $"{shop.Name} was deactivated",
+                active ? "Customers can see your shop and order again." : "Customers cannot see your shop, and it cannot be changed. Contact support for details.",
+                $"/shops/{shop.Id}", ct);
         }
         return NoContent();
     }
