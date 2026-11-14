@@ -18,7 +18,9 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | 6 | Inventory: stock counting, adjustments with history, low-stock warnings, stock checks on orders | Done, tested |
 | 6 | In-app notifications for shops and customers | Done, tested |
 | Design | Customer redesign: search header, category tiles, product grid, cart bar, bottom navigation, order tracker | Done, tested |
-| Later | Easier item entry (quick add, catalog, AI from photos), offers and coupons, push and email notifications, saved addresses, support tickets, mobile packaging | Not started |
+| Owners | Quick add, new category from the item form, duplicate an item | Done, tested |
+| AI | Add items from a photo: details read by an OpenAI vision model, barcode lookup, shared catalog, daily limit | Done, tested against the real service |
+| Later | Offers and coupons, push and email notifications, saved addresses, support tickets, mobile packaging | Not started |
 
 ## What the customer screens look like
 
@@ -125,6 +127,48 @@ filled in. After paying, the customer sends the transaction ID and a screenshot.
 or UPI app and confirms or rejects. A UPI order cannot be accepted until the payment is confirmed, one
 transaction ID can pay for one order only, and every confirmation is in the activity log. There are no
 gateway fees and no automatic refunds: a cancelled paid order tells the shop to refund by hand.
+
+Adding items faster:
+
+| Method and path | Purpose |
+|---|---|
+| `POST /api/shops/{id}/items` with `newCategoryName` | Add an item and, if needed, its category in one step |
+| `POST /api/shops/{id}/items/{itemId}/duplicate` | A hidden copy of an item, photo included, to edit into a variant |
+| `GET /api/shops/{id}/items/scan/status` | Whether photo scanning is set up, and scans left today |
+| `POST /api/shops/{id}/items/scan` | Read a product photo (form field `file`) into draft items |
+
+### Adding items from a photo (AI)
+
+A shop member uploads a photo of one product or a shelf. The API sends it to an OpenAI vision model and returns
+a draft for each product: name, brand, pack size, printed MRP, barcode and a category. Nothing is saved as an
+item until the owner has reviewed the drafts in the app.
+
+- **Where each value comes from.** Every field carries a source and a "needs review" flag. A product a shop
+  owner saved before (matched by barcode in the shared catalog) wins. Otherwise the photo is used, with the
+  public Open Food Facts database filling gaps and settling fields the photo was unsure about. A web search is
+  an optional last resort and is always marked for review.
+- **Barcodes.** A barcode is used only when its check digit is right, so a misread digit cannot attach the
+  wrong product.
+- **Prices.** The model is never asked for a selling price and the API never returns one. Only the printed MRP
+  is read, and the shop's own price is never shared with other shops.
+- **Shared catalog.** An item saved with a valid barcode is remembered, so the next shop that scans the same
+  product gets its details without guesswork.
+- **Limits.** Each shop gets `Ai:DailyScansPerShop` scans in 24 hours (30 by default). A scan that fails on the
+  AI side is not counted.
+
+To switch it on, put the key in `backend/src/SmallMart.Api/appsettings.Local.json` (never in a committed file):
+
+```json
+{
+  "Ai": {
+    "OpenAiApiKey": "sk-...",
+    "WebSearchFallback": true
+  }
+}
+```
+
+`Ai:Model` defaults to `gpt-4o-mini`. Without a key the scan screen says the feature is not set up and
+everything else works as before.
 
 Stock and notifications:
 

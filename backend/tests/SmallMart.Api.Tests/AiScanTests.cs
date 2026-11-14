@@ -92,7 +92,29 @@ public class AiScanTests(TestApp app)
     }
 
     [Fact]
-    public async Task A_barcode_match_overrides_what_the_photo_seemed_to_say()
+    public async Task A_thin_public_database_entry_does_not_replace_a_clear_reading_from_the_photo()
+    {
+        var (owner, _, scan) = await ShopAsync();
+        var barcode = NewBarcode();
+        // What the real database returned for a real biscuit pack: the brand as the "name", and no pack size.
+        app.Ai.BarcodeDatabase[barcode] = new FoundProduct("britannia", "Britannia", null, null, null, null);
+        var photo = app.Ai.Photo(Seen("Marie Gold", "250 g", 35, barcode, "Snacks", "Britannia"));
+
+        var draft = Assert.Single((await Read<ScanResultDto>(await owner.PostAsync(scan, Upload(photo)))).Products);
+
+        Assert.Equal(new ScanField<string>("Marie Gold", "photo", false), draft.Name);
+        Assert.Equal(new ScanField<string>("Britannia", "photo", false), draft.Brand);
+        Assert.Equal(new ScanField<string>("250 g", "photo", false), draft.Unit);
+
+        // And a public entry is not copied into the shared catalog: only what shop owners save goes there.
+        var (other, _, otherScan) = await ShopAsync();
+        app.Ai.BarcodeDatabase.TryRemove(barcode, out _);
+        var again = Assert.Single((await Read<ScanResultDto>(await other.PostAsync(otherScan, Upload(app.Ai.Photo(Seen("unclear", null, null, barcode, null, null, null, "name")))))).Products);
+        Assert.Equal("photo", again.Name.Source);
+    }
+
+    [Fact]
+    public async Task A_barcode_match_settles_what_the_photo_was_unsure_about()
     {
         var (owner, _, scan) = await ShopAsync();
         var barcode = NewBarcode();

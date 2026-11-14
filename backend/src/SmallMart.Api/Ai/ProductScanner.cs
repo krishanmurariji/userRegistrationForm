@@ -6,7 +6,8 @@ namespace SmallMart.Api.Ai;
 
 /// <summary>
 /// Turns a product photo into draft items. Sources are trusted in this order:
-/// the shared catalog and the barcode database (exact matches), then the photo, then a web search (a guess).
+/// the shared catalog (checked by a shop owner), then the photo, with the public barcode database filling gaps
+/// and settling doubts, and a web search as a last guess.
 /// Every field says where it came from, and nothing here ever sets a selling price.
 /// </summary>
 public class ProductScanner(
@@ -54,16 +55,24 @@ public class ProductScanner(
             {
                 matched = true;
                 barcode = barcode with { NeedsReview = false };
-                if (found.Name is not null) name = new(found.Name, source, false);
-                if (found.Brand is not null) brand = new(found.Brand, source, false);
-                if (found.Unit is not null) unit = new(found.Unit, source, false);
+
+                // What a shop owner saved was checked by a person, so it wins. The public database is filled in by
+                // volunteers and is often thin, so it only fills gaps and settles fields the photo was unsure about.
+                var trusted = source == Catalog;
+                ScanField<string> Merge(ScanField<string> fromPhoto, string? value) =>
+                    value is null ? fromPhoto
+                    : trusted || fromPhoto.Value is null || fromPhoto.NeedsReview ? new(value, source, false)
+                    : fromPhoto;
+
+                // A "name" that is only the brand again tells us nothing.
+                var foundName = found.Name is { Length: >= 3 } n && !string.Equals(n, found.Brand ?? seen.Brand, StringComparison.OrdinalIgnoreCase) ? n : null;
+                name = Merge(name, foundName);
+                brand = Merge(brand, found.Brand);
+                unit = Merge(unit, found.Unit);
                 if (found.Description is not null && description.Value is null) description = new(found.Description, source, false);
-                if (found.Category is not null) category = new(MatchCategory(found.Category, shopCategories), source, false);
+                if (found.Category is not null) category = Merge(category, MatchCategory(found.Category, shopCategories));
                 // A price printed on the pack in the photo is newer than one saved earlier.
                 if (found.Mrp is not null && (mrp.Value is null || mrp.NeedsReview)) mrp = new(found.Mrp, source, true);
-
-                if (saved is null)
-                    await RememberAsync(code, found, "openfoodfacts", ct);
             }
         }
 
