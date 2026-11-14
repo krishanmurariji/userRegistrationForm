@@ -1,14 +1,15 @@
 import { Routes } from '@angular/router';
-import { adminGuard, notAdminGuard, shopOwnerGuard, signedInGuard, signedOutGuard } from './core/auth.guard';
+import { adminGuard, customerGuard, shopOwnerGuard, signedInGuard, signedOutGuard } from './core/auth.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/browse').then((m) => m.BrowsePage) },
-  { path: 'search', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/search').then((m) => m.SearchPage) },
-  { path: 'store/:shopId', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/store').then((m) => m.StorePage) },
-  { path: 'cart', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/cart').then((m) => m.CartPage) },
-  { path: 'checkout', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/checkout').then((m) => m.CheckoutPage) },
-  { path: 'orders', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/orders').then((m) => m.OrdersPage) },
-  { path: 'orders/:orderId', canActivate: [signedInGuard, notAdminGuard], loadComponent: () => import('./pages/order').then((m) => m.OrderPage) },
+  { path: '', pathMatch: 'full', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/browse').then((m) => m.BrowsePage) },
+  { path: 'search', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/search').then((m) => m.SearchPage) },
+  { path: 'store/:shopId', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/store').then((m) => m.StorePage) },
+  { path: 'store/:shopId/items/:itemId', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/product').then((m) => m.ProductPage) },
+  { path: 'cart', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/cart').then((m) => m.CartPage) },
+  { path: 'checkout', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/checkout').then((m) => m.CheckoutPage) },
+  { path: 'orders', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/orders').then((m) => m.OrdersPage) },
+  { path: 'orders/:orderId', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/order').then((m) => m.OrderPage) },
   { path: 'my-shops', canActivate: [signedInGuard, shopOwnerGuard], loadComponent: () => import('./pages/home').then((m) => m.HomePage) },
   { path: 'notifications', canActivate: [signedInGuard], loadComponent: () => import('./pages/notifications').then((m) => m.NotificationsPage) },
   { path: 'account', canActivate: [signedInGuard], loadComponent: () => import('./pages/account').then((m) => m.AccountPage) },

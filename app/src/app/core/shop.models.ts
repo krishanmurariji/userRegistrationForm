@@ -40,9 +40,19 @@ export interface Item {
   trackStock: boolean;
   stockQuantity: number;
   lowStockThreshold: number;
+  /** All pictures, the first one is the cover. An item has 1 to 5. */
+  images: ItemImage[];
 }
 
-export type ItemInput = Omit<Item, 'id' | 'imageUrl' | 'stockQuantity'> & {
+export interface ItemImage {
+  id: string;
+  /** A path on the API; use fileUrl() to show it. */
+  url: string;
+}
+
+export type ItemInput = Omit<Item, 'id' | 'imageUrl' | 'stockQuantity' | 'images'> & {
+  /** When creating: 1 to 5 pictures uploaded with stageImage(), the first is the cover. Ignored when updating. */
+  imageIds?: string[];
   /** Used when the item is created with stock counting, or when counting is switched on. */
   openingStock: number | null;
   /** Put the item in a category with this name, creating it if the shop does not have it yet. */

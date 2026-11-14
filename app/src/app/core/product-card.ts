@@ -16,14 +16,14 @@ import { StoreItem, StoreShop, discountPercent } from './store.models';
   template: `
     @let i = item();
     <article class="product" [class.unavailable]="soldOut()">
-      <div class="photo">
+      <a class="photo" [routerLink]="['/store', shop().id, 'items', i.id]" [attr.aria-label]="'See details of ' + i.name">
         @if (image(); as src) { <img [src]="src" [alt]="i.name" loading="lazy" /> }
         @else { <ion-icon name="image-outline" aria-hidden="true" /> }
         @if (discount(); as percent) { <span class="deal">{{ percent }}% OFF</span> }
         @if (soldOut()) { <span class="sold-out">Out of stock</span> }
-      </div>
+      </a>
       <div class="info">
-        <h3>{{ i.name }}</h3>
+        <h3><a [routerLink]="['/store', shop().id, 'items', i.id]">{{ i.name }}</a></h3>
         <p class="unit">{{ i.unit }}</p>
         @if (showShop()) {
           <a class="from" [routerLink]="['/store', shop().id]">{{ shop().name }}@if (!shop().isOpen) { · closed }</a>

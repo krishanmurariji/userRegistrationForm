@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonBackButton, IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonSpinner, IonText, IonThumbnail, IonTitle, IonToolbar } from '@ionic/angular';
+import { IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonSpinner, IonText, IonThumbnail, IonTitle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addOutline, personCircleOutline, storefrontOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
@@ -9,27 +9,23 @@ import { AuthService } from '../core/auth.service';
 import { Shop } from '../core/shop.models';
 import { ShopService, fileUrl } from '../core/shop.service';
 
-/** The shops a shop owner manages. */
+/** The shop owner's home: the shops they manage. */
 @Component({
   selector: 'app-home',
-  imports: [RouterLink, NotificationBell, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonSpinner, IonText],
+  imports: [RouterLink, NotificationBell, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
         <ion-title>My shops</ion-title>
-        <ion-buttons slot="end"><app-notification-bell /></ion-buttons>
+        <ion-buttons slot="end">
+          <app-notification-bell />
+          <ion-button routerLink="/account" aria-label="Account"><ion-icon slot="icon-only" name="person-circle-outline" /></ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
       <main class="page-column">
-        @if (!auth.isShopOwner()) {
-          <div class="empty">
-            <ion-icon name="storefront-outline" aria-hidden="true" />
-            <h2>Welcome, {{ auth.user()?.fullName }}</h2>
-            <p>Browsing shops and ordering is coming soon.</p>
-          </div>
-        } @else if (loading()) {
+        @if (loading()) {
           <div class="centered"><ion-spinner name="crescent" aria-label="Loading shops" /></div>
         } @else if (error(); as message) {
           <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
@@ -88,7 +84,6 @@ export class HomePage {
   }
 
   protected async load(): Promise<void> {
-    if (!this.auth.isShopOwner()) return;
     this.error.set('');
     try {
       this.shops.set(await this.shopService.myShops());

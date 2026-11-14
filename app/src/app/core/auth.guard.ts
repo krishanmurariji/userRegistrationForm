@@ -28,8 +28,14 @@ export const shopOwnerGuard: CanActivateFn = () => {
   return inject(AuthService).isShopOwner() ? true : router.createUrlTree(['/']);
 };
 
-/** The platform admin has no customer or shop pages; their home is the admin section. */
-export const notAdminGuard: CanActivateFn = () => {
+/**
+ * Customer pages: browsing, cart, orders. Shop owners and the admin are different kinds of account and have
+ * their own home, so they are sent there instead.
+ */
+export const customerGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
   const router = inject(Router);
-  return inject(AuthService).isAdmin() ? router.createUrlTree(['/admin']) : true;
+  if (auth.isAdmin()) return router.createUrlTree(['/admin']);
+  if (auth.isShopOwner()) return router.createUrlTree(['/my-shops']);
+  return true;
 };

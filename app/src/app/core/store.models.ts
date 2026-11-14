@@ -36,6 +36,13 @@ export interface StoreShopDetail {
   categories: StoreCategory[];
 }
 
+/** One product with all its pictures and the shop that sells it, for the product page. */
+export interface StoreItemDetail {
+  item: StoreItem;
+  imageUrls: string[];
+  shop: StoreShop;
+}
+
 export interface StoreCategoryTile {
   name: string;
   itemCount: number;

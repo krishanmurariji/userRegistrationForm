@@ -10,7 +10,7 @@ import { AuthService } from '../core/auth.service';
   template: `
     <ion-header class="shop-header">
       <ion-toolbar [color]="auth.isAdmin() ? 'dark' : 'primary'">
-        @if (auth.isAdmin()) { <ion-buttons slot="start"><ion-back-button defaultHref="/admin" /></ion-buttons> }
+        @if (!auth.isCustomer()) { <ion-buttons slot="start"><ion-back-button [defaultHref]="auth.isAdmin() ? '/admin' : '/my-shops'" /></ion-buttons> }
         <ion-title>Account</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -25,18 +25,22 @@ import { AuthService } from '../core/auth.service';
               <span class="tag open">{{ auth.isAdmin() ? 'Platform admin' : auth.isShopOwner() ? 'Shop owner' : 'Customer' }}</span>
             </div>
           </section>
-          @if (!auth.isAdmin()) {
+          @if (auth.isCustomer()) {
             <nav class="card menu" aria-label="Account">
               <a routerLink="/orders">My orders</a>
               <a routerLink="/notifications">Notifications</a>
-              @if (auth.isShopOwner()) { <a routerLink="/my-shops">Manage my shops</a> }
+            </nav>
+          } @else if (auth.isShopOwner()) {
+            <nav class="card menu" aria-label="Account">
+              <a routerLink="/my-shops">My shops</a>
+              <a routerLink="/notifications">Notifications</a>
             </nav>
           }
           <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="signOut()">Sign out</ion-button>
         </main>
       }
     </ion-content>
-    @if (!auth.isAdmin()) { <ion-footer class="shop-footer"><app-bottom-nav active="account" /></ion-footer> }
+    @if (auth.isCustomer()) { <ion-footer class="shop-footer"><app-bottom-nav active="account" /></ion-footer> }
   `,
 })
 export class AccountPage {

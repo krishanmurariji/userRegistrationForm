@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Category, Item, ItemInput, ScanProduct, ScanStatus, Shop, ShopInput, StockMovement } from './shop.models';
+import { Category, Item, ItemImage, ItemInput, ScanProduct, ScanStatus, Shop, ShopInput, StockMovement } from './shop.models';
 import { Order, OrderStatus, OrderSummary } from './store.models';
 
 /** Full address of a picture path returned by the API, or null when there is no picture. */
@@ -81,8 +81,26 @@ export class ShopService {
     return firstValueFrom(this.http.delete<void>(`${this.api}/${shopId}/items/${id}`));
   }
 
-  uploadItemImage(shopId: string, id: string, file: File): Promise<Item> {
-    return firstValueFrom(this.http.post<Item>(`${this.api}/${shopId}/items/${id}/image`, this.form(file)));
+  /** Uploads a picture for an item that does not exist yet. Pass the returned ids as `imageIds` when creating it. */
+  stageImage(shopId: string, file: File): Promise<ItemImage> {
+    return firstValueFrom(this.http.post<ItemImage>(`${this.api}/${shopId}/items/images`, this.form(file)));
+  }
+
+  /** Throws away a picture uploaded with stageImage() that will not be used. */
+  discardStagedImage(shopId: string, imageId: string): Promise<void> {
+    return firstValueFrom(this.http.delete<void>(`${this.api}/${shopId}/items/images/${imageId}`));
+  }
+
+  addItemImage(shopId: string, itemId: string, file: File): Promise<Item> {
+    return firstValueFrom(this.http.post<Item>(`${this.api}/${shopId}/items/${itemId}/images`, this.form(file)));
+  }
+
+  deleteItemImage(shopId: string, itemId: string, imageId: string): Promise<Item> {
+    return firstValueFrom(this.http.delete<Item>(`${this.api}/${shopId}/items/${itemId}/images/${imageId}`));
+  }
+
+  setCoverImage(shopId: string, itemId: string, imageId: string): Promise<Item> {
+    return firstValueFrom(this.http.post<Item>(`${this.api}/${shopId}/items/${itemId}/images/${imageId}/cover`, null));
   }
 
   // ----- Reading items from photos -----

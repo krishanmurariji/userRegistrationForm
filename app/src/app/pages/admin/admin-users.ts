@@ -120,8 +120,8 @@ export class AdminUsers {
       header: user.email,
       buttons: [
         isOwner
-          ? { text: 'Remove shop owner role', handler: () => void this.run(user, () => this.admin.removeShopOwner(user.id)) }
-          : { text: 'Make shop owner', handler: () => void this.run(user, () => this.admin.makeShopOwner(user.id)) },
+          ? { text: 'Change to customer', handler: () => void this.confirmChange(user, false) }
+          : { text: 'Change to shop owner', handler: () => void this.confirmChange(user, true) },
         user.suspended
           ? { text: 'Reactivate account', handler: () => void this.run(user, () => this.admin.setSuspended(user.id, false)) }
           : { text: 'Suspend account', role: 'destructive', handler: () => void this.confirmSuspend(user) },
@@ -129,6 +129,20 @@ export class AdminUsers {
       ],
     });
     await sheet.present();
+  }
+
+  /** An account is only one kind, so this swaps the type rather than adding to it. */
+  private async confirmChange(user: AdminUser, toOwner: boolean): Promise<void> {
+    const alert = await this.alerts.create({
+      header: toOwner ? 'Change to a shop owner?' : 'Change to a customer?',
+      message: toOwner
+        ? `${user.email} will stop being a customer and become a shop owner. They are signed out everywhere and sign in again as an owner.`
+        : `${user.email} will stop being a shop owner and become a customer. They are signed out everywhere and sign in again as a customer.`,
+      buttons: [{ text: 'Cancel', role: 'cancel' }, { text: 'Change account', role: 'confirm' }],
+    });
+    await alert.present();
+    if ((await alert.onDidDismiss()).role !== 'confirm') return;
+    await this.run(user, () => (toOwner ? this.admin.makeShopOwner(user.id) : this.admin.removeShopOwner(user.id)));
   }
 
   private async confirmSuspend(user: AdminUser): Promise<void> {

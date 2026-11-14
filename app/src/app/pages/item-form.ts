@@ -3,7 +3,8 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonSelect, IonSelectOption, IonSpinner, IonText, IonTextarea, IonTitle, IonToggle, IonToolbar, NavController } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
-import { Category } from '../core/shop.models';
+import { Category, Item } from '../core/shop.models';
+import { PhotoEntry, PhotoPicker, photoFromFile, releasePhoto } from '../core/photo-picker';
 import { ShopService, fileUrl } from '../core/shop.service';
 
 function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
@@ -15,7 +16,7 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
 /** Adds an item (/shops/:shopId/items/new) or edits one (/shops/:shopId/items/:itemId). */
 @Component({
   selector: 'app-item-form',
-  imports: [ReactiveFormsModule, RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonToggle, IonItem, IonButton, IonSpinner, IonText],
+  imports: [ReactiveFormsModule, RouterLink, PhotoPicker, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonToggle, IonItem, IonButton, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -37,15 +38,8 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
               </a>
             }
 
-            <div class="photo-row">
-              <div class="photo">
-                @if (photoUrl(); as src) { <img [src]="src" alt="Item photo" /> } @else { <span>No photo</span> }
-              </div>
-              <ion-button fill="outline" [disabled]="busy()" (click)="picker.click()">
-                {{ photoUrl() ? 'Change photo' : 'Add photo' }}
-              </ion-button>
-              <input #picker type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="pickPhoto($event)" />
-            </div>
+            <app-photo-picker label="Pictures" [photos]="photos()" [busy]="busy()" [minKeep]="itemId ? 1 : 0"
+              (add)="addPhotos($event)" (remove)="removePhoto($event)" (makeCover)="coverPhoto($event)" (problem)="error.set($event)" />
 
             <ion-input formControlName="name" label="Item name" labelPlacement="stacked" fill="outline"
               errorText="Enter the item name" />
@@ -160,13 +154,11 @@ export class ItemFormPage implements OnInit, OnDestroy {
   protected readonly newCategory = '__new__';
   /** True when this page was opened on a freshly made copy. */
   protected readonly copied = signal(inject(ActivatedRoute).snapshot.queryParamMap.has('copied'));
-  protected readonly photoUrl = signal<string | null>(null);
+  /** The pictures on screen. For a new item they are files not uploaded yet; for an existing item they are stored. */
+  protected readonly photos = signal<PhotoEntry[]>([]);
   /** True when the saved item already counts stock; then the number changes only on the stock page. */
   protected readonly countedBefore = signal(false);
   protected readonly stockQuantity = signal(0);
-  /** A photo chosen on screen but not uploaded yet. */
-  private pendingPhoto: File | null = null;
-  private previewUrl: string | null = null;
 
   async ngOnInit(): Promise<void> {
     try {
@@ -177,7 +169,7 @@ export class ItemFormPage implements OnInit, OnDestroy {
       this.categories.set(categories);
       if (item) {
         this.form.patchValue({ ...item, barcode: item.barcode ?? '', description: item.description ?? '' });
-        this.photoUrl.set(fileUrl(item.imageUrl));
+        this.photos.set(this.fromItem(item));
         this.countedBefore.set(item.trackStock);
         this.stockQuantity.set(item.stockQuantity);
       }
@@ -199,28 +191,69 @@ export class ItemFormPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.releasePreview();
+    this.photos().forEach(releasePhoto);
   }
 
-  protected pickPhoto(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      this.error.set('The photo is larger than 5 MB. Please choose a smaller one.');
+  private fromItem(item: Item): PhotoEntry[] {
+    return item.images.map((image) => ({ key: image.id, url: fileUrl(image.url)!, id: image.id }));
+  }
+
+  /** New item: keep the files until it is saved. Existing item: each one goes to the server straight away. */
+  protected async addPhotos(files: File[]): Promise<void> {
+    this.error.set('');
+    if (!this.itemId) {
+      this.photos.update((list) => [...list, ...files.map(photoFromFile)]);
       return;
     }
+    await this.changeStored(async (itemId) => {
+      let item: Item | null = null;
+      for (const file of files) item = await this.shops.addItemImage(this.shopId, itemId, file);
+      return item;
+    });
+  }
+
+  protected async removePhoto(entry: PhotoEntry): Promise<void> {
     this.error.set('');
-    this.releasePreview();
-    this.pendingPhoto = file;
-    this.previewUrl = URL.createObjectURL(file);
-    this.photoUrl.set(this.previewUrl);
+    if (!this.itemId) {
+      this.photos.update((list) => list.filter((p) => p.key !== entry.key));
+      releasePhoto(entry);
+      // It may already have been uploaded by an earlier attempt to save; do not leave it behind.
+      if (entry.id) void this.shops.discardStagedImage(this.shopId, entry.id).catch(() => undefined);
+      return;
+    }
+    await this.changeStored((itemId) => this.shops.deleteItemImage(this.shopId, itemId, entry.id!));
+  }
+
+  protected async coverPhoto(entry: PhotoEntry): Promise<void> {
+    this.error.set('');
+    if (!this.itemId) {
+      this.photos.update((list) => [entry, ...list.filter((p) => p.key !== entry.key)]);
+      return;
+    }
+    await this.changeStored((itemId) => this.shops.setCoverImage(this.shopId, itemId, entry.id!));
+  }
+
+  /** Runs a change to a saved item's pictures, then shows the pictures as the server now has them. */
+  private async changeStored(change: (itemId: string) => Promise<Item | null>): Promise<void> {
+    const itemId = this.itemId!;
+    this.busy.set(true);
+    try {
+      const item = (await change(itemId)) ?? (await this.shops.item(this.shopId, itemId));
+      this.photos.set(this.fromItem(item));
+    } catch (e) {
+      this.error.set(toApiError(e).message);
+      // Show what is really stored, in case only some of the pictures went through.
+      await this.shops.item(this.shopId, itemId).then((item) => this.photos.set(this.fromItem(item))).catch(() => undefined);
+    } finally {
+      this.busy.set(false);
+    }
   }
 
   protected async save(): Promise<void> {
     this.form.markAllAsTouched();
-    if (this.form.invalid || this.busy()) return;
+    const noPicture = this.photos().length === 0;
+    if (noPicture) this.error.set('Add at least one picture of the item.');
+    if (this.form.invalid || noPicture || this.busy()) return;
 
     this.busy.set(true);
     this.error.set('');
@@ -247,14 +280,17 @@ export class ItemFormPage implements OnInit, OnDestroy {
         lowStockThreshold: Math.floor(Number(v.lowStockThreshold ?? 5)),
         openingStock: v.trackStock && !this.countedBefore() ? Math.floor(Number(v.openingStock ?? 0)) : null,
       };
-      const item = this.itemId
-        ? await this.shops.updateItem(this.shopId, this.itemId, input)
-        : await this.shops.createItem(this.shopId, input);
-      // From here on the item exists, so a failed photo upload must not create it a second time on retry.
-      this.itemId = item.id;
-      if (this.pendingPhoto) {
-        await this.shops.uploadItemImage(this.shopId, item.id, this.pendingPhoto);
-        this.pendingPhoto = null;
+      if (this.itemId) {
+        await this.shops.updateItem(this.shopId, this.itemId, input);
+      } else {
+        // Upload the chosen pictures first. A picture that already went up on an earlier try is not sent again.
+        const ready = [...this.photos()];
+        for (let index = 0; index < ready.length; index++) {
+          if (ready[index].id) continue;
+          ready[index] = { ...ready[index], id: (await this.shops.stageImage(this.shopId, ready[index].file!)).id };
+          this.photos.set([...ready]);
+        }
+        await this.shops.createItem(this.shopId, { ...input, imageIds: ready.map((p) => p.id!) });
       }
       await this.nav.navigateBack(['/shops', this.shopId]);
     } catch (e) {
@@ -297,10 +333,5 @@ export class ItemFormPage implements OnInit, OnDestroy {
     } finally {
       this.busy.set(false);
     }
-  }
-
-  private releasePreview(): void {
-    if (this.previewUrl) URL.revokeObjectURL(this.previewUrl);
-    this.previewUrl = null;
   }
 }

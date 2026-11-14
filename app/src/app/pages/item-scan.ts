@@ -1,11 +1,12 @@
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IonBackButton, IonButton, IonButtons, IonCheckbox, IonContent, IonHeader, IonInput, IonSpinner, IonText, IonTitle, IonToggle, IonToolbar, NavController } from '@ionic/angular';
+import { IonBackButton, IonButton, IonButtons, IonCheckbox, IonContent, IonHeader, IonInput, IonSpinner, IonText, IonTextarea, IonTitle, IonToggle, IonToolbar, NavController } from '@ionic/angular';
+import { PhotoEntry, PhotoPicker, photoFromFile, releasePhoto } from '../core/photo-picker';
 import { toApiError } from '../core/api-error';
 import { Category, ScanField, ScanProduct, ScanStatus } from '../core/shop.models';
 import { ShopService } from '../core/shop.service';
 
-type Key = 'name' | 'category' | 'unit' | 'mrp' | 'barcode';
+type Key = 'name' | 'category' | 'unit' | 'mrp' | 'barcode' | 'description';
 
 /** A draft item on screen: what was read, what the owner has typed over it, and how each field should be labelled. */
 interface Draft {
@@ -16,7 +17,13 @@ interface Draft {
   price: string;
   mrp: string;
   barcode: string;
-  description: string | null;
+  description: string;
+  isActive: boolean;
+  trackStock: boolean;
+  openingStock: string;
+  lowStock: string;
+  /** The item's pictures: files chosen on screen, or ones already uploaded by an earlier try to save. At least one is needed. */
+  photos: PhotoEntry[];
   /** Fields the owner has not touched since the scan, so the "where it came from" note still applies. */
   untouched: Set<Key>;
   read: ScanProduct;
@@ -33,7 +40,7 @@ const SOURCES: Record<string, string> = {
 /** Add items by photographing them: the photo is read into drafts, the owner checks them and sets prices. */
 @Component({
   selector: 'app-item-scan',
-  imports: [IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonCheckbox, IonToggle, IonButton, IonSpinner, IonText],
+  imports: [PhotoPicker, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonTextarea, IonCheckbox, IonToggle, IonButton, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -78,7 +85,7 @@ const SOURCES: Record<string, string> = {
             } @else {
               <h1>Check {{ drafts().length === 1 ? 'this item' : 'these ' + drafts().length + ' items' }}</h1>
               <p class="meta">
-                Fields marked "Please check" are guesses. Type the price you sell at; it is never filled in for you.
+                Fields marked "Please check" are guesses. Type the price you sell at, which is never filled in for you, and make sure every item has at least one picture.
               </p>
               @for (d of drafts(); track $index; let i = $index) {
                 <section class="panel draft" [class.off]="!d.include">
@@ -86,23 +93,39 @@ const SOURCES: Record<string, string> = {
                     Add this item
                   </ion-checkbox>
                   @if (d.include) {
+                    <app-photo-picker label="Pictures" [photos]="d.photos" [busy]="busy()"
+                      (add)="addPhotos(i, $event)" (remove)="removePhoto(i, $event)" (makeCover)="coverPhoto(i, $event)"
+                      (problem)="patch(i, { error: $event })" />
                     <ion-input label="Item name" labelPlacement="stacked" fill="outline" [value]="d.name" maxlength="150"
                       [class.review]="review(d, 'name')" [helperText]="note(d, 'name')" (ionInput)="type(i, 'name', $event.detail.value)" />
+                    <ion-input label="Category" labelPlacement="stacked" fill="outline" [value]="d.category" maxlength="80"
+                      placeholder="Existing or new, for example Dairy" [attr.list]="'scan-categories'"
+                      [class.review]="review(d, 'category')" [helperText]="note(d, 'category')" (ionInput)="type(i, 'category', $event.detail.value)" />
                     <div class="two-columns">
                       <ion-input label="Your price (₹)" labelPlacement="stacked" fill="outline" type="number" inputmode="decimal" min="0" step="0.01"
                         [value]="d.price" helperText="You decide this" (ionInput)="patch(i, { price: $event.detail.value ?? '' })" />
-                      <ion-input label="MRP (₹)" labelPlacement="stacked" fill="outline" type="number" inputmode="decimal" min="0" step="0.01"
+                      <ion-input label="MRP (₹, optional)" labelPlacement="stacked" fill="outline" type="number" inputmode="decimal" min="0" step="0.01"
                         [value]="d.mrp" [class.review]="review(d, 'mrp')" [helperText]="note(d, 'mrp')" (ionInput)="type(i, 'mrp', $event.detail.value)" />
                     </div>
-                    <div class="two-columns">
-                      <ion-input label="Unit" labelPlacement="stacked" fill="outline" [value]="d.unit" maxlength="30" placeholder="500 g, 1 kg"
-                        [class.review]="review(d, 'unit')" [helperText]="note(d, 'unit')" (ionInput)="type(i, 'unit', $event.detail.value)" />
-                      <ion-input label="Category" labelPlacement="stacked" fill="outline" [value]="d.category" maxlength="80"
-                        [attr.list]="'scan-categories'" [class.review]="review(d, 'category')" [helperText]="note(d, 'category')"
-                        (ionInput)="type(i, 'category', $event.detail.value)" />
-                    </div>
-                    <ion-input label="Barcode" labelPlacement="stacked" fill="outline" inputmode="numeric" [value]="d.barcode" maxlength="64"
+                    <ion-input label="Unit" labelPlacement="stacked" fill="outline" [value]="d.unit" maxlength="30" placeholder="1 kg, 500 g, 1 piece"
+                      [class.review]="review(d, 'unit')" [helperText]="note(d, 'unit')" (ionInput)="type(i, 'unit', $event.detail.value)" />
+                    <ion-input label="Barcode (optional)" labelPlacement="stacked" fill="outline" inputmode="numeric" [value]="d.barcode" maxlength="64"
                       [class.review]="review(d, 'barcode')" [helperText]="note(d, 'barcode')" (ionInput)="type(i, 'barcode', $event.detail.value)" />
+                    <ion-textarea label="Description (optional)" labelPlacement="stacked" fill="outline" [autoGrow]="true" [value]="d.description"
+                      maxlength="2000" [class.review]="review(d, 'description')" [helperText]="note(d, 'description')"
+                      (ionInput)="type(i, 'description', $event.detail.value)" />
+                    <ion-toggle [checked]="d.isActive" (ionChange)="patch(i, { isActive: $event.detail.checked })">Visible to customers</ion-toggle>
+
+                    <h3 class="draft-heading">Stock</h3>
+                    <ion-toggle [checked]="d.trackStock" (ionChange)="patch(i, { trackStock: $event.detail.checked })">Count stock for this item</ion-toggle>
+                    @if (d.trackStock) {
+                      <ion-input label="How many do you have now?" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" min="0" step="1"
+                        [value]="d.openingStock" (ionInput)="patch(i, { openingStock: $event.detail.value ?? '' })" />
+                      <ion-input label="Warn me when stock falls to" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" min="0" step="1"
+                        [value]="d.lowStock" (ionInput)="patch(i, { lowStock: $event.detail.value ?? '' })" />
+                    } @else {
+                      <p class="meta">Off: the item is always shown as available.</p>
+                    }
                     @if (d.error) {
                       <ion-text color="danger" role="alert"><p class="message">{{ d.error }}</p></ion-text>
                     }
@@ -114,9 +137,9 @@ const SOURCES: Record<string, string> = {
               </datalist>
 
               @if (drafts().length === 1) {
-                <ion-toggle [checked]="usePhoto()" (ionChange)="usePhoto.set($event.detail.checked)">Use this photo as the item's picture</ion-toggle>
+                <p class="meta">The photo you took is the first picture. You can add up to four more.</p>
               } @else {
-                <p class="meta">A shelf photo is not used as the item pictures. Open each item later to add its own photo.</p>
+                <p class="meta">A shelf photo cannot be cut into pictures. Add at least one picture to each item above.</p>
               }
               @if (error(); as message) {
                 <ion-text color="danger" role="alert"><p class="message">{{ message }}</p></ion-text>
@@ -150,7 +173,6 @@ export class ItemScanPage implements OnDestroy {
   protected readonly photo = signal<File | null>(null);
   protected readonly preview = signal<string | null>(null);
   protected readonly drafts = signal<Draft[]>([]);
-  protected readonly usePhoto = signal(true);
   protected readonly nothingFound = signal(false);
   protected readonly busy = signal(false);
   protected readonly error = signal('');
@@ -172,6 +194,7 @@ export class ItemScanPage implements OnDestroy {
 
   ngOnDestroy(): void {
     this.releasePreview();
+    this.drafts().forEach((d) => d.photos.forEach(releasePhoto));
   }
 
   protected pick(event: Event): void {
@@ -200,8 +223,9 @@ export class ItemScanPage implements OnDestroy {
     try {
       const result = await this.shops.scanPhoto(this.shopId, photo);
       this.status.update((st) => st && { ...st, remainingToday: result.remainingToday });
-      this.usePhoto.set(result.products.length === 1);
-      this.drafts.set(result.products.map((read) => this.toDraft(read)));
+      this.drafts().forEach((d) => d.photos.forEach(releasePhoto));
+      // A photo of one product becomes its first picture. A shelf photo cannot, so those drafts start without any.
+      this.drafts.set(result.products.map((read) => this.toDraft(read, result.products.length === 1 ? [photoFromFile(photo)] : [])));
       this.nothingFound.set(result.products.length === 0);
     } catch (e) {
       this.error.set(toApiError(e).message);
@@ -211,7 +235,7 @@ export class ItemScanPage implements OnDestroy {
     }
   }
 
-  private toDraft(read: ScanProduct): Draft {
+  private toDraft(read: ScanProduct, photos: PhotoEntry[]): Draft {
     // The brand goes in front of the name unless the name already has it.
     const name = read.name.value ?? '';
     const brand = read.brand.value ?? '';
@@ -223,8 +247,13 @@ export class ItemScanPage implements OnDestroy {
       price: '',
       mrp: read.mrp.value === null ? '' : String(read.mrp.value),
       barcode: read.barcode.value ?? '',
-      description: read.description.value,
-      untouched: new Set<Key>(['name', 'category', 'unit', 'mrp', 'barcode']),
+      description: read.description.value ?? '',
+      isActive: true,
+      trackStock: false,
+      openingStock: '',
+      lowStock: '5',
+      photos,
+      untouched: new Set<Key>(['name', 'category', 'unit', 'mrp', 'barcode', 'description']),
       read,
       error: '',
     };
@@ -234,7 +263,7 @@ export class ItemScanPage implements OnDestroy {
   protected note(draft: Draft, key: Key): string {
     if (!draft.untouched.has(key)) return '';
     const field: ScanField<unknown> = draft.read[key];
-    if (field.value === null) return key === 'barcode' || key === 'mrp' ? 'Not readable in the photo' : 'Not found: please fill in';
+    if (field.value === null) return key === 'barcode' || key === 'mrp' || key === 'description' ? 'Not readable in the photo' : 'Not found: please fill in';
     const source = SOURCES[field.source ?? ''] ?? '';
     return field.needsReview ? `Please check · ${source}` : source;
   }
@@ -256,6 +285,27 @@ export class ItemScanPage implements OnDestroy {
     );
   }
 
+  protected addPhotos(index: number, files: File[]): void {
+    this.drafts.update((list) =>
+      list.map((d, i) => (i === index ? { ...d, photos: [...d.photos, ...files.map(photoFromFile)], error: '' } : d)),
+    );
+  }
+
+  protected removePhoto(index: number, entry: PhotoEntry): void {
+    releasePhoto(entry);
+    // It may already have been uploaded by an earlier attempt to save; do not leave it behind.
+    if (entry.id) void this.shops.discardStagedImage(this.shopId, entry.id).catch(() => undefined);
+    this.drafts.update((list) =>
+      list.map((d, i) => (i === index ? { ...d, photos: d.photos.filter((p) => p.key !== entry.key), error: '' } : d)),
+    );
+  }
+
+  protected coverPhoto(index: number, entry: PhotoEntry): void {
+    this.drafts.update((list) =>
+      list.map((d, i) => (i === index ? { ...d, photos: [entry, ...d.photos.filter((p) => p.key !== entry.key)], error: '' } : d)),
+    );
+  }
+
   protected patch(index: number, change: Partial<Draft>): void {
     this.drafts.update((list) => list.map((d, i) => (i === index ? { ...d, ...change, error: '' } : d)));
   }
@@ -269,11 +319,16 @@ export class ItemScanPage implements OnDestroy {
         if (!d.include) return d;
         const price = Number(d.price);
         const mrp = d.mrp === '' ? null : Number(d.mrp);
+        const opening = d.openingStock === '' ? 0 : Number(d.openingStock);
+        const warnAt = d.lowStock === '' ? NaN : Number(d.lowStock);
         const error = !d.name.trim() ? 'Enter the item name.'
           : !d.unit.trim() ? 'Enter the unit, for example 500 g.'
           : !(price > 0) ? 'Enter the price you sell this at.'
           : mrp !== null && !(mrp > 0) ? 'The MRP must be above 0, or leave it empty.'
           : mrp !== null && mrp < price ? 'The price cannot be higher than the MRP.'
+          : d.photos.length === 0 ? 'Add at least one picture of the item.'
+          : d.trackStock && !(Number.isInteger(opening) && opening >= 0) ? 'Enter how many you have, as a whole number.'
+          : d.trackStock && !(Number.isInteger(warnAt) && warnAt >= 0) ? 'Enter the stock level to warn at, as a whole number.'
           : '';
         invalid ||= !!error;
         return { ...d, error };
@@ -286,13 +341,17 @@ export class ItemScanPage implements OnDestroy {
 
     this.busy.set(true);
     this.error.set('');
-    const photo = this.usePhoto() && this.drafts().length === 1 ? this.photo() : null;
     const left: Draft[] = [];
     let added = 0;
     for (const draft of this.drafts()) {
       if (!draft.include) continue;
+      const ready = [...draft.photos];
       try {
-        const item = await this.shops.createItem(this.shopId, {
+        // Upload the pictures first. One that already went up on an earlier try is not sent again.
+        for (let index = 0; index < ready.length; index++) {
+          if (!ready[index].id) ready[index] = { ...ready[index], id: (await this.shops.stageImage(this.shopId, ready[index].file!)).id };
+        }
+        await this.shops.createItem(this.shopId, {
           name: draft.name.trim(),
           categoryId: null,
           newCategoryName: draft.category.trim() || null,
@@ -300,17 +359,17 @@ export class ItemScanPage implements OnDestroy {
           mrp: draft.mrp === '' ? null : Number(draft.mrp),
           unit: draft.unit.trim(),
           barcode: draft.barcode.trim() || null,
-          description: draft.description,
-          isActive: true,
-          trackStock: false,
-          lowStockThreshold: 5,
-          openingStock: null,
+          description: draft.description.trim() || null,
+          isActive: draft.isActive,
+          trackStock: draft.trackStock,
+          lowStockThreshold: draft.trackStock ? Number(draft.lowStock) : 5,
+          openingStock: draft.trackStock ? (draft.openingStock === '' ? 0 : Number(draft.openingStock)) : null,
+          imageIds: ready.map((p) => p.id!),
         });
         added++;
-        // The item exists now; a photo that fails to upload can be added later from the item page.
-        if (photo) await this.shops.uploadItemImage(this.shopId, item.id, photo).catch(() => undefined);
+        draft.photos.forEach(releasePhoto);
       } catch (e) {
-        left.push({ ...draft, error: toApiError(e).message });
+        left.push({ ...draft, photos: ready, error: toApiError(e).message });
       }
     }
     this.busy.set(false);
@@ -326,6 +385,7 @@ export class ItemScanPage implements OnDestroy {
   }
 
   protected reset(): void {
+    this.drafts().forEach((d) => d.photos.forEach(releasePhoto));
     this.drafts.set([]);
     this.photo.set(null);
     this.releasePreview();

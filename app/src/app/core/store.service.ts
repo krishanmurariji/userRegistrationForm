@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { DeliveryAddress, Order, OrderSummary, PlaceOrderInput, StoreCategoryTile, StoreItem, StoreSearchResult, StoreShop, StoreShopDetail } from './store.models';
+import { DeliveryAddress, Order, OrderSummary, PlaceOrderInput, StoreCategoryTile, StoreItem, StoreItemDetail, StoreSearchResult, StoreShop, StoreShopDetail } from './store.models';
 
 /** What customers do: browse shops, place orders, pay and follow them. */
 @Injectable({ providedIn: 'root' })
@@ -38,6 +38,11 @@ export class StoreService {
     if (filter.categoryId) params = params.set('categoryId', filter.categoryId);
     if (filter.search?.trim()) params = params.set('search', filter.search.trim());
     return firstValueFrom(this.http.get<StoreItem[]>(`${this.store}/shops/${shopId}/items`, { params }));
+  }
+
+  /** One item with all its pictures, for the product page. */
+  itemDetail(shopId: string, itemId: string): Promise<StoreItemDetail> {
+    return firstValueFrom(this.http.get<StoreItemDetail>(`${this.store}/shops/${shopId}/items/${itemId}`));
   }
 
   placeOrder(input: PlaceOrderInput): Promise<Order> {

@@ -34,13 +34,6 @@ import { StoreService } from '../core/store.service';
       <main class="shop-column">
         <p class="hello">Hello, {{ firstName() }} <span>What do you need today?</span></p>
 
-        @if (auth.isShopOwner()) {
-          <a routerLink="/my-shops" class="card strip">
-            <ion-icon name="storefront" aria-hidden="true" />
-            <span><strong>Manage my shops</strong><small>Items, stock and orders</small></span>
-            <ion-icon name="chevron-forward" aria-hidden="true" class="go" />
-          </a>
-        }
         @if (activeOrder(); as order) {
           <a [routerLink]="['/orders', order.id]" class="card strip tracking">
             <ion-icon name="time-outline" aria-hidden="true" />

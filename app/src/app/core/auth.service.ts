@@ -24,6 +24,7 @@ export class AuthService {
   readonly user = this.currentUser.asReadonly();
   readonly isSignedIn = computed(() => this.currentUser() !== null);
   readonly isAdmin = computed(() => this.currentUser()?.roles.includes('PlatformAdmin') ?? false);
+  readonly isCustomer = computed(() => this.currentUser()?.roles.includes('Customer') ?? false);
   readonly isShopOwner = computed(() => this.currentUser()?.roles.includes('ShopOwner') ?? false);
 
   /** Access token for the Authorization header, or null when signed out. */

@@ -56,9 +56,9 @@ const METHOD_NAMES: Record<string, string> = { password: 'Email and password', g
             <div class="actions">
               <ion-button fill="outline" [disabled]="busy()" (click)="sendReset()">Send password reset link</ion-button>
               @if (isOwner()) {
-                <ion-button fill="outline" [disabled]="busy()" (click)="run(admin.removeShopOwner(d.user.id), 'Shop owner role removed.')">Remove shop owner role</ion-button>
+                <ion-button fill="outline" [disabled]="busy()" (click)="changeType(false)">Change to customer</ion-button>
               } @else {
-                <ion-button fill="outline" [disabled]="busy()" (click)="run(admin.makeShopOwner(d.user.id), 'This user is now a shop owner.')">Make shop owner</ion-button>
+                <ion-button fill="outline" [disabled]="busy()" (click)="changeType(true)">Change to shop owner</ion-button>
               }
               @if (d.user.suspended) {
                 <ion-button fill="outline" color="success" [disabled]="busy()" (click)="run(admin.setSuspended(d.user.id, false), 'Account reactivated.')">Reactivate account</ion-button>
@@ -153,6 +153,23 @@ export class AdminUserDetailPage {
   protected async sendReset(): Promise<void> {
     await this.act(() => this.admin.sendPasswordReset(this.userId), `A password reset link was emailed to ${this.detail()!.user.email}.`);
     await this.load();
+  }
+
+  /** An account is only one kind, so this swaps the type rather than adding to it. */
+  protected async changeType(toOwner: boolean): Promise<void> {
+    const alert = await this.alerts.create({
+      header: toOwner ? 'Change to a shop owner?' : 'Change to a customer?',
+      message: toOwner
+        ? 'This user will stop being a customer and become a shop owner. They are signed out everywhere and sign in again as an owner.'
+        : 'This user will stop being a shop owner and become a customer. They are signed out everywhere and sign in again as a customer.',
+      buttons: [{ text: 'Cancel', role: 'cancel' }, { text: 'Change account', role: 'confirm' }],
+    });
+    await alert.present();
+    if ((await alert.onDidDismiss()).role !== 'confirm') return;
+    await this.run(
+      toOwner ? this.admin.makeShopOwner(this.userId) : this.admin.removeShopOwner(this.userId),
+      toOwner ? 'This account is now a shop owner account.' : 'This account is now a customer account.',
+    );
   }
 
   protected async suspend(): Promise<void> {

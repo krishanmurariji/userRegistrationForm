@@ -8,12 +8,13 @@ import { addOutline, createOutline, imageOutline } from 'ionicons/icons';
 import { toApiError } from '../core/api-error';
 import { Category, Item, Shop, stockState } from '../core/shop.models';
 import { NotificationBell } from '../core/notification-bell';
+import { PhotoEntry, PhotoPicker, photoFromFile, releasePhoto } from '../core/photo-picker';
 import { ShopService, fileUrl } from '../core/shop.service';
 
 /** A shop's management page: open/closed switch, categories and the item list. */
 @Component({
   selector: 'app-shop',
-  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, NotificationBell, IonInput, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonToggle, IonSearchbar, IonChip, IonFab, IonFabButton, IonSpinner, IonText],
+  imports: [CurrencyPipe, ReactiveFormsModule, RouterLink, NotificationBell, PhotoPicker, IonInput, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonIcon, IonContent, IonList, IonItem, IonLabel, IonThumbnail, IonBadge, IonToggle, IonSearchbar, IonChip, IonFab, IonFabButton, IonSpinner, IonText],
   template: `
     <ion-header>
       <ion-toolbar color="primary">
@@ -70,6 +71,9 @@ import { ShopService, fileUrl } from '../core/shop.service';
           @if (quickOpen() && s.isActive) {
             <form class="panel quick-add" [formGroup]="quick" (ngSubmit)="quickAdd()" novalidate>
               <strong>Add items one after another</strong>
+              <app-photo-picker label="Pictures" [photos]="quickPhotos()" [busy]="quickBusy()"
+                (add)="addQuickPhotos($event)" (remove)="removeQuickPhoto($event)" (makeCover)="coverQuickPhoto($event)"
+                (problem)="quickError.set($event)" />
               <ion-input #quickName formControlName="name" label="Item name" labelPlacement="stacked" fill="outline" errorText="Enter the item name" />
               <div class="two-columns">
                 <ion-input formControlName="price" type="number" inputmode="decimal" min="0" step="0.01"
@@ -89,7 +93,7 @@ import { ShopService, fileUrl } from '../core/shop.service';
                 <ion-text color="success" role="status"><p class="message">Added {{ name }}. Type the next one.</p></ion-text>
               }
               <ion-button type="submit" expand="block" [disabled]="quickBusy()">Add and continue</ion-button>
-              <p class="meta">Photo, MRP, barcode and stock can be added later by opening the item.</p>
+              <p class="meta">Every item needs at least one picture. MRP, barcode and stock can be added later by opening the item.</p>
             </form>
           }
           <ion-searchbar placeholder="Search by name or barcode" [debounce]="300"
@@ -180,6 +184,8 @@ export class ShopPage {
     category: ['', Validators.maxLength(80)],
   });
   private readonly quickName = viewChild<IonInput>('quickName');
+  /** Pictures of the item being typed. Each item needs at least one. */
+  protected readonly quickPhotos = signal<PhotoEntry[]>([]);
   private latestItemsRequest = 0;
 
   constructor() {
@@ -231,12 +237,23 @@ export class ShopPage {
 
   protected async quickAdd(): Promise<void> {
     this.quick.markAllAsTouched();
+    if (this.quickPhotos().length === 0) {
+      this.quickError.set('Add at least one picture of the item.');
+      return;
+    }
     if (this.quick.invalid || this.quickBusy()) return;
     this.quickBusy.set(true);
     this.quickError.set('');
     this.quickAdded.set('');
     try {
       const v = this.quick.getRawValue();
+      // Upload the pictures first. One that already went up on an earlier try is not sent again.
+      const ready = [...this.quickPhotos()];
+      for (let index = 0; index < ready.length; index++) {
+        if (ready[index].id) continue;
+        ready[index] = { ...ready[index], id: (await this.shops.stageImage(this.shopId, ready[index].file!)).id };
+        this.quickPhotos.set([...ready]);
+      }
       const item = await this.shops.createItem(this.shopId, {
         name: v.name!.trim(),
         categoryId: null,
@@ -250,8 +267,10 @@ export class ShopPage {
         trackStock: false,
         lowStockThreshold: 5,
         openingStock: null,
+        imageIds: ready.map((p) => p.id!),
       });
       this.quickAdded.set(item.name);
+      this.quickPhotos.set([]);
       // Keep the unit and category: neighbouring items on a shelf usually share them.
       this.quick.reset({ name: '', price: null, unit: v.unit, category: v.category });
       this.categories.set(await this.shops.categories(this.shopId));
@@ -262,6 +281,21 @@ export class ShopPage {
     } finally {
       this.quickBusy.set(false);
     }
+  }
+
+  protected addQuickPhotos(files: File[]): void {
+    this.quickError.set('');
+    this.quickPhotos.update((list) => [...list, ...files.map(photoFromFile)]);
+  }
+
+  protected removeQuickPhoto(entry: PhotoEntry): void {
+    releasePhoto(entry);
+    if (entry.id) void this.shops.discardStagedImage(this.shopId, entry.id).catch(() => undefined);
+    this.quickPhotos.update((list) => list.filter((p) => p.key !== entry.key));
+  }
+
+  protected coverQuickPhoto(entry: PhotoEntry): void {
+    this.quickPhotos.update((list) => [entry, ...list.filter((p) => p.key !== entry.key)]);
   }
 
   protected async setOpen(isOpen: boolean): Promise<void> {
