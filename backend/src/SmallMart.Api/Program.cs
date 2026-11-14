@@ -122,7 +122,10 @@ builder.Services.AddRateLimiter(o =>
         _ => new FixedWindowRateLimiterOptions { PermitLimit = authPermitsPerMinute, Window = TimeSpan.FromMinutes(1) }));
 });
 
-var allowedOrigins = config.GetSection("App:AllowedOrigins").Get<string[]>() ?? [];
+// The Android app is served from https://localhost and the iOS app from capacitor://localhost. Requests are
+// authorised by the bearer token, not by the origin, so these two are always accepted next to the configured ones.
+string[] appOrigins = ["https://localhost", "capacitor://localhost"];
+var allowedOrigins = (config.GetSection("App:AllowedOrigins").Get<string[]>() ?? []).Concat(appOrigins).Distinct().ToArray();
 builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()
     // Lets the app read the file name of a download such as an export.
     .WithExposedHeaders("Content-Disposition")));

@@ -21,7 +21,8 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | Owners | Quick add, new category from the item form, duplicate an item, up to five pictures per item | Done, tested |
 | Accounts | One account type each: customer, shop owner or admin | Done, tested |
 | AI | Add items from a photo: details read by an OpenAI vision model, barcode lookup, shared catalog, daily limit | Done, tested against the real service |
-| Later | Offers and coupons, push and email notifications, saved addresses, support tickets, mobile packaging | Not started |
+| Mobile | Android and iOS app projects (Capacitor), icons, permissions, build scripts, automatic build workflow | Set up, not yet run on a device. See [docs/MOBILE.md](docs/MOBILE.md) |
+| Later | Offers and coupons, push and email notifications, native Google and Microsoft sign-in in the apps, saved addresses, support tickets | Not started |
 
 ## What the customer screens look like
 

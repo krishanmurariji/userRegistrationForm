@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import type { PublicClientApplication } from '@azure/msal-browser';
 import { environment } from '../../environments/environment';
+import { isNativeApp } from './platform';
 
 /** The parts of Google Identity Services this app uses. Loaded from Google at runtime. */
 interface GoogleIdentity {
@@ -16,12 +17,14 @@ declare global {
 
 /**
  * Gets ID tokens from Google and Microsoft in the browser. The API verifies them and signs the user in.
- * Browser only: the Android and iOS apps need native sign-in plugins, planned for the mobile packaging phase.
+ * Browser only: the Android and iOS apps use email sign-in until native Google and Microsoft sign-in is added.
  */
 @Injectable({ providedIn: 'root' })
 export class SocialAuthService {
-  readonly googleEnabled = !!environment.googleClientId;
-  readonly microsoftEnabled = !!environment.microsoftClientId;
+  // Both sign-in pages work only in a browser: Google refuses to sign people in inside an app's embedded web view,
+  // and the Microsoft sign-in window needs a browser too. The apps use email sign-in until native sign-in is added.
+  readonly googleEnabled = !!environment.googleClientId && !isNativeApp;
+  readonly microsoftEnabled = !!environment.microsoftClientId && !isNativeApp;
 
   private googleScript: Promise<GoogleIdentity> | null = null;
   private msal: Promise<PublicClientApplication> | null = null;

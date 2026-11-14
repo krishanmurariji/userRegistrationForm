@@ -19,7 +19,9 @@ export interface PhotoEntry {
 
 /** Makes an entry for a chosen file with a preview. Call {@link releasePhoto} when it is no longer needed. */
 export function photoFromFile(file: File): PhotoEntry {
-  return { key: crypto.randomUUID(), url: URL.createObjectURL(file), file };
+  // randomUUID exists only in secure contexts, and a test build opened by an address like http://192.168.x.x is not one.
+  const key = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return { key, url: URL.createObjectURL(file), file };
 }
 
 export function releasePhoto(entry: PhotoEntry): void {

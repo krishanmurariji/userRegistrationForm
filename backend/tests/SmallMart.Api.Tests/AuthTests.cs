@@ -252,6 +252,33 @@ public class AuthTests(TestApp app)
         Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
     }
 
+    [Theory]
+    [InlineData("https://localhost")]         // the Android app
+    [InlineData("capacitor://localhost")]     // the iOS app
+    public async Task The_mobile_apps_are_allowed_to_call_the_api(string origin)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Options, "/api/auth/login");
+        request.Headers.Add("Origin", origin);
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+        request.Headers.Add("Access-Control-Request-Headers", "authorization,content-type");
+
+        var response = await app.CreateClient().SendAsync(request);
+
+        Assert.Equal(origin, response.Headers.GetValues("Access-Control-Allow-Origin").Single());
+    }
+
+    [Fact]
+    public async Task Other_websites_are_not_allowed_to_call_the_api_from_a_browser()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Options, "/api/auth/login");
+        request.Headers.Add("Origin", "https://evil.example");
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+
+        var response = await app.CreateClient().SendAsync(request);
+
+        Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
+    }
+
     [Fact]
     public async Task A_tampered_access_token_is_rejected()
     {

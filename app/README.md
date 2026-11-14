@@ -32,8 +32,7 @@ or reset link from the API's log output.
 
 ## Not done yet
 
-- Google and Microsoft sign-in work in the browser only. The Android and iOS apps need native sign-in
-  plugins, planned for the mobile packaging phase.
-- Android and iOS projects (`npx cap add android`), planned for the mobile packaging phase.
-- On phones the session is kept in app-private storage. Moving it to the device keystore/keychain is
-  planned for the mobile packaging phase.
+- Google and Microsoft sign-in work in the browser only. The Android and iOS apps use email sign-in.
+- Android and iOS apps: set up but not yet run on a device. See [../docs/MOBILE.md](../docs/MOBILE.md).
+- On phones the session is kept in the app's private storage. Moving it to the device keystore/keychain is
+  recommended before launch.

@@ -1,7 +1,10 @@
 // Production settings. `ng serve` and development builds use environment.development.ts instead.
 export const environment = {
   production: true,
-  /** Base URL of the Small Mart API, without a trailing slash. */
+  /**
+   * Base URL of the Small Mart API, without a trailing slash. Replace the placeholder with the real address of your
+   * hosted API before building the website or a release of the Android and iOS apps.
+   */
   apiUrl: 'https://api.example.com',
   /** Google OAuth client id (public). Leave empty to hide the Google button. */
   googleClientId: '478008530175-79l8gdo3s7m6sohs9bge1p2o8nlee5br.apps.googleusercontent.com',

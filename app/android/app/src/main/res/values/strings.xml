@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Small Mart</string>
+    <string name="title_activity_main">Small Mart</string>
+    <string name="package_name">com.smallmart.app</string>
+    <string name="custom_url_scheme">com.smallmart.app</string>
+</resources>
