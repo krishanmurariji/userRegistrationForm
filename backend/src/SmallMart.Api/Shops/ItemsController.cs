@@ -39,7 +39,7 @@ public class ItemsController(
         else if (stock == "out")
             query = query.Where(i => i.TrackStock && i.StockQuantity <= 0);
 
-        var items = await query.OrderBy(i => i.Name).ThenBy(i => i.Id)
+        var items = await query.Include(i => i.Images).OrderBy(i => i.Name).ThenBy(i => i.Id)
             .Skip(Math.Max(skip, 0)).Take(Math.Clamp(take, 1, 200))
             .ToListAsync(ct);
         return Ok(items.Select(ItemDto.From));
@@ -50,7 +50,7 @@ public class ItemsController(
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
-        var item = await db.Items.AsNoTracking().SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
+        var item = await db.Items.AsNoTracking().Include(i => i.Images).SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
         return item is null ? NotFound() : Ok(ItemDto.From(item));
     }
 
@@ -64,10 +64,20 @@ public class ItemsController(
         if (await ValidateAsync(shopId, request, ct) is { } error)
             return error;
 
+        var staged = await TakeStagedImagesAsync(shopId, request.ImageIds, ct);
+        if (staged.Error is not null)
+            return staged.Error;
+
         var now = clock.GetUtcNow();
         var item = new Item { Id = Guid.NewGuid(), ShopId = shopId, CreatedAt = now, UpdatedAt = now };
         Apply(item, request);
         item.CategoryId = await ResolveCategoryAsync(shopId, request, ct);
+        for (var index = 0; index < staged.Images.Count; index++)
+        {
+            staged.Images[index].SortOrder = index;   // the order the owner chose; the first is the cover
+            item.Images.Add(staged.Images[index]);
+        }
+        item.Renumber();
         db.Items.Add(item);
         await db.SaveChangesAsync(ct);
         if (item.TrackStock)
@@ -88,6 +98,9 @@ public class ItemsController(
             return NotFound();
         if (await ValidateAsync(shopId, request, ct) is { } error)
             return error;
+        // Older items may have no picture. They cannot be saved until one is added.
+        if (!await db.ItemImages.AnyAsync(i => i.ItemId == id, ct))
+            return this.ApiError(StatusCodes.Status400BadRequest, "images_required", "This item has no picture. Add at least one picture before saving.");
 
         var startsTracking = request.TrackStock && !item.TrackStock;
         Apply(item, request);
@@ -98,6 +111,7 @@ public class ItemsController(
         if (startsTracking)
             await stock.SetToAsync(item, request.OpeningStock ?? 0, StockReason.Opening, null, User.GetUserId(), ct);
         await db.Entry(item).ReloadAsync(ct);
+        await db.Entry(item).Collection(i => i.Images).LoadAsync(ct);
         await ShareWithCatalogAsync(item, ct);
         return Ok(ItemDto.From(item));
     }
@@ -109,39 +123,139 @@ public class ItemsController(
             return NotFound();
         if (!await access.IsActiveAsync(shopId, ct))
             return this.ShopDeactivated();
-        var item = await db.Items.SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
+        var item = await db.Items.Include(i => i.Images).SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
         if (item is null)
             return NotFound();
 
+        var files = item.Images.Select(i => i.Path).ToList();
         db.Items.Remove(item);
         await db.SaveChangesAsync(ct);
-        images.Delete(item.ImagePath);
+        foreach (var file in files)
+            images.Delete(file);
         return NoContent();
     }
 
-    /// <summary>Replaces the item photo. Accepts a JPEG, PNG or WebP file up to 5 MB in the form field "file".</summary>
-    [HttpPost("{id:guid}/image")]
+    /// <summary>
+    /// Uploads a picture (form field "file": JPEG, PNG or WebP up to 5 MB) before its item exists, for the item form.
+    /// Pass the returned ids as <c>imageIds</c> when creating the item.
+    /// </summary>
+    [HttpPost("images")]
     [RequestSizeLimit(ImageStorage.MaxBytes + 64 * 1024)]
-    public async Task<IActionResult> UploadImage(Guid shopId, Guid id, IFormFile file, CancellationToken ct)
+    public async Task<IActionResult> StageImage(Guid shopId, IFormFile? file, CancellationToken ct)
     {
         if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
             return NotFound();
         if (!await access.IsActiveAsync(shopId, ct))
             return this.ShopDeactivated();
-        var item = await db.Items.SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
+
+        // Pictures that never became part of an item are cleaned up after a day.
+        var now = clock.GetUtcNow();
+        var stale = await db.ItemImages.Where(i => i.ShopId == shopId && i.ItemId == null && i.CreatedAt < now.AddHours(-24)).ToListAsync(ct);
+        if (stale.Count > 0)
+        {
+            db.ItemImages.RemoveRange(stale);
+            await db.SaveChangesAsync(ct);
+            foreach (var old in stale)
+                images.Delete(old.Path);
+        }
+        if (await db.ItemImages.CountAsync(i => i.ShopId == shopId && i.ItemId == null, ct) >= MaxPendingImages)
+            return this.ApiError(StatusCodes.Status409Conflict, "too_many_pending_images",
+                "Too many pictures are waiting to be used. Save the items you are adding first.");
+
+        var path = file is null ? null : await images.SaveAsync(file, $"shops/{shopId:N}/items", ct);
+        if (path is null)
+            return InvalidImage();
+        var image = new ItemImage { Id = Guid.NewGuid(), ShopId = shopId, Path = path, CreatedAt = now };
+        db.ItemImages.Add(image);
+        await db.SaveChangesAsync(ct);
+        return StatusCode(StatusCodes.Status201Created, new ItemImageDto(image.Id, ImageStorage.Url(path)!));
+    }
+
+    /// <summary>Removes a picture that was uploaded for the item form but never used.</summary>
+    [HttpDelete("images/{imageId:guid}")]
+    public async Task<IActionResult> DeleteStagedImage(Guid shopId, Guid imageId, CancellationToken ct)
+    {
+        if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
+            return NotFound();
+        var image = await db.ItemImages.SingleOrDefaultAsync(i => i.Id == imageId && i.ShopId == shopId && i.ItemId == null, ct);
+        if (image is null)
+            return NotFound();
+        db.ItemImages.Remove(image);
+        await db.SaveChangesAsync(ct);
+        images.Delete(image.Path);
+        return NoContent();
+    }
+
+    /// <summary>Adds a picture to an existing item (form field "file"). An item can have up to 5.</summary>
+    [HttpPost("{id:guid}/images")]
+    [RequestSizeLimit(ImageStorage.MaxBytes + 64 * 1024)]
+    public async Task<IActionResult> AddImage(Guid shopId, Guid id, IFormFile? file, CancellationToken ct)
+    {
+        if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
+            return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
+        var item = await db.Items.Include(i => i.Images).SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
         if (item is null)
             return NotFound();
+        if (item.Images.Count >= Item.MaxImages)
+            return TooManyImages();
 
-        var path = await images.SaveAsync(file, $"shops/{shopId:N}/items", ct);
+        var path = file is null ? null : await images.SaveAsync(file, $"shops/{shopId:N}/items", ct);
         if (path is null)
-            return this.ApiError(StatusCodes.Status400BadRequest, "invalid_image",
-                "Upload a JPEG, PNG or WebP picture up to 5 MB.");
+            return InvalidImage();
+        var now = clock.GetUtcNow();
+        var added = new ItemImage { Id = Guid.NewGuid(), ShopId = shopId, ItemId = item.Id, Path = path, SortOrder = item.Images.Count, CreatedAt = now };
+        db.ItemImages.Add(added);   // a new row with a key already set must be marked as new explicitly, or EF tries to update it
+        if (!item.Images.Contains(added))   // EF may already have put it in the list
+            item.Images.Add(added);
+        item.Renumber();
+        item.UpdatedAt = now;
+        await db.SaveChangesAsync(ct);
+        return Ok(ItemDto.From(item));
+    }
 
-        var previous = item.ImagePath;
-        item.ImagePath = path;
+    /// <summary>Removes a picture of an item. The last remaining picture cannot be removed: add another first.</summary>
+    [HttpDelete("{id:guid}/images/{imageId:guid}")]
+    public async Task<IActionResult> DeleteImage(Guid shopId, Guid id, Guid imageId, CancellationToken ct)
+    {
+        if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
+            return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
+        var item = await db.Items.Include(i => i.Images).SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
+        var image = item?.Images.SingleOrDefault(i => i.Id == imageId);
+        if (item is null || image is null)
+            return NotFound();
+        if (item.Images.Count <= 1)
+            return this.ApiError(StatusCodes.Status409Conflict, "last_image", "An item needs at least one picture. Add another one before removing this one.");
+
+        item.Images.Remove(image);
+        db.ItemImages.Remove(image);
+        item.Renumber();
         item.UpdatedAt = clock.GetUtcNow();
         await db.SaveChangesAsync(ct);
-        images.Delete(previous);
+        images.Delete(image.Path);
+        return Ok(ItemDto.From(item));
+    }
+
+    /// <summary>Makes a picture the cover: the first one, shown in lists and on the product card.</summary>
+    [HttpPost("{id:guid}/images/{imageId:guid}/cover")]
+    public async Task<IActionResult> MakeCover(Guid shopId, Guid id, Guid imageId, CancellationToken ct)
+    {
+        if (await access.RoleAsync(shopId, User.GetUserId(), ct) is null)
+            return NotFound();
+        if (!await access.IsActiveAsync(shopId, ct))
+            return this.ShopDeactivated();
+        var item = await db.Items.Include(i => i.Images).SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
+        var image = item?.Images.SingleOrDefault(i => i.Id == imageId);
+        if (item is null || image is null)
+            return NotFound();
+
+        image.SortOrder = -1;
+        item.Renumber();
+        item.UpdatedAt = clock.GetUtcNow();
+        await db.SaveChangesAsync(ct);
         return Ok(ItemDto.From(item));
     }
 
@@ -156,7 +270,7 @@ public class ItemsController(
             return NotFound();
         if (!await access.IsActiveAsync(shopId, ct))
             return this.ShopDeactivated();
-        var source = await db.Items.AsNoTracking().SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
+        var source = await db.Items.AsNoTracking().Include(i => i.Images).SingleOrDefaultAsync(i => i.Id == id && i.ShopId == shopId, ct);
         if (source is null)
             return NotFound();
 
@@ -176,10 +290,16 @@ public class ItemsController(
             IsActive = false,
             TrackStock = source.TrackStock,
             LowStockThreshold = source.LowStockThreshold,
-            ImagePath = images.Copy(source.ImagePath, $"shops/{shopId:N}/items"),
             CreatedAt = now,
             UpdatedAt = now,
         };
+        // Every picture is copied to its own file, so deleting the original never leaves the copy without one.
+        foreach (var picture in source.Images.OrderBy(i => i.SortOrder))
+        {
+            if (images.Copy(picture.Path, $"shops/{shopId:N}/items") is { } copiedPath)
+                copy.Images.Add(new ItemImage { Id = Guid.NewGuid(), ShopId = shopId, Path = copiedPath, SortOrder = picture.SortOrder, CreatedAt = now });
+        }
+        copy.Renumber();
         db.Items.Add(copy);
         await db.SaveChangesAsync(ct);
         if (copy.TrackStock)
@@ -234,6 +354,7 @@ public class ItemsController(
         }
 
         await db.Entry(item).ReloadAsync(ct);
+        await db.Entry(item).Collection(i => i.Images).LoadAsync(ct);
         return Ok(ItemDto.From(item));
     }
 
@@ -285,6 +406,33 @@ public class ItemsController(
             : null;
         await catalog.RememberAsync(barcode, new FoundProduct(item.Name, null, item.Unit, item.Mrp, categoryName, item.Description), "shop", ct);
     }
+
+    private const int MaxPendingImages = 25;
+
+    /// <summary>
+    /// Checks the picture ids of a new item (1 to 5, all uploaded by this shop and not used yet) and returns the pictures in order.
+    /// </summary>
+    private async Task<(List<ItemImage> Images, ObjectResult? Error)> TakeStagedImagesAsync(Guid shopId, List<Guid>? requested, CancellationToken ct)
+    {
+        var ids = requested ?? [];
+        if (ids.Count == 0)
+            return ([], this.ApiError(StatusCodes.Status400BadRequest, "images_required", "Add at least one picture of the item."));
+        if (ids.Count > Item.MaxImages)
+            return ([], TooManyImages());
+        if (ids.Distinct().Count() != ids.Count)
+            return ([], this.ApiError(StatusCodes.Status400BadRequest, "unknown_image", "A picture was listed twice."));
+
+        var found = await db.ItemImages.Where(i => ids.Contains(i.Id) && i.ShopId == shopId && i.ItemId == null).ToListAsync(ct);
+        if (found.Count != ids.Count)
+            return ([], this.ApiError(StatusCodes.Status400BadRequest, "unknown_image", "One of the pictures could not be found. Please add it again."));
+        return (ids.Select(id => found.Single(i => i.Id == id)).ToList(), null);
+    }
+
+    private ObjectResult TooManyImages() =>
+        this.ApiError(StatusCodes.Status409Conflict, "too_many_images", $"An item can have up to {Item.MaxImages} pictures.");
+
+    private ObjectResult InvalidImage() =>
+        this.ApiError(StatusCodes.Status400BadRequest, "invalid_image", "Upload a JPEG, PNG or WebP picture up to 5 MB.");
 
     /// <summary>The category the item goes in: the given id, or the one with the given name, created if needed.</summary>
     private async Task<Guid?> ResolveCategoryAsync(Guid shopId, ItemRequest request, CancellationToken ct)

@@ -44,6 +44,13 @@ public static class DbSeeder
                 await users.AddToRoleAsync(owner, Roles.ShopOwner);
         }
 
+        // Earlier versions also gave shop owners (and the admin) the customer role. An account is only one kind now.
+        foreach (var user in await users.GetUsersInRoleAsync(Roles.Customer))
+        {
+            if (await users.IsInRoleAsync(user, Roles.ShopOwner) || await users.IsInRoleAsync(user, Roles.PlatformAdmin))
+                await users.RemoveFromRoleAsync(user, Roles.Customer);
+        }
+
         var adminEmail = config["Seed:AdminEmail"];
         var adminPassword = config["Seed:AdminPassword"];
         if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))

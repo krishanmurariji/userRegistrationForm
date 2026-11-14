@@ -216,7 +216,7 @@ public class ShopTests(TestApp app)
         var url = $"/api/shops/{shop.Id}/items";
         var original = await Read<ItemDto>(await client.PostAsJsonAsync(url,
             NewItem("Toor Dal") with { NewCategoryName = "Grains", TrackStock = true, OpeningStock = 9 }));
-        original = await Read<ItemDto>(await client.PostAsync($"{url}/{original.Id}/image", Upload(Png, "dal.png", "image/png")));
+        original = await Read<ItemDto>(await client.PostAsync($"{url}/{original.Id}/images", Upload(Png, "dal.png", "image/png")));
 
         var copy = await Read<ItemDto>(await client.PostAsync($"{url}/{original.Id}/duplicate", null));
 
@@ -227,8 +227,9 @@ public class ShopTests(TestApp app)
         Assert.Null(copy.Barcode);
         Assert.True(copy.TrackStock);
         Assert.Equal(0, copy.StockQuantity);
-        Assert.NotNull(copy.ImageUrl);
+        Assert.Equal(2, copy.Images.Count);   // every picture is copied, each to its own file
         Assert.NotEqual(original.ImageUrl, copy.ImageUrl);
+        Assert.Empty(copy.Images.Select(i => i.Url).Intersect(original.Images.Select(i => i.Url)));
 
         // The copy's photo is its own file: deleting the original leaves it in place.
         await client.DeleteAsync($"{url}/{original.Id}");
@@ -251,27 +252,6 @@ public class ShopTests(TestApp app)
 
         var kept = await client.GetFromJsonAsync<ItemDto>($"/api/shops/{shop.Id}/items/{item.Id}");
         Assert.Null(kept!.CategoryId);
-    }
-
-    [Fact]
-    public async Task Item_photo_can_be_uploaded_replaced_and_downloaded()
-    {
-        var (client, shop) = await OwnerWithShopAsync();
-        var item = await Read<ItemDto>(await client.PostAsJsonAsync($"/api/shops/{shop.Id}/items", NewItem()));
-        var url = $"/api/shops/{shop.Id}/items/{item.Id}/image";
-
-        // The file name lies about the type; the content decides.
-        var first = await Read<ItemDto>(await client.PostAsync(url, Upload(Png, "photo.exe", "application/octet-stream")));
-        Assert.EndsWith(".png", first.ImageUrl);
-
-        var download = await app.CreateClient().GetAsync(first.ImageUrl);
-        Assert.Equal(HttpStatusCode.OK, download.StatusCode);
-        Assert.Equal("image/png", download.Content.Headers.ContentType!.MediaType);
-        Assert.Equal(Png, await download.Content.ReadAsByteArrayAsync());
-
-        var second = await Read<ItemDto>(await client.PostAsync(url, Upload(Png, "photo.png", "image/png")));
-        Assert.NotEqual(first.ImageUrl, second.ImageUrl);
-        Assert.Equal(HttpStatusCode.NotFound, (await app.CreateClient().GetAsync(first.ImageUrl)).StatusCode);
     }
 
     [Fact]

@@ -460,6 +460,38 @@ namespace SmallMart.Api.Data.Migrations
                     b.ToTable("Items");
                 });
 
+            modelBuilder.Entity("SmallMart.Api.Domain.ItemImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid>("ShopId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId", "SortOrder");
+
+                    b.HasIndex("ShopId", "CreatedAt");
+
+                    b.ToTable("ItemImages");
+                });
+
             modelBuilder.Entity("SmallMart.Api.Domain.Notification", b =>
                 {
                     b.Property<long>("Id")
@@ -939,6 +971,22 @@ namespace SmallMart.Api.Data.Migrations
                     b.Navigation("Shop");
                 });
 
+            modelBuilder.Entity("SmallMart.Api.Domain.ItemImage", b =>
+                {
+                    b.HasOne("SmallMart.Api.Domain.Item", "Item")
+                        .WithMany("Images")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("SmallMart.Api.Domain.Shop", null)
+                        .WithMany()
+                        .HasForeignKey("ShopId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+                });
+
             modelBuilder.Entity("SmallMart.Api.Domain.Notification", b =>
                 {
                     b.HasOne("SmallMart.Api.Domain.ApplicationUser", "User")
@@ -1031,6 +1079,11 @@ namespace SmallMart.Api.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Item");
+                });
+
+            modelBuilder.Entity("SmallMart.Api.Domain.Item", b =>
+                {
+                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("SmallMart.Api.Domain.Order", b =>

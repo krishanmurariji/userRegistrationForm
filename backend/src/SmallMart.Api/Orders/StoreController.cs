@@ -10,7 +10,7 @@ namespace SmallMart.Api.Orders;
 /// <summary>What customers browse: shops the admin has not deactivated, and their visible items.</summary>
 [ApiController]
 [Route("api/store")]
-[Authorize]
+[Authorize(Roles = Roles.Customer)]
 public class StoreController(AppDbContext db) : ControllerBase
 {
     /// <summary>Shops, open ones first. <c>search</c> matches the name, city or pincode.</summary>
@@ -101,6 +101,20 @@ public class StoreController(AppDbContext db) : ControllerBase
             .Select(c => new StoreCategoryDto(c.Id, c.Name))
             .ToListAsync(ct);
         return Ok(new StoreShopDetailDto(StoreShopDto.From(shop), categories));
+    }
+
+    /// <summary>One visible item with all its pictures, for the product page.</summary>
+    [HttpGet("shops/{id:guid}/items/{itemId:guid}")]
+    public async Task<IActionResult> ItemDetail(Guid id, Guid itemId, CancellationToken ct)
+    {
+        var item = await db.Items.AsNoTracking().Include(i => i.Images).Include(i => i.Shop)
+            .SingleOrDefaultAsync(i => i.Id == itemId && i.ShopId == id && i.IsActive && i.Shop.IsActive, ct);
+        if (item is null)
+            return NotFound();
+        return Ok(new StoreItemDetailDto(
+            StoreItemDto.From(item),
+            item.Images.OrderBy(i => i.SortOrder).Select(i => ImageStorage.Url(i.Path)!).ToList(),
+            StoreShopDto.From(item.Shop)));
     }
 
     /// <summary>Visible items of a shop, sorted by name.</summary>

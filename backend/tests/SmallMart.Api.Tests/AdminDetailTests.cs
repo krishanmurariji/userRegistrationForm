@@ -158,7 +158,7 @@ public class AdminDetailTests(TestApp app)
         Assert.Contains($",{email},Customer,", users);
         Assert.Contains("\"'=HYPERLINK(\"\"http://evil\"\",\"\"x\"\")\"", users);   // neutralised and quoted
         Assert.DoesNotContain("\n=HYPERLINK", users);
-        Assert.Contains($"{ownerEmail},Customer + ShopOwner,", users);
+        Assert.Contains($"{ownerEmail},ShopOwner,", users);
 
         var shops = await admin.GetStringAsync("/api/admin/shops/export");
         Assert.Contains("\"Comma, \"\"Quote\"\" Store\"", shops);

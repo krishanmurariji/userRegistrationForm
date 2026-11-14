@@ -31,6 +31,15 @@ public class TestApp : WebApplicationFactory<Program>
 
     private readonly string _uploads = Path.Combine(Path.GetTempPath(), $"smallmart-test-{Guid.NewGuid():N}");
 
+    /// <summary>
+    /// Every test client adds one picture to a new item that was sent without any, because an item cannot be
+    /// created without a picture and most tests are about something else. Send the header
+    /// <see cref="NoAutoImage"/> to test the real rule.
+    /// </summary>
+    public const string NoAutoImage = "X-Test-No-Images";
+
+    public new HttpClient CreateClient() => CreateDefaultClient(new AutoImageHandler());
+
     public FakeEmailSender Emails { get; } = new();
     public FakeAi Ai { get; } = new();
 
@@ -97,7 +106,9 @@ public class TestApp : WebApplicationFactory<Program>
         using (var scope = Services.CreateScope())
         {
             var users = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            await users.AddToRoleAsync((await users.FindByEmailAsync(email))!, Roles.ShopOwner);
+            var user = (await users.FindByEmailAsync(email))!;
+            await users.RemoveFromRoleAsync(user, Roles.Customer);   // an account is only one kind
+            await users.AddToRoleAsync(user, Roles.ShopOwner);
         }
         var auth = await LoginAsync(client, email, password); // new token that carries the role
         return (client, auth, email, password);
@@ -143,6 +154,45 @@ public partial class FakeEmailSender : IEmailSender
 
     [GeneratedRegex(@"userId=([0-9a-f-]+)&token=([A-Za-z0-9_-]+)")]
     private static partial Regex LinkPattern();
+}
+
+/// <summary>See <see cref="TestApp.NoAutoImage"/>.</summary>
+public sealed partial class AutoImageHandler : DelegatingHandler
+{
+    private static readonly byte[] Png = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=");
+
+    [GeneratedRegex("^/api/shops/[0-9a-fA-F-]{36}/items$")]
+    private static partial Regex CreateItemPath();
+
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+    {
+        var optedOut = request.Headers.Remove(TestApp.NoAutoImage);
+        if (!optedOut && request.Method == HttpMethod.Post && request.RequestUri is { } uri &&
+            CreateItemPath().IsMatch(uri.AbsolutePath) && request.Content is not null &&
+            request.Content.Headers.ContentType?.MediaType == "application/json" &&
+            System.Text.Json.Nodes.JsonNode.Parse(await request.Content.ReadAsStringAsync(ct)) is System.Text.Json.Nodes.JsonObject body &&
+            body["imageIds"] is null)
+        {
+            var file = new ByteArrayContent(Png);
+            file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+            using var stage = new HttpRequestMessage(HttpMethod.Post, uri.GetLeftPart(UriPartial.Path) + "/images")
+            {
+                Content = new MultipartFormDataContent { { file, "file", "auto.png" } },
+            };
+            stage.Headers.Authorization = request.Headers.Authorization;
+            using var staged = await base.SendAsync(stage, ct);
+            // When the picture cannot be staged (not a member, shop deactivated) send the request as it was,
+            // so the endpoint gives the same refusal the test expects.
+            if (staged.IsSuccessStatusCode)
+            {
+                var id = (await staged.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(cancellationToken: ct)).GetProperty("id").GetGuid();
+                body["imageIds"] = new System.Text.Json.Nodes.JsonArray(id);
+            }
+            request.Content = new StringContent(body.ToJsonString(), System.Text.Encoding.UTF8, "application/json");
+        }
+        return await base.SendAsync(request, ct);
+    }
 }
 
 /// <summary>

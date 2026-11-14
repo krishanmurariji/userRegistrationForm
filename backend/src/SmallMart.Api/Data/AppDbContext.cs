@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ShopMember> ShopMembers => Set<ShopMember>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Item> Items => Set<Item>();
+    public DbSet<ItemImage> ItemImages => Set<ItemImage>();
     public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderItem> OrderItems => Set<OrderItem>();
@@ -129,6 +130,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         });
 
         builder.Entity<AiScan>(b => b.HasIndex(s => new { s.ShopId, s.At }));
+
+        builder.Entity<ItemImage>(b =>
+        {
+            b.Property(i => i.Path).HasMaxLength(300);
+            b.HasIndex(i => new { i.ItemId, i.SortOrder });
+            b.HasIndex(i => new { i.ShopId, i.CreatedAt });
+            b.HasOne(i => i.Item).WithMany(item => item.Images).HasForeignKey(i => i.ItemId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne<Shop>().WithMany().HasForeignKey(i => i.ShopId).OnDelete(DeleteBehavior.Cascade);
+        });
 
         builder.Entity<StockMovement>(b =>
         {

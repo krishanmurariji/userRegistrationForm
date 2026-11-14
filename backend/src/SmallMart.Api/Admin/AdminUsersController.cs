@@ -98,7 +98,7 @@ public class AdminUsersController(
             return this.ApiError(StatusCodes.Status400BadRequest, "invalid_account",
                 string.Join(" ", result.Errors.Select(e => e.Description)));
 
-        await users.AddToRolesAsync(user, [Roles.ShopOwner, Roles.Customer]);
+        await users.AddToRoleAsync(user, Roles.ShopOwner);
         await audit.WriteAsync("user.shop_owner_created", $"Created shop owner {user.Email}", "user", user.Id, ct: ct);
 
         if (!hasPassword)
@@ -114,7 +114,10 @@ public class AdminUsersController(
         return StatusCode(StatusCodes.Status201Created, await ToDtoAsync(user));
     }
 
-    /// <summary>Makes an existing customer a shop owner. Takes effect the next time their sign-in refreshes.</summary>
+    /// <summary>
+    /// Changes a customer into a shop owner. The account stops being a customer: it loses the shopping screens and is
+    /// signed out everywhere so the change shows at once. Refused while the customer has an order in progress.
+    /// </summary>
     [HttpPost("{id:guid}/shop-owner")]
     public async Task<IActionResult> MakeShopOwner(Guid id, CancellationToken ct)
     {
@@ -126,17 +129,23 @@ public class AdminUsersController(
 
         if (!await users.IsInRoleAsync(user, Roles.ShopOwner))
         {
+            if (await db.Orders.AnyAsync(o => o.CustomerId == id && o.Status != OrderStatus.Delivered && o.Status != OrderStatus.Cancelled, ct))
+                return this.ApiError(StatusCodes.Status409Conflict, "has_open_orders",
+                    "This customer has an order in progress. Change the account after it is delivered or cancelled.");
+
+            await users.RemoveFromRoleAsync(user, Roles.Customer);
             await users.AddToRoleAsync(user, Roles.ShopOwner);
-            await audit.WriteAsync("user.made_shop_owner", $"Made {user.Email} a shop owner", "user", user.Id, ct: ct);
+            await tokens.RevokeAllForUserAsync(user.Id, ct);
+            await audit.WriteAsync("user.made_shop_owner", $"Changed {user.Email} from customer to shop owner", "user", user.Id, ct: ct);
             await notifier.ToUserAsync(user.Id, "You can now open a shop",
-                "Your account is a shop owner account. Sign out and in again, then choose \"Manage my shops\".", "/my-shops", ct);
+                "Your account is now a shop owner account and no longer a customer account. Past orders stay in your history.", "/my-shops", ct);
         }
         return Ok(await ToDtoAsync(user));
     }
 
     /// <summary>
-    /// Takes the shop owner role away. Refused while the user still owns shops, so no shop is left without
-    /// an owner who can manage it; deactivate those shops instead.
+    /// Changes a shop owner back into a customer. Refused while the user still owns shops, so no shop is left
+    /// without an owner who can manage it; deactivate those shops instead.
     /// </summary>
     [HttpDelete("{id:guid}/shop-owner")]
     public async Task<IActionResult> RemoveShopOwner(Guid id, CancellationToken ct)
@@ -151,7 +160,9 @@ public class AdminUsersController(
         if (await users.IsInRoleAsync(user, Roles.ShopOwner))
         {
             await users.RemoveFromRoleAsync(user, Roles.ShopOwner);
-            await audit.WriteAsync("user.shop_owner_removed", $"Removed shop owner role from {user.Email}", "user", user.Id, ct: ct);
+            await users.AddToRoleAsync(user, Roles.Customer);
+            await tokens.RevokeAllForUserAsync(user.Id, ct);
+            await audit.WriteAsync("user.shop_owner_removed", $"Changed {user.Email} from shop owner to customer", "user", user.Id, ct: ct);
         }
         return Ok(await ToDtoAsync(user));
     }

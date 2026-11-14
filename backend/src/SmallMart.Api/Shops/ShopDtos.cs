@@ -29,6 +29,10 @@ public record CategoryRequest([Required, MaxLength(80)] string Name, int SortOrd
 
 public record CategoryDto(Guid Id, string Name, int SortOrder, int ItemCount);
 
+/// <param name="ImageIds">
+/// When creating an item: the ids of 1 to 5 pictures already uploaded with <c>POST items/images</c>, first one is the cover.
+/// Ignored when updating: pictures of an existing item are changed with their own endpoints.
+/// </param>
 /// <param name="NewCategoryName">
 /// Puts the item in a category with this name, creating the category when the shop does not have it yet.
 /// Used instead of <c>CategoryId</c>, so an item and its category can be added in one step.
@@ -45,17 +49,23 @@ public record ItemRequest(
     bool TrackStock = false,
     [Range(0, 100000)] int LowStockThreshold = 5,
     [Range(0, 1000000)] int? OpeningStock = null,
-    [MaxLength(80)] string? NewCategoryName = null);
+    [MaxLength(80)] string? NewCategoryName = null,
+    List<Guid>? ImageIds = null);
 
 public record ItemDto(
     Guid Id, Guid? CategoryId, string Name, string? Description, decimal Price, decimal? Mrp,
     string Unit, string? Barcode, bool IsActive, string? ImageUrl,
-    bool TrackStock, int StockQuantity, int LowStockThreshold)
+    bool TrackStock, int StockQuantity, int LowStockThreshold, IReadOnlyList<ItemImageDto> Images)
 {
+    /// <summary>Needs the item's <c>Images</c> loaded.</summary>
     public static ItemDto From(Item i) => new(
         i.Id, i.CategoryId, i.Name, i.Description, i.Price, i.Mrp, i.Unit, i.Barcode, i.IsActive, ImageStorage.Url(i.ImagePath),
-        i.TrackStock, i.StockQuantity, i.LowStockThreshold);
+        i.TrackStock, i.StockQuantity, i.LowStockThreshold,
+        i.Images.OrderBy(x => x.SortOrder).Select(x => new ItemImageDto(x.Id, ImageStorage.Url(x.Path)!)).ToList());
 }
+
+/// <summary>A picture of an item. <c>Url</c> is a path on the API; the first picture of an item is its cover.</summary>
+public record ItemImageDto(Guid Id, string Url);
 
 /// <summary>
 /// A stock change made by hand. Give exactly one of <paramref name="Change"/> (add or remove this many)

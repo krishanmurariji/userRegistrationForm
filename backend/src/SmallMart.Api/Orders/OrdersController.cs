@@ -14,7 +14,7 @@ namespace SmallMart.Api.Orders;
 /// <summary>A customer's own orders: placing, paying by UPI, following and cancelling.</summary>
 [ApiController]
 [Route("api/orders")]
-[Authorize]
+[Authorize(Roles = Roles.Customer)]
 public partial class OrdersController(
     AppDbContext db, ImageStorage images, StockService stock, Notifier notifier, TimeProvider clock) : ControllerBase
 {

@@ -68,7 +68,7 @@ public class AdminTests(TestApp app)
         var admin = await app.AdminClientAsync();
 
         Assert.Equal([Roles.Customer], (await FindUser(admin, customerEmail)).Roles);
-        Assert.Equal([Roles.Customer, Roles.ShopOwner], (await FindUser(admin, ownerEmail)).Roles);
+        Assert.Equal([Roles.ShopOwner], (await FindUser(admin, ownerEmail)).Roles);
 
         var owners = await admin.GetFromJsonAsync<Page<AdminUserDto>>($"/api/admin/users?role={Roles.ShopOwner}&take=200");
         Assert.Contains(owners!.Items, u => u.Email == ownerEmail);
@@ -88,7 +88,7 @@ public class AdminTests(TestApp app)
 
         var created = await Read<AdminUserDto>(await admin.PostAsJsonAsync("/api/admin/users/shop-owners",
             new CreateShopOwnerRequest(email, "Sunita Rao", "Owner12345")));
-        Assert.Equal([Roles.Customer, Roles.ShopOwner], created.Roles);
+        Assert.Equal([Roles.ShopOwner], created.Roles);
         Assert.True(created.EmailConfirmed);
         Assert.Equal(0, app.Emails.CountFor(email));
 

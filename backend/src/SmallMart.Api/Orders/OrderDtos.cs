@@ -29,6 +29,9 @@ public record StoreItemDto(
 
 public record StoreShopDetailDto(StoreShopDto Shop, IReadOnlyList<StoreCategoryDto> Categories);
 
+/// <summary>One product with all its pictures and the shop that sells it, for the product page.</summary>
+public record StoreItemDetailDto(StoreItemDto Item, IReadOnlyList<string> ImageUrls, StoreShopDto Shop);
+
 /// <summary>A category name used by one or more shops, for the tiles on the customer home page.</summary>
 public record StoreCategoryTileDto(string Name, int ItemCount, string? ImageUrl);
 

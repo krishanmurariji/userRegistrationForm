@@ -83,6 +83,35 @@ public class Item
     public int LowStockThreshold { get; set; } = 5;
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
+
+    /// <summary>All pictures of the item. At least one is required and at most <see cref="MaxImages"/> are allowed.</summary>
+    public List<ItemImage> Images { get; set; } = [];
+
+    public const int MaxImages = 5;
+
+    /// <summary>Numbers the pictures 0, 1, 2… in their current order and makes the first one the cover.</summary>
+    public void Renumber()
+    {
+        var ordered = Images.OrderBy(i => i.SortOrder).ThenBy(i => i.CreatedAt).ToList();
+        for (var index = 0; index < ordered.Count; index++)
+            ordered[index].SortOrder = index;
+        ImagePath = ordered.FirstOrDefault()?.Path;
+    }
+}
+
+/// <summary>
+/// One picture of an item. A picture uploaded in the item form before the item exists has no <see cref="ItemId"/> yet;
+/// it is attached when the item is saved, and removed after a day if it never is.
+/// </summary>
+public class ItemImage
+{
+    public Guid Id { get; set; }
+    public Guid ShopId { get; set; }
+    public Guid? ItemId { get; set; }
+    public Item? Item { get; set; }
+    public string Path { get; set; } = string.Empty;
+    public int SortOrder { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
 }
 
 public enum StockReason
