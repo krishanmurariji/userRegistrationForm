@@ -29,6 +29,14 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
           <div class="centered"><ion-spinner name="crescent" aria-label="Loading" /></div>
         } @else {
           <form [formGroup]="form" (ngSubmit)="save()" novalidate class="stack">
+            @if (!itemId) {
+              <a class="scan-link" [routerLink]="['/shops', shopId, 'scan']">
+                <strong>Have the product in your hand?</strong>
+                <span>Take a photo and the details are filled in for you. You only add the price.</span>
+                <span class="go">Fill in from a photo</span>
+              </a>
+            }
+
             <div class="photo-row">
               <div class="photo">
                 @if (photoUrl(); as src) { <img [src]="src" alt="Item photo" /> } @else { <span>No photo</span> }

@@ -461,6 +461,28 @@
 }
 
 /* Adding items from a photo. */
+.page-column .scan-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-primary);
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  color: var(--ion-color-dark);
+  text-decoration: none;
+
+  span {
+    color: var(--ion-color-medium-shade);
+    font-size: 0.9rem;
+  }
+
+  .go {
+    color: var(--ion-color-primary);
+    font-weight: 700;
+  }
+}
+
 .page-column {
   .tips {
     margin: 0 0 12px;
