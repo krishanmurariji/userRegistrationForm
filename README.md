@@ -18,7 +18,8 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | 6 | Inventory: stock counting, adjustments with history, low-stock warnings, stock checks on orders | Done, tested |
 | 6 | In-app notifications for shops and customers | Done, tested |
 | Design | Customer redesign: search header, category tiles, product grid, cart bar, bottom navigation, order tracker | Done, tested |
-| Owners | Quick add, new category from the item form, duplicate an item | Done, tested |
+| Owners | Quick add, new category from the item form, duplicate an item, up to five pictures per item | Done, tested |
+| Accounts | One account type each: customer, shop owner or admin | Done, tested |
 | AI | Add items from a photo: details read by an OpenAI vision model, barcode lookup, shared catalog, daily limit | Done, tested against the real service |
 | Later | Offers and coupons, push and email notifications, saved addresses, support tickets, mobile packaging | Not started |
 
@@ -32,9 +33,15 @@ The product pictures in them are generated placeholders.
 
 | Role | How the account is created | What it can do |
 |---|---|---|
-| Customer | Signing up in the app (email, Google or Microsoft) | Shop and order (coming in phase 3) |
-| Shop owner | Only by the platform admin: a new account, or by promoting a customer | Open shops and manage their items |
+| Customer | Signing up in the app (email, Google or Microsoft) | Browse, order and pay |
+| Shop owner | Only by the platform admin: a new account, or by changing a customer | Open shops and manage their items and orders |
 | Platform admin | Only by the startup seed (`Seed:AdminEmail`, `Seed:AdminPassword`) | The admin section |
+
+**An account is exactly one of these.** A shop owner cannot shop and a customer cannot manage a shop, so each
+kind of account has its own home screen and the other kind's API endpoints answer 403. The admin changes an
+account between customer and shop owner (Users, then the account's menu). That signs the user out everywhere,
+is refused while a customer has an order in progress, and is refused when changing a shop owner back to a
+customer while they still own shops. On startup, accounts that had two roles (an earlier version) are tidied.
 
 The admin section (`/admin` in the app) has an overview with headline numbers, a user list (add shop owner,
 make or remove shop owner, suspend, reactivate), a shop list (deactivate, activate) and an activity log of
@@ -128,12 +135,26 @@ or UPI app and confirms or rejects. A UPI order cannot be accepted until the pay
 transaction ID can pay for one order only, and every confirmation is in the activity log. There are no
 gateway fees and no automatic refunds: a cancelled paid order tells the shop to refund by hand.
 
+Item pictures:
+
+| Method and path | Purpose |
+|---|---|
+| `POST /api/shops/{id}/items/images` | Upload a picture for an item that does not exist yet (form field `file`); returns its id |
+| `POST /api/shops/{id}/items` with `imageIds` | Create the item with 1 to 5 of those pictures; the first is the cover. Required |
+| `POST /api/shops/{id}/items/{itemId}/images` | Add a picture to a saved item (up to 5) |
+| `DELETE /api/shops/{id}/items/{itemId}/images/{imageId}` | Remove one; the last picture cannot be removed |
+| `POST /api/shops/{id}/items/{itemId}/images/{imageId}/cover` | Make a picture the cover |
+| `GET /api/store/shops/{id}/items/{itemId}` | Customers: one item with all its pictures (the product page) |
+
+Pictures uploaded but never used are deleted after a day, and a shop can have 25 waiting at a time.
+Items from before this change keep their picture. An older item with no picture needs one added before it can be saved.
+
 Adding items faster:
 
 | Method and path | Purpose |
 |---|---|
 | `POST /api/shops/{id}/items` with `newCategoryName` | Add an item and, if needed, its category in one step |
-| `POST /api/shops/{id}/items/{itemId}/duplicate` | A hidden copy of an item, photo included, to edit into a variant |
+| `POST /api/shops/{id}/items/{itemId}/duplicate` | A hidden copy of an item, every picture included, to edit into a variant |
 | `GET /api/shops/{id}/items/scan/status` | Whether photo scanning is set up, and scans left today |
 | `POST /api/shops/{id}/items/scan` | Read a product photo (form field `file`) into draft items |
 

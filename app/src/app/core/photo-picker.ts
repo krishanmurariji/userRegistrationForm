@@ -102,10 +102,10 @@ export class PhotoPicker {
     const fine = pictures.filter((f) => f.size <= MAX_PHOTO_BYTES);
     const accepted = fine.slice(0, Math.max(room, 0));
 
+    // The pictures go first: the page clears its message when it receives them, so the note must come after.
+    if (accepted.length) this.add.emit(accepted);
     if (pictures.length < chosen.length) this.problem.emit('Only JPEG, PNG or WebP pictures can be used.');
     else if (fine.length < pictures.length) this.problem.emit('A picture is larger than 5 MB. Please choose a smaller one.');
     else if (accepted.length < fine.length) this.problem.emit(`An item can have up to ${this.max()} pictures. Only the first ${accepted.length} were added.`);
-    else this.problem.emit('');
-    if (accepted.length) this.add.emit(accepted);
   }
 }
