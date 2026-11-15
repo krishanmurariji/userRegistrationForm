@@ -1,0 +1,8 @@
+# Gets and renews a free HTTPS certificate for your domain by itself and forwards requests to the API.
+{$DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 8MB
+	}
+	reverse_proxy api:8080
+}

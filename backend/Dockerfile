@@ -14,5 +14,7 @@ COPY --from=build /app .
 ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true \
     DOTNET_gcServer=0 \
     DOTNET_EnableDiagnostics=0
+# Folder for uploaded pictures when they are kept on disk (a volume is mounted here).
+RUN mkdir -p /data && chown $APP_UID /data
 USER $APP_UID
 ENTRYPOINT ["/bin/sh", "-c", "ASPNETCORE_URLS=http://+:${PORT:-8080} exec dotnet SmallMart.Api.dll"]

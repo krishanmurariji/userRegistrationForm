@@ -1,0 +1,65 @@
+# Runs Small Mart on one small server: the API, its PostgreSQL database and Caddy (automatic HTTPS).
+# Settings come from deploy/.env (copy .env.example). Start with:  docker compose up -d --build
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: smallmart
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+      POSTGRES_DB: smallmart
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smallmart"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build: ../backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      PORT: "8080"
+      ConnectionStrings__Default: Host=db;Database=smallmart;Username=smallmart;Password=${DB_PASSWORD}
+      Database__MigrateOnStartup: "true"
+      App__DisableHttpsRedirect: "true"
+      App__ClientUrl: ${CLIENT_URL:-https://${DOMAIN}}
+      Jwt__Key: ${JWT_KEY:?Set JWT_KEY in .env}
+      Seed__AdminEmail: ${ADMIN_EMAIL:?Set ADMIN_EMAIL in .env}
+      Seed__AdminPassword: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
+      Storage__Root: /data/uploads
+      Storage__PrivateRoot: /data/private
+      Smtp__Host: ${SMTP_HOST:-}
+      Smtp__Port: ${SMTP_PORT:-587}
+      Smtp__Username: ${SMTP_USERNAME:-}
+      Smtp__Password: ${SMTP_PASSWORD:-}
+      Smtp__FromEmail: ${SMTP_FROM_EMAIL:-}
+      Ai__OpenAiApiKey: ${OPENAI_API_KEY:-}
+    volumes:
+      - uploads:/data
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  dbdata:
+  uploads:
+  caddy_data:
+  caddy_config:

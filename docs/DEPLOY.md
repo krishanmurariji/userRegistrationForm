@@ -1,77 +1,120 @@
-# Deploying the API for free (Render + Supabase)
+# Deploying the API for free, always on (Oracle Cloud Always Free)
 
-Cost: nothing, and no credit card. The API runs on **Render** (free web service, built from `backend/Dockerfile`),
-the data lives in your **Supabase** free PostgreSQL database. Pictures (item photos, shop logos, UPI payment
-screenshots) are stored in that same database, because a free host wipes its disk whenever it restarts.
+Free services that sleep (Render, Koyeb and similar) are not good for a shop: the first customer of the day waits a
+minute. Oracle Cloud's **Always Free** tier gives you a real small server that stays on 24 hours a day, with a disk
+that is kept, at no cost. This guide runs everything on that one server:
 
-**Status:** the code was tested locally (152 tests; the published app was run in Production mode and migrated a
-fresh database, seeded the admin, logged in and answered `/health`). The Docker image and the Render and Supabase
-steps below could not be run in the development environment, so expect to fix small things on the first deploy.
+- the **API** (this repository's `backend/`),
+- its **PostgreSQL** database (kept on the server's disk, with a backup script),
+- **Caddy**, which gets a free HTTPS certificate for you automatically,
+- uploaded pictures on the server's disk.
 
-## What the free plan means in practice
+**Status:** the code was tested locally (152 tests; the published API was run in Production mode, created a fresh
+database, seeded the admin, logged in and answered `/health`). The compose file passes `docker compose config`.
+The Docker images and the steps on Oracle could not be run in the development environment, so expect to fix small
+things on the first deploy and send me the output of any failing command.
 
-- Render's free service **goes to sleep after 15 minutes without a request**. The next request takes 30 to 60 seconds
-  while it wakes up. A free monitor such as UptimeRobot pinging `/health` every 5 minutes keeps it awake.
-- Supabase's free database is **500 MB**, shared by your data and the pictures. A typical photo is 100 to 500 KB,
-  so this holds a few thousand pictures. Move pictures to Supabase Storage or similar when you outgrow it.
-- Supabase pauses a free project after a week of no use. Restore it from the Supabase dashboard.
-- This is fine for trying the app with real people. For a busy shop, use a paid plan (about 7 USD a month on Render).
+## What you need
 
-## Step 1: the database (Supabase)
+- A phone number and a **credit or debit card for identity verification** (Oracle does not charge it for Always Free
+  resources; some Indian cards are refused, a virtual card often works).
+- 45 minutes.
+- Windows PowerShell has `ssh` built in, nothing to install.
 
-1. Supabase, open your project, press **Connect** at the top.
-2. Choose **Session pooler** (not "Direct connection": Render cannot reach that one because it needs IPv6).
-3. Copy the details: host (like `aws-0-ap-south-1.pooler.supabase.com`), port `5432`, user (like
-   `postgres.abcdefghijk`), and your database password (reset it on Database settings if you forgot it).
-4. Write the connection string like this (one line):
-   ```
-   Host=aws-0-ap-south-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.abcdefghijk;Password=YOUR_PASSWORD;SSL Mode=Require;Trust Server Certificate=true
-   ```
-   If the password has `;` or `=` in it, put it in double quotes: `Password="a;b=c"`.
+## Step 1: create the server
 
-## Step 2: the API (Render)
+1. Sign up at oracle.com/cloud/free. Choose a **home region near your customers** (for India: Mumbai or Hyderabad).
+   You cannot change the region later.
+2. In the console: **Compute, Instances, Create instance**.
+   - Image: **Ubuntu 24.04** (or 22.04).
+   - Shape: **Ampere, VM.Standard.A1.Flex**, 2 OCPU and 12 GB memory (the free allowance is up to 4 OCPU and 24 GB).
+     If it says "Out of host capacity", try again later or in another availability domain, or choose the AMD shape
+     **VM.Standard.E2.1.Micro** (1 GB, enough for a small shop; the setup script adds swap).
+   - Networking: keep the defaults and make sure **Assign a public IPv4 address** is on.
+   - SSH keys: **Generate a key pair** and download the private key (keep it safe, you cannot download it again).
+3. When it is running, copy the **Public IP address**.
+4. Open the web ports. Instance page, **Subnet, Default security list, Add ingress rules**: source `0.0.0.0/0`,
+   TCP, destination port `80`; add a second rule for port `443`. (Without this nothing from the internet reaches the
+   server.)
+5. Optional but wise: Oracle can reclaim Always Free servers that sit almost idle for 7 days. Upgrading the account to
+   "Pay as you go" removes that risk, and you are still not charged while you stay inside the free limits.
 
-1. Push this code to GitHub on `master` (it must contain `render.yaml`).
-2. On render.com sign up with GitHub. **New, Blueprint**, pick this repository. Render reads `render.yaml`.
-3. Render asks for four values:
-   | Name | What to enter |
-   |---|---|
-   | `ConnectionStrings__Default` | the string from step 1 |
-   | `Seed__AdminEmail` | the email you will use as platform admin |
-   | `Seed__AdminPassword` | a strong password (8+ characters, with a digit). Only used the first time. |
-   | `App__ClientUrl` | where the web app will live, for example `https://smallmart.example.com`. A placeholder is fine for now. |
-4. Press **Apply**. The first build takes about 5 to 10 minutes.
-5. When it is live, open `https://smallmart-api.onrender.com/health` (your own name is shown on the dashboard).
-   You should see `{"status":"ok"}`. **That `https://...onrender.com` address is your API address.**
+## Step 2: a free address
 
-The database tables are created automatically on every start (`Database__MigrateOnStartup`), and `Jwt__Key` is
-generated by Render. Do not delete `Jwt__Key` later: it signs everyone's login tokens.
+HTTPS certificates need a name, not a bare IP.
 
-Updates deploy automatically when you push to `master`.
+1. Go to duckdns.org, sign in, create a name such as `mysmallmart`, and set its IP to the server's public IP.
+2. Your address is `mysmallmart.duckdns.org`. (Your own domain works the same: point an A record at the IP.)
 
-## Step 3: use the address
+## Step 3: set up the server
 
-- **Release builds:** put the address in the repository variable `API_URL` (GitHub, Settings, Secrets and variables,
-  Actions, Variables) or in the `api_url` box of the Release workflow. See [RELEASING.md](RELEASING.md).
-- **Testing the web app:** in `app/src/environments/environment.ts` set `apiUrl` to the address.
-- **A web version of the app on another address:** add that address to the Render environment variable
-  `App__AllowedOrigins__0` (the Windows, Android and iOS apps are always allowed).
+In PowerShell on your computer (use your downloaded key's path and your IP):
 
-## Optional settings (Render, Environment)
+```bash
+ssh -i C:\path\to\ssh-key.key ubuntu@YOUR_SERVER_IP
+```
 
-| Name | Purpose |
+On the server:
+
+```bash
+git clone https://github.com/krishanmurariji/userRegistrationForm.git smallmart
+cd smallmart
+sudo bash deploy/setup.sh
+cd deploy
+cp .env.example .env
+nano .env
+```
+
+Fill in `.env` (Ctrl+O, Enter, Ctrl+X to save in nano). You can make the random values with:
+
+```bash
+openssl rand -hex 16      # for DB_PASSWORD
+openssl rand -base64 36   # for JWT_KEY
+```
+
+| Name | Value |
 |---|---|
-| `Smtp__Host`, `Smtp__Port`, `Smtp__Username`, `Smtp__Password`, `Smtp__FromEmail` | Real emails (confirmation, password reset). Without them emails are only written to the log. Zoho: `smtp.zoho.in` (or `.com`), port 587. |
-| `Ai__OpenAiApiKey` | Turns on adding items from a photo. |
-| `Authentication__Google__ClientIds__0`, `Authentication__Microsoft__ClientIds__0` | Already set in `appsettings.json`; only change them if you use other client ids. |
+| `DOMAIN` | `mysmallmart.duckdns.org` |
+| `DB_PASSWORD`, `JWT_KEY` | the random values above |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | your platform admin login (8+ characters, with a digit) |
+| the rest | optional: email (Zoho), OpenAI key |
 
-Never put secrets in `render.yaml` or in git. Enter them on the Render dashboard.
+If the repository is private, clone with a GitHub personal access token (`https://TOKEN@github.com/...`).
 
-## If something goes wrong
+Start everything (the first build takes several minutes):
 
-- Open the service's **Logs** on Render. A first-run line "Failed executing DbCommand ... __EFMigrationsHistory" is
-  normal (the table does not exist yet).
-- "Jwt:Key must be set": the `Jwt__Key` variable is missing.
-- Database connection errors: use the **Session pooler** string, check the password, keep `SSL Mode=Require`.
-- Pictures from before a switch do not move on their own: if you ran with files on disk earlier, those pictures
-  are not in the database.
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+## Step 4: check
+
+Open `https://mysmallmart.duckdns.org/health`. You should see `{"status":"ok"}`. **That `https://...` address is your
+API address.** Use it as `api_url` in the Release workflow (see [RELEASING.md](RELEASING.md)).
+
+The first request may wait a few seconds while Caddy gets the certificate. If it fails, run
+`docker compose logs caddy api` and check that ports 80 and 443 are open in step 1.4.
+
+## Updating and operating
+
+```bash
+cd ~/smallmart && bash deploy/update.sh        # get the newest code and restart
+cd ~/smallmart/deploy && docker compose logs -f api   # watch the logs
+bash ~/smallmart/deploy/backup.sh              # backup now (database + pictures) into ~/smallmart-backups
+```
+
+Backup daily: `crontab -e`, add `0 3 * * * bash /home/ubuntu/smallmart/deploy/backup.sh`. Copy the backups off the
+server now and then (for example with `scp`), because a backup on the same server does not protect you if the
+server is lost.
+
+The database tables are created and updated automatically each time the API starts. Never lose `JWT_KEY`: it signs
+everyone's login tokens.
+
+## Other free always-on options
+
+- **Google Cloud e2-micro** ("Always Free", US regions only, 1 GB): the same files work on it, only step 1 differs.
+- **Azure App Service Free (F1)** and similar plans have a daily CPU allowance and idle out, so they are not good
+  for a shop.
+- If you would rather pay a little for less work: a 4 to 6 USD per month server (Hetzner, DigitalOcean) uses these
+  same files.
