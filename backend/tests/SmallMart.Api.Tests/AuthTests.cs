@@ -255,7 +255,8 @@ public class AuthTests(TestApp app)
     [Theory]
     [InlineData("https://localhost")]         // the Android app
     [InlineData("capacitor://localhost")]     // the iOS app
-    public async Task The_mobile_apps_are_allowed_to_call_the_api(string origin)
+    [InlineData("app://localhost")]           // the Windows program
+    public async Task The_android_ios_and_windows_apps_are_allowed_to_call_the_api(string origin)
     {
         var request = new HttpRequestMessage(HttpMethod.Options, "/api/auth/login");
         request.Headers.Add("Origin", origin);

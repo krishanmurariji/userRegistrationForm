@@ -49,14 +49,8 @@ Xcode opens. Choose a simulator and press Run. The simulator can reach the API a
 
 ## Get an installable Android file without Android Studio
 
-The repository has a GitHub Actions workflow, `.github/workflows/mobile.yml`:
-
-1. On GitHub open the repository's **Actions** tab, choose **Mobile apps**, then **Run workflow**.
-2. When it finishes, download the `small-mart-android-debug-apk` file from the run and install it on a phone
-   (allow "install unknown apps"). The iOS job produces a simulator build, which only runs on a Mac.
-
-To make the apps talk to your hosted API, add a repository variable `API_URL` (Settings, Secrets and variables,
-Actions, Variables) with its address. This workflow has not been run yet; if it fails, send me the log.
+Run the **Release** workflow on GitHub and download the Android file from the draft release. The steps are in
+[RELEASING.md](RELEASING.md).
 
 ## Before publishing to the stores
 

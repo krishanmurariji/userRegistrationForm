@@ -1,0 +1,404 @@
+# Prepares a release of Small Mart for Windows, Android and iOS.
+#
+# How to use: GitHub, Actions tab, "Release", "Run workflow", fill in the version (for example 1.0.0) and press Run.
+# It tests the project, builds the three apps, and creates a DRAFT release with the files attached. Open the draft,
+# check it, and press "Publish release". Full guide: docs/RELEASING.md
+#
+# Nothing here needs a secret to run. Without secrets the apps are built unsigned (Windows installer, Android debug
+# app, iOS simulator build). Add the optional secrets listed in docs/RELEASING.md to get signed, store-ready files.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number, for example 1.0.0'
+        required: true
+        type: string
+      api_url:
+        description: 'Address of your hosted API, for example https://api.yourshop.com (or set the API_URL repository variable)'
+        required: false
+        type: string
+      run_tests:
+        description: 'Run the backend and desktop tests first'
+        type: boolean
+        default: true
+      windows:
+        description: 'Build the Windows installer'
+        type: boolean
+        default: true
+      android:
+        description: 'Build the Android app'
+        type: boolean
+        default: true
+      ios:
+        description: 'Build the iOS app (uses the more expensive macOS machines)'
+        type: boolean
+        default: true
+      draft:
+        description: 'Create the release as a draft, to check before publishing'
+        type: boolean
+        default: true
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.settings.outputs.version }}
+      api_url: ${{ steps.settings.outputs.api_url }}
+      placeholder: ${{ steps.settings.outputs.placeholder }}
+    steps:
+      - name: Check the settings
+        id: settings
+        env:
+          VERSION: ${{ inputs.version }}
+          API_INPUT: ${{ inputs.api_url }}
+          API_VARIABLE: ${{ vars.API_URL }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::The version must look like 1.0.0 (three numbers separated by dots). You entered '$VERSION'."
+            exit 1
+          fi
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::error::A release for v$VERSION already exists. Choose a higher version number, or delete that release first."
+            exit 1
+          fi
+          API_URL="${API_INPUT:-$API_VARIABLE}"
+          API_URL="${API_URL%/}"
+          PLACEHOLDER=false
+          if [ -z "$API_URL" ]; then
+            PLACEHOLDER=true
+            API_URL="https://api.example.com"
+            echo "::warning::No API address was given, so the apps are built against the placeholder $API_URL and cannot sign in. Set the API_URL repository variable or fill in the api_url box. The release is marked as a pre-release."
+          elif ! [[ "$API_URL" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?(/.*)?$ ]]; then
+            echo "::error::The API address must start with https:// (you entered '$API_URL')."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "api_url=$API_URL" >> "$GITHUB_OUTPUT"
+          echo "placeholder=$PLACEHOLDER" >> "$GITHUB_OUTPUT"
+
+  verify:
+    name: Run the tests
+    needs: prepare
+    if: ${{ inputs.run_tests }}
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            app/package-lock.json
+            desktop/package-lock.json
+      - name: Backend tests
+        working-directory: backend
+        run: dotnet test --nologo
+      - name: Build the web app
+        working-directory: app
+        run: |
+          npm ci
+          npx ng build --configuration production
+      - name: Desktop tests
+        working-directory: desktop
+        run: |
+          npm ci
+          npm test
+
+  windows:
+    name: Windows
+    needs: [prepare, verify]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.verify.result != 'failure' && inputs.windows }}
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      API_URL: ${{ needs.prepare.outputs.api_url }}
+      HAS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            app/package-lock.json
+            desktop/package-lock.json
+      - name: Point the app at the hosted API
+        run: sed -i "s|https://api.example.com|$API_URL|" app/src/environments/environment.ts
+      - name: Build the web app
+        working-directory: app
+        run: |
+          npm ci
+          npx ng build --configuration production
+      - name: Install the desktop tools
+        working-directory: desktop
+        run: npm ci
+      - name: Build the installer (signed)
+        if: ${{ env.HAS_CERTIFICATE == 'true' }}
+        working-directory: desktop
+        env:
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE_BASE64 }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: npx electron-builder --win nsis --x64 --publish never "-c.extraMetadata.version=$VERSION"
+      - name: Build the installer (not signed)
+        if: ${{ env.HAS_CERTIFICATE != 'true' }}
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: npx electron-builder --win nsis --x64 --publish never "-c.extraMetadata.version=$VERSION"
+      - name: Name the file
+        run: |
+          mkdir -p out
+          cp desktop/dist/Small-Mart-Setup-*.exe "out/Small-Mart-$VERSION-windows-setup.exe"
+          ls -l out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: out/*
+          if-no-files-found: error
+
+  android:
+    name: Android
+    needs: [prepare, verify]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.verify.result != 'failure' && inputs.android }}
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      API_URL: ${{ needs.prepare.outputs.api_url }}
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Point the app at the hosted API
+        run: sed -i "s|https://api.example.com|$API_URL|" app/src/environments/environment.ts
+      - name: Build the web app into the Android project
+        working-directory: app
+        run: |
+          npm ci
+          npm run mobile:android
+      - name: Prepare the signing key
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+      - name: Build the signed app (APK and Play Store bundle)
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
+        working-directory: app/android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease bundleRelease --no-daemon -PappVersionName="$VERSION" -PappVersionCode="$GITHUB_RUN_NUMBER"
+      - name: Build the debug app (not signed for the store)
+        if: ${{ env.HAS_KEYSTORE != 'true' }}
+        working-directory: app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon -PappVersionName="$VERSION" -PappVersionCode="$GITHUB_RUN_NUMBER"
+      - name: Name the files
+        run: |
+          mkdir -p out
+          if [ "$HAS_KEYSTORE" = "true" ]; then
+            cp app/android/app/build/outputs/apk/release/app-release.apk "out/Small-Mart-$VERSION-android.apk"
+            cp app/android/app/build/outputs/bundle/release/app-release.aab "out/Small-Mart-$VERSION-android-play-store.aab"
+          else
+            cp app/android/app/build/outputs/apk/debug/app-debug.apk "out/Small-Mart-$VERSION-android-debug.apk"
+          fi
+          ls -l out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: out/*
+          if-no-files-found: error
+
+  ios:
+    name: iOS
+    needs: [prepare, verify]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && needs.verify.result != 'failure' && inputs.ios }}
+    runs-on: macos-latest
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      API_URL: ${{ needs.prepare.outputs.api_url }}
+      HAS_SIGNING: ${{ secrets.IOS_CERTIFICATE_BASE64 != '' && secrets.IOS_PROVISIONING_PROFILE_BASE64 != '' && secrets.IOS_TEAM_ID != '' }}
+      EXPORT_METHOD: ${{ vars.IOS_EXPORT_METHOD || 'app-store-connect' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - name: Point the app at the hosted API
+        run: sed -i '' "s|https://api.example.com|$API_URL|" app/src/environments/environment.ts
+      - name: Build the web app into the iOS project
+        working-directory: app
+        run: |
+          npm ci
+          npm run mobile:ios
+      - name: Install the Apple certificate and profile
+        if: ${{ env.HAS_SIGNING == 'true' }}
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          echo "$CERTIFICATE_BASE64" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security import "$RUNNER_TEMP/certificate.p12" -P "$CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
+          echo "$PROFILE_BASE64" | base64 --decode > "$RUNNER_TEMP/profile.mobileprovision"
+          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" > "$RUNNER_TEMP/profile.plist"
+          PROFILE_UUID="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$RUNNER_TEMP/profile.plist")"
+          PROFILE_NAME="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$RUNNER_TEMP/profile.plist")"
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$RUNNER_TEMP/profile.mobileprovision" "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+      - name: Build the signed app (.ipa)
+        if: ${{ env.HAS_SIGNING == 'true' }}
+        env:
+          TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          IDENTITY="Apple Distribution"
+          if [ "$EXPORT_METHOD" = "development" ]; then IDENTITY="Apple Development"; fi
+          BUNDLE_ID="com.smallmart.app"
+          xcodebuild -project app/ios/App/App.xcodeproj -scheme App -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM="$TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" CODE_SIGN_IDENTITY="$IDENTITY" \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" \
+            archive
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>$EXPORT_METHOD</string>
+            <key>teamID</key><string>$TEAM_ID</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict><key>$BUNDLE_ID</key><string>$PROFILE_NAME</string></dict>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/App.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+          mkdir -p out
+          cp "$RUNNER_TEMP"/export/*.ipa "out/Small-Mart-$VERSION-ios.ipa"
+      - name: Build for the iOS simulator (not signed)
+        if: ${{ env.HAS_SIGNING != 'true' }}
+        run: |
+          xcodebuild -project app/ios/App/App.xcodeproj -scheme App -configuration Debug \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
+          mkdir -p out
+          (cd build/Build/Products/Debug-iphonesimulator && zip -qr "$GITHUB_WORKSPACE/out/Small-Mart-$VERSION-ios-simulator.zip" App.app)
+      - run: ls -l out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: out/*
+          if-no-files-found: error
+
+  release:
+    name: Create the release
+    needs: [prepare, windows, android, ios]
+    if: ${{ !cancelled() && needs.prepare.result == 'success' && !contains(needs.*.result, 'failure') && (needs.windows.result == 'success' || needs.android.result == 'success' || needs.ios.result == 'success') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ needs.prepare.outputs.version }}
+      PLACEHOLDER: ${{ needs.prepare.outputs.placeholder }}
+      API_URL: ${{ needs.prepare.outputs.api_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-files
+          merge-multiple: true
+      - name: Describe what is in the release
+        run: |
+          {
+            echo "## Small Mart $VERSION"
+            echo
+            if [ "$PLACEHOLDER" = "true" ]; then
+              echo "> **These builds were made without an API address, so they cannot sign in.** Run the workflow again with the address of your hosted API."
+              echo
+            else
+              echo "The apps are built to talk to \`$API_URL\`."
+              echo
+            fi
+            echo "| File | What it is |"
+            echo "|---|---|"
+            for f in release-files/*; do
+              name="$(basename "$f")"
+              case "$name" in
+                *windows-setup.exe) what="Windows installer. Not signed unless a certificate was set up, so Windows may show a SmartScreen warning (More info, then Run anyway)." ;;
+                *android-play-store.aab) what="Android bundle for the Google Play Store." ;;
+                *android-debug.apk) what="Android app for testing. Install it on a phone directly; not signed for the Play Store." ;;
+                *android.apk) what="Android app you can install on a phone directly." ;;
+                *ios.ipa) what="iOS app signed with your Apple certificate, ready for TestFlight or the App Store." ;;
+                *ios-simulator.zip) what="iOS build for the Simulator on a Mac. It cannot be installed on an iPhone; add the Apple signing secrets for that." ;;
+                *) what="" ;;
+              esac
+              echo "| \`$name\` | $what |"
+            done
+          } > release-notes.md
+          cat release-notes.md
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.prepare.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          name: Small Mart ${{ needs.prepare.outputs.version }}
+          body_path: release-notes.md
+          generate_release_notes: true
+          draft: ${{ inputs.draft }}
+          prerelease: ${{ needs.prepare.outputs.placeholder == 'true' }}
+          files: release-files/*
+          fail_on_unmatched_files: true

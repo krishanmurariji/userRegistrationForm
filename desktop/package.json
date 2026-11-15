@@ -1,0 +1,36 @@
+{
+  "name": "small-mart-desktop",
+  "version": "1.0.0",
+  "description": "Small Mart for Windows: the Small Mart app in its own window",
+  "main": "main.js",
+  "private": true,
+  "author": "Small Mart",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test",
+    "dist:win": "electron-builder --win nsis --x64 --publish never"
+  },
+  "build": {
+    "appId": "com.smallmart.desktop",
+    "productName": "Small Mart",
+    "copyright": "Small Mart",
+    "directories": { "output": "dist", "buildResources": "build" },
+    "files": ["main.js", "preload.js", "serve.js", "build/icon.png", "package.json"],
+    "extraResources": [{ "from": "../app/dist/app/browser", "to": "web" }],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "artifactName": "Small-Mart-Setup-${version}.${ext}"
+    }
+  },
+  "devDependencies": {
+    "electron": "^45.3.2",
+    "electron-builder": "^26.18.0"
+  }
+}
