@@ -1,120 +1,110 @@
-# Deploying the API for free, always on (Oracle Cloud Always Free)
+# Running the API from your own PC with a Cloudflare Tunnel
 
-Free services that sleep (Render, Koyeb and similar) are not good for a shop: the first customer of the day waits a
-minute. Oracle Cloud's **Always Free** tier gives you a real small server that stays on 24 hours a day, with a disk
-that is kept, at no cost. This guide runs everything on that one server:
-
-- the **API** (this repository's `backend/`),
-- its **PostgreSQL** database (kept on the server's disk, with a backup script),
-- **Caddy**, which gets a free HTTPS certificate for you automatically,
-- uploaded pictures on the server's disk.
+The API, its PostgreSQL database and your uploaded pictures run in Docker on your Windows PC. **Cloudflare Tunnel**
+(free) gives it a public `https://` address without opening any port on your router, and works even when your
+internet provider hides your IP.
 
 **Status:** the code was tested locally (152 tests; the published API was run in Production mode, created a fresh
-database, seeded the admin, logged in and answered `/health`). The compose file passes `docker compose config`.
-The Docker images and the steps on Oracle could not be run in the development environment, so expect to fix small
-things on the first deploy and send me the output of any failing command.
+database, seeded the admin, logged in and answered `/health`), and the compose file validates in both modes. The
+Docker images, Docker Desktop on Windows and the Cloudflare steps could not be run in the development environment,
+so expect small fixes on the first run and send me the output of any command that fails.
 
-## What you need
+## Be clear about what this means
 
-- A phone number and a **credit or debit card for identity verification** (Oracle does not charge it for Always Free
-  resources; some Indian cards are refused, a virtual card often works).
-- 45 minutes.
-- Windows PowerShell has `ssh` built in, nothing to install.
+- **The PC must be on, awake and online whenever customers use the app.** If it is off, the app cannot sign in or
+  order. Set Windows power settings to "never sleep" (plugged in), and let it start Docker after a reboot.
+- **A domain name is needed** for a permanent address. The tunnel itself is free, but a domain costs a few dollars a
+  year (a `.xyz` or `.in` is often 1 to 8 USD; Cloudflare sells `.com` at cost, about 10 USD). Cloudflare's free
+  "quick tunnels" give a random address that changes every restart, which cannot be baked into a release build.
+- **Your PC's disk holds everything** (customers, orders, pictures). Run the backup script and copy backups to
+  another place (USB drive, cloud drive).
+- For a real shop with real customers a 4 to 6 USD a month server is steadier than a home PC (see the end).
 
-## Step 1: create the server
+## Step 1: Docker on the PC
 
-1. Sign up at oracle.com/cloud/free. Choose a **home region near your customers** (for India: Mumbai or Hyderabad).
-   You cannot change the region later.
-2. In the console: **Compute, Instances, Create instance**.
-   - Image: **Ubuntu 24.04** (or 22.04).
-   - Shape: **Ampere, VM.Standard.A1.Flex**, 2 OCPU and 12 GB memory (the free allowance is up to 4 OCPU and 24 GB).
-     If it says "Out of host capacity", try again later or in another availability domain, or choose the AMD shape
-     **VM.Standard.E2.1.Micro** (1 GB, enough for a small shop; the setup script adds swap).
-   - Networking: keep the defaults and make sure **Assign a public IPv4 address** is on.
-   - SSH keys: **Generate a key pair** and download the private key (keep it safe, you cannot download it again).
-3. When it is running, copy the **Public IP address**.
-4. Open the web ports. Instance page, **Subnet, Default security list, Add ingress rules**: source `0.0.0.0/0`,
-   TCP, destination port `80`; add a second rule for port `443`. (Without this nothing from the internet reaches the
-   server.)
-5. Optional but wise: Oracle can reclaim Always Free servers that sit almost idle for 7 days. Upgrading the account to
-   "Pay as you go" removes that risk, and you are still not charged while you stay inside the free limits.
+1. Install **Docker Desktop** (docker.com). Accept the WSL 2 option. Restart when asked.
+2. Docker Desktop, Settings, General: tick **Start Docker Desktop when you sign in**.
+3. Install **Git for Windows** if you do not have it.
 
-## Step 2: a free address
+## Step 2: a domain on Cloudflare
 
-HTTPS certificates need a name, not a bare IP.
+1. Create a free account at cloudflare.com.
+2. Either buy a domain there (Domain Registration, Register domains), or add a domain you already own
+   (Add a site, and change its nameservers at your registrar to the two Cloudflare gives you).
 
-1. Go to duckdns.org, sign in, create a name such as `mysmallmart`, and set its IP to the server's public IP.
-2. Your address is `mysmallmart.duckdns.org`. (Your own domain works the same: point an A record at the IP.)
+## Step 3: create the tunnel
 
-## Step 3: set up the server
+1. Open one.dash.cloudflare.com (Zero Trust). Choose the free plan if it asks. It may ask for a payment method; the
+   free plan is not charged.
+2. **Networks, Tunnels, Create a tunnel, Cloudflared**. Name it `smallmart`.
+3. On the install page, copy the long **token** (the text after `--token`). Do not run the shown install command; the
+   token is all you need.
+4. **Public hostname** tab, add one:
+   - Subdomain `api`, domain: yours (so the address is `https://api.yourdomain.com`)
+   - Service type `HTTP`, URL `api:8080`
+5. Save.
 
-In PowerShell on your computer (use your downloaded key's path and your IP):
+## Step 4: start Small Mart
 
-```bash
-ssh -i C:\path\to\ssh-key.key ubuntu@YOUR_SERVER_IP
-```
-
-On the server:
+In PowerShell:
 
 ```bash
 git clone https://github.com/krishanmurariji/userRegistrationForm.git smallmart
-cd smallmart
-sudo bash deploy/setup.sh
-cd deploy
-cp .env.example .env
-nano .env
+cd smallmart\deploy
+copy .env.example .env
+notepad .env
 ```
 
-Fill in `.env` (Ctrl+O, Enter, Ctrl+X to save in nano). You can make the random values with:
+Fill in `.env`: `TUNNEL_TOKEN` (from step 3), `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CLIENT_URL` (your API address for
+now), and generate the two secrets with these commands, pasting each result into `.env`:
 
 ```bash
-openssl rand -hex 16      # for DB_PASSWORD
-openssl rand -base64 36   # for JWT_KEY
+$b = New-Object byte[] 16; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); -join ($b | ForEach-Object { $_.ToString('x2') })
+$b = New-Object byte[] 36; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
 ```
 
-| Name | Value |
-|---|---|
-| `DOMAIN` | `mysmallmart.duckdns.org` |
-| `DB_PASSWORD`, `JWT_KEY` | the random values above |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | your platform admin login (8+ characters, with a digit) |
-| the rest | optional: email (Zoho), OpenAI key |
+The first is `DB_PASSWORD`, the second is `JWT_KEY`. Never lose or change `JWT_KEY` later (everyone would be signed
+out). Leave `COMPOSE_PROFILES=tunnel` and `DOMAIN` empty. If the repository is private, sign in to Git when it asks.
 
-If the repository is private, clone with a GitHub personal access token (`https://TOKEN@github.com/...`).
-
-Start everything (the first build takes several minutes):
+Then start it (the first build takes several minutes):
 
 ```bash
 docker compose up -d --build
 docker compose ps
 ```
 
-## Step 4: check
+## Step 5: check
 
-Open `https://mysmallmart.duckdns.org/health`. You should see `{"status":"ok"}`. **That `https://...` address is your
-API address.** Use it as `api_url` in the Release workflow (see [RELEASING.md](RELEASING.md)).
+Open `https://api.yourdomain.com/health` in a browser (from your phone's mobile data too). You should see
+`{"status":"ok"}`. **That address is your API address**: use it as `api_url` in the Release workflow
+([RELEASING.md](RELEASING.md)).
 
-The first request may wait a few seconds while Caddy gets the certificate. If it fails, run
-`docker compose logs caddy api` and check that ports 80 and 443 are open in step 1.4.
+If it does not work: `docker compose logs cloudflared api`. "Bad gateway" usually means the public hostname service
+is not exactly `http://api:8080`, or the API is still starting.
 
-## Updating and operating
+## Operating
 
 ```bash
-cd ~/smallmart && bash deploy/update.sh        # get the newest code and restart
-cd ~/smallmart/deploy && docker compose logs -f api   # watch the logs
-bash ~/smallmart/deploy/backup.sh              # backup now (database + pictures) into ~/smallmart-backups
+cd smallmart\deploy
+.\update.ps1                 # get the newest code and restart
+docker compose logs -f api   # watch the logs
+.\backup.ps1                 # database + pictures into deploy\backups (keeps 14 days)
 ```
 
-Backup daily: `crontab -e`, add `0 3 * * * bash /home/ubuntu/smallmart/deploy/backup.sh`. Copy the backups off the
-server now and then (for example with `scp`), because a backup on the same server does not protect you if the
-server is lost.
+Daily backup: Task Scheduler, Create Basic Task, Daily 3:00, Action "Start a program": program `powershell.exe`,
+arguments `-ExecutionPolicy Bypass -File C:\path\to\smallmart\deploy\backup.ps1`. Copy `deploy\backups` somewhere
+else regularly.
 
-The database tables are created and updated automatically each time the API starts. Never lose `JWT_KEY`: it signs
-everyone's login tokens.
+Tables are created and updated automatically when the API starts.
 
-## Other free always-on options
+## Moving to a server later
 
-- **Google Cloud e2-micro** ("Always Free", US regions only, 1 GB): the same files work on it, only step 1 differs.
-- **Azure App Service Free (F1)** and similar plans have a daily CPU allowance and idle out, so they are not good
-  for a shop.
-- If you would rather pay a little for less work: a 4 to 6 USD per month server (Hetzner, DigitalOcean) uses these
-  same files.
+The same files run on any Ubuntu server with a public IP: set `COMPOSE_PROFILES=server` and `DOMAIN` in `.env`,
+run `sudo bash deploy/setup.sh`, then `docker compose up -d --build`. Caddy gets the HTTPS certificate itself, and
+`deploy/update.sh` and `deploy/backup.sh` replace the PowerShell scripts. Choices:
+
+- A small paid server (Hetzner or DigitalOcean, 4 to 6 USD a month) is the steadiest.
+- Google Cloud's Always Free e2-micro (US regions only, 1 GB) is free, but sources disagree on whether its public
+  IPv4 address is charged, so check Google's current pricing before relying on it
+  ([one review](https://bestusavps.pages.dev/reviews/google-cloud)).
+- Oracle Cloud Always Free works too if you have not used its allowance.

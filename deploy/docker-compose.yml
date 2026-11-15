@@ -1,4 +1,6 @@
-# Runs Small Mart on one small server: the API, its PostgreSQL database and Caddy (automatic HTTPS).
+# Runs Small Mart: the API and its PostgreSQL database, plus ONE way to reach it from the internet:
+#   COMPOSE_PROFILES=tunnel  -> Cloudflare Tunnel (for a PC at home or any machine without open ports)
+#   COMPOSE_PROFILES=server  -> Caddy with automatic HTTPS (for a server with a public IP)
 # Settings come from deploy/.env (copy .env.example). Start with:  docker compose up -d --build
 services:
   db:
@@ -28,7 +30,7 @@ services:
       ConnectionStrings__Default: Host=db;Database=smallmart;Username=smallmart;Password=${DB_PASSWORD}
       Database__MigrateOnStartup: "true"
       App__DisableHttpsRedirect: "true"
-      App__ClientUrl: ${CLIENT_URL:-https://${DOMAIN}}
+      App__ClientUrl: ${CLIENT_URL:-https://${DOMAIN:-localhost}}
       Jwt__Key: ${JWT_KEY:?Set JWT_KEY in .env}
       Seed__AdminEmail: ${ADMIN_EMAIL:?Set ADMIN_EMAIL in .env}
       Seed__AdminPassword: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD in .env}
@@ -43,8 +45,19 @@ services:
     volumes:
       - uploads:/data
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    restart: unless-stopped
+    depends_on:
+      - api
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+
   caddy:
     image: caddy:2
+    profiles: ["server"]
     restart: unless-stopped
     depends_on:
       - api
@@ -52,7 +65,7 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      DOMAIN: ${DOMAIN:-localhost}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

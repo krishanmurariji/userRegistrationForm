@@ -486,3 +486,5 @@ App_Data/
 
 # Personal settings for one machine (database password and so on)
 appsettings.Local.json
+
+deploy/backups/
