@@ -204,10 +204,10 @@ public partial class OrdersController(
         catch (DbUpdateException)
         {
             // Lost a race: another order took this reference, or the order changed meanwhile.
-            images.Delete(path, isPrivate: true);
+            await images.DeleteAsync(path, isPrivate: true, ct: ct);
             return this.ApiError(StatusCodes.Status409Conflict, "order_changed", "This order has just changed. Please reload and try again.");
         }
-        images.Delete(previous, isPrivate: true);
+        await images.DeleteAsync(previous, isPrivate: true, ct: ct);
         await notifier.ToShopAsync(order.ShopId, $"Check UPI payment for {order.DisplayNumber}",
             $"{order.CustomerName} says they paid ₹{order.Total:0.##} (transaction ID {reference}).",
             $"/shops/{order.ShopId}/orders/{order.Id}", ct);
@@ -221,7 +221,7 @@ public partial class OrdersController(
         var userId = User.GetUserId();
         var path = await db.Orders.Where(o => o.Id == id && o.CustomerId == userId)
             .Select(o => o.UpiScreenshotPath).SingleOrDefaultAsync(ct);
-        return images.OpenPrivate(path) is { } image ? File(image.Content, image.ContentType) : NotFound();
+        return await images.OpenPrivateAsync(path, ct) is { } image ? File(image.Content, image.ContentType) : NotFound();
     }
 
     /// <summary>A customer can cancel only until the shop accepts the order.</summary>

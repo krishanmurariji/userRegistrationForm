@@ -137,24 +137,40 @@ await DbSeeder.InitialiseAsync(app.Services, config);
 
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();
-else
+else if (!config.GetValue("App:DisableHttpsRedirect", false))
     app.UseHttpsRedirection();
 
 app.UseCors();
 
 // Uploaded pictures. "nosniff" stops browsers from treating a file as anything but the image type we stored.
 var imageStorage = app.Services.GetRequiredService<ImageStorage>();
-Directory.CreateDirectory(imageStorage.Root);
-app.UseStaticFiles(new StaticFileOptions
+if (!imageStorage.InDatabase)
+    Directory.CreateDirectory(imageStorage.Root);
+if (imageStorage.InDatabase)
 {
-    FileProvider = new PhysicalFileProvider(imageStorage.Root),
-    RequestPath = ImageStorage.RequestPath,
-    OnPrepareResponse = ctx =>
+    // The host's disk is not kept between restarts, so public pictures are read from the database.
+    app.MapGet($"{ImageStorage.RequestPath}/{{**path}}", async (string path, ImageStorage storage, HttpContext http, CancellationToken ct) =>
     {
-        ctx.Context.Response.Headers.XContentTypeOptions = "nosniff";
-        ctx.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
-    },
-});
+        if (await storage.ReadPublicAsync(path, ct) is not { } file)
+            return Results.NotFound();
+        http.Response.Headers.XContentTypeOptions = "nosniff";
+        http.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        return Results.File(file.Content, file.ContentType);
+    });
+}
+else
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(imageStorage.Root),
+        RequestPath = ImageStorage.RequestPath,
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.XContentTypeOptions = "nosniff";
+            ctx.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+        },
+    });
+}
 
 app.UseRateLimiter();
 app.UseAuthentication();

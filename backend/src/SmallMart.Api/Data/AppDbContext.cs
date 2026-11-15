@@ -26,6 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<CatalogProduct> CatalogProducts => Set<CatalogProduct>();
     public DbSet<AiScan> AiScans => Set<AiScan>();
+    public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -130,6 +131,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         });
 
         builder.Entity<AiScan>(b => b.HasIndex(s => new { s.ShopId, s.At }));
+
+        builder.Entity<StoredFile>(b =>
+        {
+            b.HasKey(f => new { f.Path, f.IsPrivate });
+            b.Property(f => f.Path).HasMaxLength(300);
+            b.Property(f => f.ContentType).HasMaxLength(50);
+        });
 
         builder.Entity<ItemImage>(b =>
         {

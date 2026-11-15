@@ -9,6 +9,7 @@ environment. Expect to fix small things on the first run; send the log of any fa
 
 ## Run it
 
+0. Deploy the API first: [DEPLOY.md](DEPLOY.md) (free). Its address is what goes in `api_url`.
 1. The workflow must be on the `master` branch, or it does not show in the Actions tab.
 2. Open the repository on GitHub, **Actions**, **Release**, **Run workflow**.
 3. Fill in:

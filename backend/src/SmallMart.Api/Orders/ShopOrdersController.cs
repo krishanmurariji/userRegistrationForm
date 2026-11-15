@@ -87,7 +87,7 @@ public class ShopOrdersController(
             return NotFound();
         var path = await db.Orders.Where(o => o.Id == id && o.ShopId == shopId)
             .Select(o => o.UpiScreenshotPath).SingleOrDefaultAsync(ct);
-        return images.OpenPrivate(path) is { } image ? File(image.Content, image.ContentType) : NotFound();
+        return await images.OpenPrivateAsync(path, ct) is { } image ? File(image.Content, image.ContentType) : NotFound();
     }
 
     /// <summary>

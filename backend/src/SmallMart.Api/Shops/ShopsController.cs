@@ -100,7 +100,7 @@ public class ShopsController(
         var previous = shop.LogoPath;
         shop.LogoPath = path;
         await db.SaveChangesAsync(ct);
-        images.Delete(previous);
+        await images.DeleteAsync(previous, ct: ct);
         return Ok(ShopDto.From(shop, role.Value));
     }
 

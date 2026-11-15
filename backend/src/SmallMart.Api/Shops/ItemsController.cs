@@ -131,7 +131,7 @@ public class ItemsController(
         db.Items.Remove(item);
         await db.SaveChangesAsync(ct);
         foreach (var file in files)
-            images.Delete(file);
+            await images.DeleteAsync(file, ct: ct);
         return NoContent();
     }
 
@@ -156,7 +156,7 @@ public class ItemsController(
             db.ItemImages.RemoveRange(stale);
             await db.SaveChangesAsync(ct);
             foreach (var old in stale)
-                images.Delete(old.Path);
+                await images.DeleteAsync(old.Path, ct: ct);
         }
         if (await db.ItemImages.CountAsync(i => i.ShopId == shopId && i.ItemId == null, ct) >= MaxPendingImages)
             return this.ApiError(StatusCodes.Status409Conflict, "too_many_pending_images",
@@ -182,7 +182,7 @@ public class ItemsController(
             return NotFound();
         db.ItemImages.Remove(image);
         await db.SaveChangesAsync(ct);
-        images.Delete(image.Path);
+        await images.DeleteAsync(image.Path, ct: ct);
         return NoContent();
     }
 
@@ -235,7 +235,7 @@ public class ItemsController(
         item.Renumber();
         item.UpdatedAt = clock.GetUtcNow();
         await db.SaveChangesAsync(ct);
-        images.Delete(image.Path);
+        await images.DeleteAsync(image.Path, ct: ct);
         return Ok(ItemDto.From(item));
     }
 
@@ -296,7 +296,7 @@ public class ItemsController(
         // Every picture is copied to its own file, so deleting the original never leaves the copy without one.
         foreach (var picture in source.Images.OrderBy(i => i.SortOrder))
         {
-            if (images.Copy(picture.Path, $"shops/{shopId:N}/items") is { } copiedPath)
+            if (await images.CopyAsync(picture.Path, $"shops/{shopId:N}/items", ct) is { } copiedPath)
                 copy.Images.Add(new ItemImage { Id = Guid.NewGuid(), ShopId = shopId, Path = copiedPath, SortOrder = picture.SortOrder, CreatedAt = now });
         }
         copy.Renumber();
