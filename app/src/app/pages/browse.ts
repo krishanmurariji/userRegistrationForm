@@ -1,12 +1,13 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonSearchbar, IonSpinner, IonTitle, IonToolbar } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { chevronForward, storefront, storefrontOutline, timeOutline } from 'ionicons/icons';
+import { IonButtons, IonContent, IonFooter, IonHeader, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
 import { BottomNav } from '../core/bottom-nav';
 import { CartBar } from '../core/cart-bar';
+import { categoryIcon } from '../core/category-icon';
+import { AppIcon } from '../core/icon';
+import { SkeletonList } from '../core/skeletons';
 import { NotificationBell } from '../core/notification-bell';
 import { fileUrl } from '../core/shop.service';
 import { OrderSummary, StoreCategoryTile, StoreShop, statusLabel } from '../core/store.models';
@@ -15,14 +16,20 @@ import { StoreService } from '../core/store.service';
 /** The customer home page: search, categories, an order in progress, and the shops. */
 @Component({
   selector: 'app-browse',
-  imports: [RouterLink, IonHeader, IonToolbar, IonTitle, IonButtons, IonIcon, IonContent, IonSearchbar, IonSpinner, IonFooter, NotificationBell, CartBar, BottomNav],
+  imports: [RouterLink, IonHeader, IonToolbar, IonButtons, IonContent, IonSearchbar, IonFooter, NotificationBell, CartBar, BottomNav, AppIcon, SkeletonList],
   template: `
     <ion-header class="shop-header">
-      <ion-toolbar color="primary">
-        <ion-title>Small Mart</ion-title>
+      <ion-toolbar>
+        <div class="greeting" slot="start">
+          <span class="brand-mark"><app-icon name="shopping-bag" weight="duotone" /></span>
+          <span class="who">
+            <small>Welcome back</small>
+            <strong>{{ firstName() }}</strong>
+          </span>
+        </div>
         <ion-buttons slot="end"><app-notification-bell /></ion-buttons>
       </ion-toolbar>
-      <ion-toolbar color="primary" class="search-toolbar">
+      <ion-toolbar class="search-toolbar">
         <form role="search" (submit)="search($event)">
           <ion-searchbar placeholder="Search for atta, milk, soap…" enterkeyhint="search" inputmode="search"
             [value]="query()" (ionInput)="query.set($event.detail.value ?? '')" />
@@ -31,30 +38,28 @@ import { StoreService } from '../core/store.service';
     </ion-header>
 
     <ion-content class="shop-bg">
-      <main class="shop-column">
-        <p class="hello">Hello, {{ firstName() }} <span>What do you need today?</span></p>
+      <main class="shop-column home">
+        <h1 class="hero-title">What do you need <em>today?</em></h1>
 
         @if (activeOrder(); as order) {
           <a [routerLink]="['/orders', order.id]" class="card strip tracking">
-            <ion-icon name="time-outline" aria-hidden="true" />
+            <span class="strip-icon"><app-icon name="moped" weight="duotone" /></span>
             <span><strong>{{ statusLabel(order.status) }}</strong><small>{{ order.number }} from {{ order.shopName }}</small></span>
-            <span class="go-text">Track <ion-icon name="chevron-forward" aria-hidden="true" /></span>
+            <span class="go-text">Track <app-icon name="caret-right" /></span>
           </a>
         }
 
         @if (error(); as message) {
           <div class="card"><p role="alert" class="error-text">{{ message }}</p><button type="button" class="link" (click)="load()">Try again</button></div>
         } @else if (loading()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading" /></div>
+          <app-skeleton-list [count]="3" />
         } @else {
           @if (categories().length) {
             <h2>Shop by category</h2>
-            <div class="tiles">
+            <div class="rail" role="list">
               @for (c of categories(); track c.name) {
-                <a class="tile" routerLink="/search" [queryParams]="{ category: c.name }">
-                  <span class="pic">
-                    @if (file(c.imageUrl); as src) { <img [src]="src" alt="" loading="lazy" /> } @else { <span>{{ c.name.charAt(0) }}</span> }
-                  </span>
+                <a class="tile" role="listitem" routerLink="/search" [queryParams]="{ category: c.name }">
+                  <span class="pic"><app-icon [name]="icon(c.name)" weight="duotone" /></span>
                   <span class="name">{{ c.name }}</span>
                 </a>
               }
@@ -64,7 +69,7 @@ import { StoreService } from '../core/store.service';
           <h2>Shops near you</h2>
           @if (shops().length === 0) {
             <div class="card empty-card">
-              <ion-icon name="storefront-outline" aria-hidden="true" />
+              <app-icon name="storefront" weight="duotone" />
               <p>No shops are available yet. Please check back soon.</p>
             </div>
           } @else {
@@ -73,19 +78,19 @@ import { StoreService } from '../core/store.service';
                 <a class="card shop-card" [routerLink]="['/store', shop.id]" [class.closed]="!shop.isOpen">
                   <span class="logo">
                     @if (file(shop.logoUrl); as src) { <img [src]="src" alt="" loading="lazy" /> }
-                    @else { <ion-icon name="storefront-outline" aria-hidden="true" /> }
+                    @else { <app-icon name="storefront" weight="duotone" /> }
                   </span>
                   <span class="body">
                     <strong>{{ shop.name }}</strong>
-                    <small>{{ shop.addressLine }}, {{ shop.city }}</small>
+                    <small><app-icon name="map-pin" />{{ shop.addressLine }}, {{ shop.city }}</small>
                     <span class="tags">
-                      <span class="tag" [class.open]="shop.isOpen">{{ shop.isOpen ? 'Open' : 'Closed' }}</span>
-                      <span class="tag">{{ shop.deliveryFee ? '₹' + shop.deliveryFee + ' delivery' : 'Free delivery' }}</span>
+                      <span class="tag" [class.open]="shop.isOpen"><app-icon name="clock" />{{ shop.isOpen ? 'Open' : 'Closed' }}</span>
+                      <span class="tag"><app-icon name="moped" />{{ shop.deliveryFee ? '₹' + shop.deliveryFee : 'Free delivery' }}</span>
                       @if (shop.minimumOrder) { <span class="tag">Min ₹{{ shop.minimumOrder }}</span> }
-                      @if (shop.acceptsUpi) { <span class="tag">UPI</span> }
+                      @if (shop.acceptsUpi) { <span class="tag"><app-icon name="qr-code" />UPI</span> }
                     </span>
                   </span>
-                  <ion-icon name="chevron-forward" aria-hidden="true" class="go" />
+                  <span class="go"><app-icon name="caret-right" /></span>
                 </a>
               }
             </div>
@@ -113,11 +118,8 @@ export class BrowsePage {
   protected readonly error = signal('');
   protected readonly firstName = computed(() => this.auth.user()?.fullName.trim().split(/\s+/)[0] ?? 'there');
   protected readonly file = fileUrl;
+  protected readonly icon = categoryIcon;
   protected readonly statusLabel = statusLabel;
-
-  constructor() {
-    addIcons({ chevronForward, storefront, storefrontOutline, timeOutline });
-  }
 
   ionViewWillEnter(): void {
     this.query.set('');

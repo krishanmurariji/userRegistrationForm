@@ -1,10 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonSearchbar, IonSpinner, IonTitle, IonToolbar } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { callOutline, locationOutline, searchOutline, storefrontOutline } from 'ionicons/icons';
+import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonSearchbar, IonTitle, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { CartBar } from '../core/cart-bar';
+import { categoryIcon } from '../core/category-icon';
+import { AppIcon } from '../core/icon';
+import { SkeletonProducts } from '../core/skeletons';
 import { NotificationBell } from '../core/notification-bell';
 import { ProductCard } from '../core/product-card';
 import { fileUrl } from '../core/shop.service';
@@ -14,40 +15,40 @@ import { StoreService } from '../core/store.service';
 /** One shop as a customer sees it: who they are, and a grid of what they sell. */
 @Component({
   selector: 'app-store',
-  imports: [IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonSearchbar, IonIcon, IonSpinner, IonFooter, NotificationBell, ProductCard, CartBar],
+  imports: [IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonSearchbar, IonFooter, NotificationBell, ProductCard, CartBar, AppIcon, SkeletonProducts],
   template: `
     <ion-header class="shop-header">
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>
         <ion-title>{{ shop()?.name ?? 'Shop' }}</ion-title>
         <ion-buttons slot="end"><app-notification-bell /></ion-buttons>
       </ion-toolbar>
-      <ion-toolbar color="primary" class="search-toolbar">
+      <ion-toolbar class="search-toolbar">
         <ion-searchbar [placeholder]="'Search in ' + (shop()?.name ?? 'this shop')" [debounce]="300" inputmode="search"
           (ionInput)="search.set($event.detail.value ?? ''); loadItems()" />
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="shop-bg">
-      <main class="shop-column">
+      <main class="shop-column store">
         @if (error(); as message) {
           <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         }
         @if (shop(); as s) {
-          <section class="card shop-hero">
+          <section class="shop-hero">
             <span class="logo">
-              @if (file(s.logoUrl); as src) { <img [src]="src" alt="" /> } @else { <ion-icon name="storefront-outline" aria-hidden="true" /> }
+              @if (file(s.logoUrl); as src) { <img [src]="src" alt="" /> } @else { <app-icon name="storefront" weight="duotone" /> }
             </span>
             <div class="body">
               <h1>{{ s.name }}</h1>
-              @if (s.description) { <p>{{ s.description }}</p> }
-              <p class="line"><ion-icon name="location-outline" aria-hidden="true" />{{ s.addressLine }}, {{ s.city }} {{ s.pincode }}</p>
-              <p class="line"><ion-icon name="call-outline" aria-hidden="true" /><a [href]="'tel:' + s.phone">{{ s.phone }}</a></p>
+              @if (s.description) { <p class="about-shop">{{ s.description }}</p> }
+              <p class="line"><app-icon name="map-pin" />{{ s.addressLine }}, {{ s.city }} {{ s.pincode }}</p>
+              <p class="line"><app-icon name="phone" /><a [href]="'tel:' + s.phone">{{ s.phone }}</a></p>
               <div class="tags">
-                <span class="tag" [class.open]="s.isOpen">{{ s.isOpen ? 'Open now' : 'Closed' }}</span>
-                <span class="tag">{{ s.deliveryFee ? '₹' + s.deliveryFee + ' delivery' : 'Free delivery' }}</span>
+                <span class="tag" [class.open]="s.isOpen"><app-icon name="clock" />{{ s.isOpen ? 'Open now' : 'Closed' }}</span>
+                <span class="tag"><app-icon name="moped" />{{ s.deliveryFee ? '₹' + s.deliveryFee + ' delivery' : 'Free delivery' }}</span>
                 @if (s.minimumOrder) { <span class="tag">Min order ₹{{ s.minimumOrder }}</span> }
-                <span class="tag">{{ s.acceptsUpi ? 'Cash or UPI' : 'Cash on delivery' }}</span>
+                <span class="tag"><app-icon name="wallet" />{{ s.acceptsUpi ? 'Cash or UPI' : 'Cash on delivery' }}</span>
               </div>
             </div>
           </section>
@@ -59,16 +60,18 @@ import { StoreService } from '../core/store.service';
             <div class="pills" role="group" aria-label="Filter by category">
               <button type="button" [class.on]="categoryId() === null" [attr.aria-pressed]="categoryId() === null" (click)="filter(null)">All</button>
               @for (c of categories(); track c.id) {
-                <button type="button" [class.on]="categoryId() === c.id" [attr.aria-pressed]="categoryId() === c.id" (click)="filter(c.id)">{{ c.name }}</button>
+                <button type="button" [class.on]="categoryId() === c.id" [attr.aria-pressed]="categoryId() === c.id" (click)="filter(c.id)">
+                  <app-icon [name]="icon(c.name)" weight="duotone" />{{ c.name }}
+                </button>
               }
             </div>
           }
 
           @if (loadingItems()) {
-            <div class="centered"><ion-spinner name="crescent" aria-label="Loading items" /></div>
+            <app-skeleton-products />
           } @else if (items().length === 0) {
             <div class="card empty-card">
-              <ion-icon name="search-outline" aria-hidden="true" />
+              <app-icon name="magnifying-glass" weight="duotone" />
               <p>{{ search() || categoryId() ? 'No items match.' : 'This shop has not listed any items yet.' }}</p>
             </div>
           } @else {
@@ -77,7 +80,7 @@ import { StoreService } from '../core/store.service';
             </div>
           }
         } @else if (!error()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading shop" /></div>
+          <app-skeleton-products />
         }
       </main>
     </ion-content>
@@ -96,11 +99,8 @@ export class StorePage {
   protected readonly loadingItems = signal(true);
   protected readonly error = signal('');
   protected readonly file = fileUrl;
+  protected readonly icon = categoryIcon;
   private latest = 0;
-
-  constructor() {
-    addIcons({ callOutline, locationOutline, searchOutline, storefrontOutline });
-  }
 
   async ionViewWillEnter(): Promise<void> {
     this.error.set('');

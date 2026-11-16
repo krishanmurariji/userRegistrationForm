@@ -15,7 +15,7 @@ import { StoreService } from '../core/store.service';
   imports: [CurrencyPipe, DatePipe, RouterLink, IonHeader, IonToolbar, IonButtons, IonTitle, IonContent, IonFooter, IonButton, IonIcon, IonSpinner, NotificationBell, BottomNav],
   template: `
     <ion-header class="shop-header">
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-title>My orders</ion-title>
         <ion-buttons slot="end"><app-notification-bell /></ion-buttons>
       </ion-toolbar>

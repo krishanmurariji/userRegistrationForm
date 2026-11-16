@@ -18,7 +18,7 @@ import { StoreService } from '../core/store.service';
   imports: [CurrencyPipe, RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonIcon, IonSpinner, IonFooter, CartBar],
   template: `
     <ion-header class="shop-header">
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button [defaultHref]="'/store/' + shopId" /></ion-buttons>
         <ion-title>{{ detail()?.item?.name ?? 'Product' }}</ion-title>
       </ion-toolbar>

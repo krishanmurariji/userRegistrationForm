@@ -14,7 +14,7 @@ import { fileUrl } from '../core/shop.service';
   imports: [CurrencyPipe, RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonIcon, IonButton, IonFooter, BottomNav],
   template: `
     <ion-header class="shop-header">
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
         <ion-title>Cart</ion-title>
       </ion-toolbar>

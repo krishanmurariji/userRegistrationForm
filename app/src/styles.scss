@@ -7,14 +7,28 @@
 @import '@ionic/angular/css/text-alignment.css';
 @import '@ionic/angular/css/display.css';
 @import '@ionic/angular/css/palettes/dark.system.css';
+@import '@fontsource-variable/plus-jakarta-sans';
 
 :root {
-  --ion-color-primary: #0b7a4b;
-  --ion-color-primary-rgb: 11, 122, 75;
+  --ion-font-family: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Caramel brown: white text on it is 6.4:1, so buttons stay readable. */
+  --ion-color-primary: #8c4f22;
+  --ion-color-primary-rgb: 140, 79, 34;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #0a6b42;
-  --ion-color-primary-tint: #23875d;
+  --ion-color-primary-shade: #7b461e;
+  --ion-color-primary-tint: #98602f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ion-color-primary: #f2b48a;
+    --ion-color-primary-rgb: 242, 180, 138;
+    --ion-color-primary-contrast: #2b1d12;
+    --ion-color-primary-contrast-rgb: 43, 29, 18;
+    --ion-color-primary-shade: #d59f79;
+    --ion-color-primary-tint: #f4bc96;
+  }
 }
 
 /* Shared layout of the sign-in pages: one centred column that fits a phone and stays narrow on desktop. */
@@ -738,33 +752,41 @@
 
 /* ==========================================================================
    Customer design: home, search, shop, cart, checkout, orders.
-   Grey page, white cards, one green for actions, orange only for deals.
+   Cream page, warm white cards, caramel brown for actions, peach for soft highlights, terracotta only for deals.
    ========================================================================== */
 :root {
-  --sm-page: #f0f2f1;
-  --sm-card: #ffffff;
-  --sm-line: #e4e8e6;
-  --sm-text: #17201c;
-  --sm-muted: #5f6b66;
-  --sm-soft: #eef6f1;
-  --sm-deal: #b93d07;
-  --sm-deal-soft: #fff1e8;
-  --sm-accent: #0b7a4b;
-  --sm-radius: 14px;
-  --sm-shadow: 0 1px 2px rgba(16, 32, 24, 0.06), 0 2px 8px rgba(16, 32, 24, 0.05);
+  --sm-page: #fbf4ea;
+  --sm-card: #fffdf9;
+  --sm-line: #ebddcb;
+  --sm-text: #2b1d12;
+  --sm-muted: #75634f;
+  --sm-soft: #fde7d5;
+  --sm-sand: #f3e3ce;
+  --sm-peach: #f7b58c;
+  --sm-deal: #a63a14;
+  --sm-deal-soft: #ffe9dc;
+  --sm-ok: #2f6b3f;
+  --sm-accent: #8c4f22;
+  --sm-radius: 18px;
+  --sm-shadow: 0 1px 2px rgba(80, 50, 20, 0.06), 0 4px 14px rgba(80, 50, 20, 0.07);
+  --sm-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --sm-page: #101312;
-    --sm-card: #1b1f1d;
-    --sm-line: #2b312e;
-    --sm-text: #eef2f0;
-    --sm-muted: #a2ada8;
-    --sm-soft: #1d2a23;
-    --sm-accent: #62d6a0;
+    --sm-page: #1d1611;
+    --sm-card: #2a2019;
+    --sm-line: #3b2e24;
+    --sm-text: #efe3d6;
+    --sm-muted: #b5a18c;
+    --sm-soft: #3a2a1d;
+    --sm-sand: #33261b;
+    --sm-peach: #f2b48a;
     --sm-deal: #ffb38a;
-    --sm-deal-soft: #33211a;
+    --sm-deal-soft: #3d2519;
+    --sm-ok: #8fd19e;
+    --sm-accent: #f2b48a;
     --sm-shadow: none;
   }
 }
@@ -799,10 +821,10 @@ ion-content.shop-bg {
 
     ion-searchbar {
       --background: #ffffff;
-      --color: #17201c;
-      --placeholder-color: #5f6b66;
-      --icon-color: #0b7a4b;
-      --clear-button-color: #5f6b66;
+      --color: #2b1d12;
+      --placeholder-color: #75634f;
+      --icon-color: #8c4f22;
+      --clear-button-color: #75634f;
       --border-radius: 12px;
       --box-shadow: none;
       padding: 0;
@@ -2226,3 +2248,5 @@ app-product-card {
   color: inherit;
   text-decoration: none;
 }
+
+@import 'theme/customer';

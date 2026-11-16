@@ -15,7 +15,7 @@ import { StoreService } from '../core/store.service';
   imports: [CurrencyPipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonButton, IonSpinner, OrderTracker],
   template: `
     <ion-header class="shop-header">
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/orders" /></ion-buttons>
         <ion-title>{{ order()?.number ?? 'Order' }}</ion-title>
       </ion-toolbar>

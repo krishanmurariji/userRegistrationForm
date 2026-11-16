@@ -14,7 +14,7 @@ import { StoreService } from '../core/store.service';
   imports: [CurrencyPipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonFooter, IonInput, IonTextarea, IonRadioGroup, IonRadio, IonButton, IonSpinner],
   template: `
     <ion-header class="shop-header">
-      <ion-toolbar color="primary">
+      <ion-toolbar>
         <ion-buttons slot="start"><ion-back-button defaultHref="/cart" /></ion-buttons>
         <ion-title>Checkout</ion-title>
       </ion-toolbar>

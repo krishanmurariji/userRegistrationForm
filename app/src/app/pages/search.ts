@@ -16,7 +16,7 @@ import { StoreService } from '../core/store.service';
   imports: [RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonSearchbar, IonContent, IonIcon, IonSpinner, IonFooter, ProductCard, CartBar],
   template: `
     <ion-header class="shop-header">
-      <ion-toolbar color="primary" class="search-toolbar with-back">
+      <ion-toolbar class="search-toolbar with-back">
         <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
         <form role="search" (submit)="$event.preventDefault()">
           <ion-searchbar placeholder="Search items and shops" enterkeyhint="search" inputmode="search" [debounce]="350"
