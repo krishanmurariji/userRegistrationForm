@@ -304,7 +304,7 @@ export class ShopPage {
     this.saving.set(true);
     this.error.set('');
     try {
-      const { id, logoUrl, myRole, isActive, ...input } = shop;
+      const { id, logoUrl, coverUrl, myRole, isActive, ...input } = shop;
       this.shop.set(await this.shops.updateShop(id, { ...input, isOpen }));
     } catch (e) {
       this.shop.set({ ...shop }); // put the switch back

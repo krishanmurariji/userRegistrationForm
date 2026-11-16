@@ -81,7 +81,17 @@ public class ShopsController(
     /// <summary>Replaces the shop logo. Accepts a JPEG, PNG or WebP file up to 5 MB in the form field "file".</summary>
     [HttpPost("{id:guid}/logo")]
     [RequestSizeLimit(ImageStorage.MaxBytes + 64 * 1024)]
-    public async Task<IActionResult> UploadLogo(Guid id, IFormFile file, CancellationToken ct)
+    public Task<IActionResult> UploadLogo(Guid id, IFormFile file, CancellationToken ct) =>
+        ReplacePictureAsync(id, file, s => s.LogoPath, (s, path) => s.LogoPath = path, ct);
+
+    /// <summary>Replaces the wide cover picture shown on the shop's card. Same file rules as the logo.</summary>
+    [HttpPost("{id:guid}/cover")]
+    [RequestSizeLimit(ImageStorage.MaxBytes + 64 * 1024)]
+    public Task<IActionResult> UploadCover(Guid id, IFormFile file, CancellationToken ct) =>
+        ReplacePictureAsync(id, file, s => s.CoverPath, (s, path) => s.CoverPath = path, ct);
+
+    private async Task<IActionResult> ReplacePictureAsync(
+        Guid id, IFormFile file, Func<Shop, string?> current, Action<Shop, string> assign, CancellationToken ct)
     {
         var role = await access.RoleAsync(id, User.GetUserId(), ct);
         if (role is null)
@@ -97,8 +107,8 @@ public class ShopsController(
                 "Upload a JPEG, PNG or WebP picture up to 5 MB.");
 
         var shop = await db.Shops.SingleAsync(s => s.Id == id, ct);
-        var previous = shop.LogoPath;
-        shop.LogoPath = path;
+        var previous = current(shop);
+        assign(shop, path);
         await db.SaveChangesAsync(ct);
         await images.DeleteAsync(previous, ct: ct);
         return Ok(ShopDto.From(shop, role.Value));

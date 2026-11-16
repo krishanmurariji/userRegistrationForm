@@ -13,10 +13,11 @@ export interface Shop {
   /** False when the platform admin has deactivated the shop; it is then read-only. */
   isActive: boolean;
   logoUrl: string | null;
+  coverUrl: string | null;
   myRole: 'Owner' | 'Manager' | 'Staff';
 }
 
-export type ShopInput = Omit<Shop, 'id' | 'logoUrl' | 'myRole' | 'isActive'>;
+export type ShopInput = Omit<Shop, 'id' | 'logoUrl' | 'coverUrl' | 'myRole' | 'isActive'>;
 
 export interface Category {
   id: string;

@@ -57,6 +57,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             b.Property(s => s.DeliveryFee).HasPrecision(10, 2);
             b.Property(s => s.MinimumOrder).HasPrecision(10, 2);
             b.Property(s => s.LogoPath).HasMaxLength(300);
+            b.Property(s => s.CoverPath).HasMaxLength(300);
             b.Property(s => s.IsActive).HasDefaultValue(true);
         });
 

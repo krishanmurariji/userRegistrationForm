@@ -75,7 +75,12 @@ import { StoreService } from '../core/store.service';
           } @else {
             <div class="shop-grid">
               @for (shop of shops(); track shop.id) {
-                <a class="card shop-card" [routerLink]="['/store', shop.id]" [class.closed]="!shop.isOpen">
+                <a class="card shop-card big" [routerLink]="['/store', shop.id]" [class.closed]="!shop.isOpen">
+                  <span class="cover">
+                    @if (file(shop.coverUrl); as src) { <img [src]="src" alt="" loading="lazy" decoding="async" /> }
+                    @else { <app-icon name="storefront" weight="duotone" /> }
+                    <span class="state" [class.open]="shop.isOpen">{{ shop.isOpen ? 'Open' : 'Closed' }}</span>
+                  </span>
                   <span class="logo">
                     @if (file(shop.logoUrl); as src) { <img [src]="src" alt="" loading="lazy" /> }
                     @else { <app-icon name="storefront" weight="duotone" /> }
@@ -84,8 +89,7 @@ import { StoreService } from '../core/store.service';
                     <strong>{{ shop.name }}</strong>
                     <small><app-icon name="map-pin" />{{ shop.addressLine }}, {{ shop.city }}</small>
                     <span class="tags">
-                      <span class="tag" [class.open]="shop.isOpen"><app-icon name="clock" />{{ shop.isOpen ? 'Open' : 'Closed' }}</span>
-                      <span class="tag"><app-icon name="moped" />{{ shop.deliveryFee ? '₹' + shop.deliveryFee : 'Free delivery' }}</span>
+                      <span class="tag"><app-icon name="moped" />{{ shop.deliveryFee ? '₹' + shop.deliveryFee + ' delivery' : 'Free delivery' }}</span>
                       @if (shop.minimumOrder) { <span class="tag">Min ₹{{ shop.minimumOrder }}</span> }
                       @if (shop.acceptsUpi) { <span class="tag"><app-icon name="qr-code" />UPI</span> }
                     </span>

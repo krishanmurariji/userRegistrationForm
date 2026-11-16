@@ -272,4 +272,31 @@ public class ShopTests(TestApp app)
         var logo = await Read<ShopDto>(await client.PostAsync($"/api/shops/{shop.Id}/logo", Upload(Png, "logo.png", "image/png")));
         Assert.StartsWith("/files/shops/", logo.LogoUrl);
     }
+
+    [Fact]
+    public async Task A_shop_can_have_a_cover_picture_that_customers_see()
+    {
+        var (client, shop) = await OwnerWithShopAsync();
+        Assert.Null(shop.CoverUrl);
+
+        var bad = await client.PostAsync($"/api/shops/{shop.Id}/cover", Upload("not a picture"u8.ToArray(), "c.png", "image/png"));
+        Assert.Equal(HttpStatusCode.BadRequest, bad.StatusCode);
+
+        var first = await Read<ShopDto>(await client.PostAsync($"/api/shops/{shop.Id}/cover", Upload(Png, "c.png", "image/png")));
+        Assert.StartsWith("/files/shops/", first.CoverUrl);
+        Assert.Null(first.LogoUrl);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(first.CoverUrl)).StatusCode);
+
+        // Replacing it removes the old file.
+        var second = await Read<ShopDto>(await client.PostAsync($"/api/shops/{shop.Id}/cover", Upload(Png, "c.png", "image/png")));
+        Assert.NotEqual(first.CoverUrl, second.CoverUrl);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync(first.CoverUrl)).StatusCode);
+
+        var (customer, _, _, _) = await app.SignedInUserAsync();
+        var seen = await customer.GetFromJsonAsync<JsonElement>($"/api/store/shops/{shop.Id}");
+        Assert.Equal(second.CoverUrl, seen.GetProperty("shop").GetProperty("coverUrl").GetString());
+
+        var (stranger, _, _, _) = await app.SignedInOwnerAsync();
+        Assert.Equal(HttpStatusCode.NotFound, (await stranger.PostAsync($"/api/shops/{shop.Id}/cover", Upload(Png, "c.png", "image/png"))).StatusCode);
+    }
 }

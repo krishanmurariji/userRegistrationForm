@@ -36,6 +36,11 @@ export class ShopService {
     return firstValueFrom(this.http.post<Shop>(`${this.api}/${id}/logo`, this.form(file)));
   }
 
+  /** The wide picture at the top of the shop's card. */
+  uploadCover(id: string, file: File): Promise<Shop> {
+    return firstValueFrom(this.http.post<Shop>(`${this.api}/${id}/cover`, this.form(file)));
+  }
+
   categories(shopId: string): Promise<Category[]> {
     return firstValueFrom(this.http.get<Category[]>(`${this.api}/${shopId}/categories`));
   }

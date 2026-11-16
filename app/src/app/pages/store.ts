@@ -35,7 +35,8 @@ import { StoreService } from '../core/store.service';
           <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         }
         @if (shop(); as s) {
-          <section class="shop-hero">
+          <section class="shop-hero" [class.has-cover]="!!file(s.coverUrl)">
+            @if (file(s.coverUrl); as cover) { <img class="cover" [src]="cover" alt="" /> }
             <span class="logo">
               @if (file(s.logoUrl); as src) { <img [src]="src" alt="" /> } @else { <app-icon name="storefront" weight="duotone" /> }
             </span>

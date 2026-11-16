@@ -8,11 +8,11 @@ namespace SmallMart.Api.Orders;
 
 public record StoreShopDto(
     Guid Id, string Name, string? Description, string AddressLine, string City, string Pincode, string Phone,
-    bool IsOpen, bool AcceptsUpi, decimal DeliveryFee, decimal MinimumOrder, string? LogoUrl)
+    bool IsOpen, bool AcceptsUpi, decimal DeliveryFee, decimal MinimumOrder, string? LogoUrl, string? CoverUrl = null)
 {
     public static StoreShopDto From(Shop s) => new(
         s.Id, s.Name, s.Description, s.AddressLine, s.City, s.Pincode, s.Phone,
-        s.IsOpen, s.UpiId != null, s.DeliveryFee, s.MinimumOrder, ImageStorage.Url(s.LogoPath));
+        s.IsOpen, s.UpiId != null, s.DeliveryFee, s.MinimumOrder, ImageStorage.Url(s.LogoPath), ImageStorage.Url(s.CoverPath));
 }
 
 public record StoreCategoryDto(Guid Id, string Name);

@@ -21,6 +21,8 @@ public class Shop
     /// </summary>
     public bool IsActive { get; set; } = true;
     public string? LogoPath { get; set; }
+    /// <summary>A wide picture of the shop shown at the top of its card.</summary>
+    public string? CoverPath { get; set; }
     public DateTimeOffset CreatedAt { get; set; }
 
     public List<ShopMember> Members { get; set; } = [];

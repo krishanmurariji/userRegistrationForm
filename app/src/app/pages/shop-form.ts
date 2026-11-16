@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSpinner, IonText, IonTextarea, IonTitle, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
+import { Shop } from '../core/shop.models';
 import { ShopService, fileUrl } from '../core/shop.service';
 
 /** Creates a shop (/shops/new) or edits one (/shops/:shopId/edit). */
@@ -31,6 +32,16 @@ import { ShopService, fileUrl } from '../core/shop.service';
                   {{ logoUrl() ? 'Change logo' : 'Add logo' }}
                 </ion-button>
                 <input #picker type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="uploadLogo($event)" />
+              </div>
+              <div class="cover-row">
+                <div class="cover-preview">
+                  @if (coverUrl(); as src) { <img [src]="src" alt="Shop cover picture" /> } @else { <span>No cover picture</span> }
+                </div>
+                <ion-button fill="outline" [disabled]="busy()" (click)="coverPicker.click()">
+                  {{ coverUrl() ? 'Change cover picture' : 'Add cover picture' }}
+                </ion-button>
+                <p class="hint">A wide photo of your shop front or shelves. Customers see it at the top of your shop.</p>
+                <input #coverPicker type="file" accept="image/jpeg,image/png,image/webp" hidden (change)="uploadCover($event)" />
               </div>
             }
 
@@ -92,6 +103,7 @@ export class ShopFormPage implements OnInit {
   protected readonly busy = signal(false);
   protected readonly error = signal('');
   protected readonly logoUrl = signal<string | null>(null);
+  protected readonly coverUrl = signal<string | null>(null);
   private isOpen = true;
 
   async ngOnInit(): Promise<void> {
@@ -102,6 +114,7 @@ export class ShopFormPage implements OnInit {
       if (!shop.isActive) this.error.set('This shop has been deactivated by the platform admin and cannot be changed.');
       this.isOpen = shop.isOpen;
       this.logoUrl.set(fileUrl(shop.logoUrl));
+      this.coverUrl.set(fileUrl(shop.coverUrl));
     } catch (e) {
       this.error.set(toApiError(e).message);
     } finally {
@@ -134,7 +147,15 @@ export class ShopFormPage implements OnInit {
     }
   }
 
-  protected async uploadLogo(event: Event): Promise<void> {
+  protected uploadLogo(event: Event): Promise<void> {
+    return this.upload(event, (id, file) => this.shops.uploadLogo(id, file));
+  }
+
+  protected uploadCover(event: Event): Promise<void> {
+    return this.upload(event, (id, file) => this.shops.uploadCover(id, file));
+  }
+
+  private async upload(event: Event, send: (shopId: string, file: File) => Promise<Shop>): Promise<void> {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
@@ -143,8 +164,9 @@ export class ShopFormPage implements OnInit {
     this.busy.set(true);
     this.error.set('');
     try {
-      const shop = await this.shops.uploadLogo(this.shopId, file);
+      const shop = await send(this.shopId, file);
       this.logoUrl.set(fileUrl(shop.logoUrl));
+      this.coverUrl.set(fileUrl(shop.coverUrl));
     } catch (e) {
       this.error.set(toApiError(e).message);
     } finally {

@@ -11,13 +11,13 @@
 
 :root {
   --ion-font-family: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  /* Caramel brown: white text on it is 6.4:1, so buttons stay readable. */
-  --ion-color-primary: #8c4f22;
-  --ion-color-primary-rgb: 140, 79, 34;
+  /* Warm caramel: white text on it is 5.8:1, so buttons stay readable. */
+  --ion-color-primary: #9b5227;
+  --ion-color-primary-rgb: 155, 82, 39;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #7b461e;
-  --ion-color-primary-tint: #98602f;
+  --ion-color-primary-shade: #8d4c25;
+  --ion-color-primary-tint: #aa673f;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -755,18 +755,18 @@
    Cream page, warm white cards, caramel brown for actions, peach for soft highlights, terracotta only for deals.
    ========================================================================== */
 :root {
-  --sm-page: #fbf4ea;
+  --sm-page: #fbf3e8;
   --sm-card: #fffdf9;
   --sm-line: #ebddcb;
   --sm-text: #2b1d12;
   --sm-muted: #75634f;
-  --sm-soft: #fde7d5;
+  --sm-soft: #ffe1cc;
   --sm-sand: #f3e3ce;
-  --sm-peach: #f7b58c;
+  --sm-peach: #ffab85;
   --sm-deal: #a63a14;
   --sm-deal-soft: #ffe9dc;
   --sm-ok: #2f6b3f;
-  --sm-accent: #8c4f22;
+  --sm-accent: #9b5227;
   --sm-radius: 18px;
   --sm-shadow: 0 1px 2px rgba(80, 50, 20, 0.06), 0 4px 14px rgba(80, 50, 20, 0.07);
   --sm-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -823,7 +823,7 @@ ion-content.shop-bg {
       --background: #ffffff;
       --color: #2b1d12;
       --placeholder-color: #75634f;
-      --icon-color: #8c4f22;
+      --icon-color: #9b5227;
       --clear-button-color: #75634f;
       --border-radius: 12px;
       --box-shadow: none;

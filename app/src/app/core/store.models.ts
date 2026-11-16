@@ -11,6 +11,7 @@ export interface StoreShop {
   deliveryFee: number;
   minimumOrder: number;
   logoUrl: string | null;
+  coverUrl: string | null;
 }
 
 export interface StoreCategory {
