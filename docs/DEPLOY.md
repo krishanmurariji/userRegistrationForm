@@ -1,110 +1,79 @@
-# Running the API from your own PC with a Cloudflare Tunnel
+# Deploying the API for free on Northflank (always on) with a Supabase database
 
-The API, its PostgreSQL database and your uploaded pictures run in Docker on your Windows PC. **Cloudflare Tunnel**
-(free) gives it a public `https://` address without opening any port on your router, and works even when your
-internet provider hides your IP.
+**Why Northflank:** in a search of current free hosts, its free "Developer Sandbox" is the one that runs services
+**without sleeping**: up to 2 services, 1 database and 2 jobs, built straight from your GitHub repository and your
+`backend/Dockerfile`. Render, Zeabur and Koyeb's free plans sleep or scale to zero, and Koyeb's free plan is
+reported to need a card and may be closed to new users.
 
-**Status:** the code was tested locally (152 tests; the published API was run in Production mode, created a fresh
-database, seeded the admin, logged in and answered `/health`), and the compose file validates in both modes. The
-Docker images, Docker Desktop on Windows and the Cloudflare steps could not be run in the development environment,
-so expect small fixes on the first run and send me the output of any command that fails.
+**Status, read this first:** nothing here was run. Free-tier terms change often and the sources disagree, so
+confirm on [Northflank's pricing page](https://northflank.com/pricing) before you start:
 
-## Be clear about what this means
+- Whether a **payment card is needed**: the pricing page says "No card needed", other sources say a payment method
+  must be added to create resources (not charged inside the free allowance). Be ready for either.
+- Northflank describes the sandbox as for hobby projects and testing, **not production**. It is good for trying the
+  app with real people; plan a small paid plan for a busy shop.
+- I found no per-service memory or CPU numbers. The API is small, but if it runs out of memory pick the largest
+  size the sandbox allows.
+- Sources: [Northflank pricing](https://northflank.com/pricing), [agentdeals summary](https://agentdeals.dev/vendor/northflank),
+  [freetier.co comparison](https://freetier.co/compare/koyeb-vs-northflank).
 
-- **The PC must be on, awake and online whenever customers use the app.** If it is off, the app cannot sign in or
-  order. Set Windows power settings to "never sleep" (plugged in), and let it start Docker after a reboot.
-- **A domain name is needed** for a permanent address. The tunnel itself is free, but a domain costs a few dollars a
-  year (a `.xyz` or `.in` is often 1 to 8 USD; Cloudflare sells `.com` at cost, about 10 USD). Cloudflare's free
-  "quick tunnels" give a random address that changes every restart, which cannot be baked into a release build.
-- **Your PC's disk holds everything** (customers, orders, pictures). Run the backup script and copy backups to
-  another place (USB drive, cloud drive).
-- For a real shop with real customers a 4 to 6 USD a month server is steadier than a home PC (see the end).
+## Step 1: the database (Supabase, free)
 
-## Step 1: Docker on the PC
+1. Supabase, your project, **Connect**, **Session pooler** (not Direct: that one is IPv6 only).
+2. Make the connection string (one line):
+   ```
+   Host=aws-0-ap-south-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.abcdefghijk;Password=YOUR_PASSWORD;SSL Mode=Require;Trust Server Certificate=true
+   ```
+   (a password with `;` or `=` goes in double quotes.)
 
-1. Install **Docker Desktop** (docker.com). Accept the WSL 2 option. Restart when asked.
-2. Docker Desktop, Settings, General: tick **Start Docker Desktop when you sign in**.
-3. Install **Git for Windows** if you do not have it.
+Supabase's free database is 500 MB and pauses after a week with no use. Pictures are stored in it too (see below).
 
-## Step 2: a domain on Cloudflare
+## Step 2: the API on Northflank
 
-1. Create a free account at cloudflare.com.
-2. Either buy a domain there (Domain Registration, Register domains), or add a domain you already own
-   (Add a site, and change its nameservers at your registrar to the two Cloudflare gives you).
+1. Sign up at northflank.com with GitHub. Create a project (pick a region near your customers, for example Mumbai if
+   offered, otherwise Singapore).
+2. **Create new, Service, Combined service** (build and deploy):
+   - Repository: this repository, branch `master` (merge `release-pipeline` first).
+   - Build: **Dockerfile**, Dockerfile location `/backend/Dockerfile`, build context `/backend`.
+   - Port: `8080`, protocol **HTTP**, tick **Publish this port to the internet** (this gives you the `https://` address).
+   - Health check (if offered): HTTP path `/health` on port 8080.
+3. **Runtime variables** (mark the secret ones as secret):
 
-## Step 3: create the tunnel
+   | Name | Value |
+   |---|---|
+   | `ASPNETCORE_ENVIRONMENT` | `Production` |
+   | `ConnectionStrings__Default` | the string from step 1 (secret) |
+   | `Database__MigrateOnStartup` | `true` |
+   | `Storage__Provider` | `Database` (the free service has no kept disk; pictures go into the database) |
+   | `App__DisableHttpsRedirect` | `true` |
+   | `Jwt__Key` | 32+ random characters (secret). Never change it later. |
+   | `Seed__AdminEmail`, `Seed__AdminPassword` | your platform admin login (secret) |
+   | `App__ClientUrl` | the public address Northflank shows you (you can edit it after the first deploy) |
 
-1. Open one.dash.cloudflare.com (Zero Trust). Choose the free plan if it asks. It may ask for a payment method; the
-   free plan is not charged.
-2. **Networks, Tunnels, Create a tunnel, Cloudflared**. Name it `smallmart`.
-3. On the install page, copy the long **token** (the text after `--token`). Do not run the shown install command; the
-   token is all you need.
-4. **Public hostname** tab, add one:
-   - Subdomain `api`, domain: yours (so the address is `https://api.yourdomain.com`)
-   - Service type `HTTP`, URL `api:8080`
-5. Save.
+   Make a `Jwt__Key` in PowerShell:
+   ```bash
+   $b = New-Object byte[] 36; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+   ```
+4. Create the service. The first build takes 5 to 10 minutes.
 
-## Step 4: start Small Mart
+## Step 3: check
 
-In PowerShell:
+Open `https://<your-service-address>/health`. You should see `{"status":"ok"}`. **That address is your API address**:
+use it as `api_url` in the Release workflow ([RELEASING.md](RELEASING.md)). Updates deploy by themselves when you
+push to `master` if you enabled that in the service's build settings.
 
-```bash
-git clone https://github.com/krishanmurariji/userRegistrationForm.git smallmart
-cd smallmart\deploy
-copy .env.example .env
-notepad .env
-```
+Optional variables, same place: `Smtp__Host`, `Smtp__Port`, `Smtp__Username`, `Smtp__Password`, `Smtp__FromEmail`
+(real emails; Zoho is `smtp.zoho.in`, port 587) and `Ai__OpenAiApiKey` (adding items from a photo).
 
-Fill in `.env`: `TUNNEL_TOKEN` (from step 3), `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CLIENT_URL` (your API address for
-now), and generate the two secrets with these commands, pasting each result into `.env`:
+## If it does not work
 
-```bash
-$b = New-Object byte[] 16; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); -join ($b | ForEach-Object { $_.ToString('x2') })
-$b = New-Object byte[] 36; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
-```
+- Service logs on Northflank. A first-run line mentioning `__EFMigrationsHistory` is normal.
+- "Jwt:Key must be set": the `Jwt__Key` variable is missing.
+- Database connection errors: use the Session pooler string and keep `SSL Mode=Require`.
+- Out of memory or restarts: increase the service size, or reduce load.
 
-The first is `DB_PASSWORD`, the second is `JWT_KEY`. Never lose or change `JWT_KEY` later (everyone would be signed
-out). Leave `COMPOSE_PROFILES=tunnel` and `DOMAIN` empty. If the repository is private, sign in to Git when it asks.
+## Other ways
 
-Then start it (the first build takes several minutes):
-
-```bash
-docker compose up -d --build
-docker compose ps
-```
-
-## Step 5: check
-
-Open `https://api.yourdomain.com/health` in a browser (from your phone's mobile data too). You should see
-`{"status":"ok"}`. **That address is your API address**: use it as `api_url` in the Release workflow
-([RELEASING.md](RELEASING.md)).
-
-If it does not work: `docker compose logs cloudflared api`. "Bad gateway" usually means the public hostname service
-is not exactly `http://api:8080`, or the API is still starting.
-
-## Operating
-
-```bash
-cd smallmart\deploy
-.\update.ps1                 # get the newest code and restart
-docker compose logs -f api   # watch the logs
-.\backup.ps1                 # database + pictures into deploy\backups (keeps 14 days)
-```
-
-Daily backup: Task Scheduler, Create Basic Task, Daily 3:00, Action "Start a program": program `powershell.exe`,
-arguments `-ExecutionPolicy Bypass -File C:\path\to\smallmart\deploy\backup.ps1`. Copy `deploy\backups` somewhere
-else regularly.
-
-Tables are created and updated automatically when the API starts.
-
-## Moving to a server later
-
-The same files run on any Ubuntu server with a public IP: set `COMPOSE_PROFILES=server` and `DOMAIN` in `.env`,
-run `sudo bash deploy/setup.sh`, then `docker compose up -d --build`. Caddy gets the HTTPS certificate itself, and
-`deploy/update.sh` and `deploy/backup.sh` replace the PowerShell scripts. Choices:
-
-- A small paid server (Hetzner or DigitalOcean, 4 to 6 USD a month) is the steadiest.
-- Google Cloud's Always Free e2-micro (US regions only, 1 GB) is free, but sources disagree on whether its public
-  IPv4 address is charged, so check Google's current pricing before relying on it
-  ([one review](https://bestusavps.pages.dev/reviews/google-cloud)).
-- Oracle Cloud Always Free works too if you have not used its allowance.
+- [DEPLOY-PC.md](DEPLOY-PC.md): run it on your own Windows PC with a Cloudflare Tunnel (needs a domain, PC always on).
+- The same Docker files run on any Ubuntu server (`COMPOSE_PROFILES=server`), for example a 4 to 6 USD a month
+  Hetzner or DigitalOcean machine, which is the steadiest option once real customers depend on the app.

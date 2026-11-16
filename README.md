@@ -23,7 +23,7 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | AI | Add items from a photo: details read by an OpenAI vision model, barcode lookup, shared catalog, daily limit | Done, tested against the real service |
 | Mobile | Android and iOS app projects (Capacitor), icons, permissions, build scripts | Set up, not yet run on a device. See [docs/MOBILE.md](docs/MOBILE.md) |
 | Desktop | Windows app (Electron) in `desktop/` | Set up, installer not yet built or run. See [docs/RELEASING.md](docs/RELEASING.md) |
-| Hosting | Dockerfile + docker compose (API, PostgreSQL) reached through a Cloudflare Tunnel from your PC, or Caddy on a server; backup and update scripts | API tested locally in Production mode; the PC and tunnel setup is not yet run. See [docs/DEPLOY.md](docs/DEPLOY.md) |
+| Hosting | Dockerfile for free always-on hosting on Northflank + Supabase (guide), plus docker compose for a PC with Cloudflare Tunnel or a server | API tested locally in Production mode; hosting steps not yet run. See [docs/DEPLOY.md](docs/DEPLOY.md) |
 | Releases | One GitHub Actions workflow builds the Windows, Android and iOS apps into a draft release | Written, not yet run. See [docs/RELEASING.md](docs/RELEASING.md) |
 | Later | Offers and coupons, push and email notifications, native Google and Microsoft sign-in in the apps, saved addresses, support tickets | Not started |
 
