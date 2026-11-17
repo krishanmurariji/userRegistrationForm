@@ -1,0 +1,164 @@
+# Publishes the API to MonsterASP.NET (free Windows hosting for ASP.NET) with Web Deploy.
+#
+# How to use: GitHub, Actions tab, "Deploy API", "Run workflow". Guide and the list of secrets: docs/DEPLOY-MONSTERASP.md
+#
+# Settings such as the database connection string never live in git. This workflow writes them from repository
+# secrets into appsettings.Production.json and sends that file with the app. Files that exist only on the server
+# (uploaded pictures in App_Data) are never deleted by a deploy.
+name: Deploy API
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_tests:
+        description: 'Run the backend tests first'
+        type: boolean
+        default: true
+      startup_logs:
+        description: 'Write startup logs to a file on the server (turn on only to find out why the site will not start)'
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run the tests
+    if: ${{ inputs.run_tests }}
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Backend tests
+        working-directory: backend
+        run: dotnet test --nologo
+
+  deploy:
+    name: Deploy
+    needs: test
+    if: ${{ !cancelled() && needs.test.result != 'failure' }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Check the secrets are set
+        shell: pwsh
+        env:
+          WEBSITE_NAME: ${{ secrets.MONSTERASP_WEBSITE_NAME }}
+          SERVER: ${{ secrets.MONSTERASP_SERVER }}
+          USERNAME: ${{ secrets.MONSTERASP_USERNAME }}
+          PASSWORD: ${{ secrets.MONSTERASP_PASSWORD }}
+          API_CONNECTION_STRING: ${{ secrets.API_CONNECTION_STRING }}
+          API_JWT_KEY: ${{ secrets.API_JWT_KEY }}
+          API_ADMIN_EMAIL: ${{ secrets.API_ADMIN_EMAIL }}
+          API_ADMIN_PASSWORD: ${{ secrets.API_ADMIN_PASSWORD }}
+        run: |
+          $names = 'WEBSITE_NAME','SERVER','USERNAME','PASSWORD','API_CONNECTION_STRING','API_JWT_KEY','API_ADMIN_EMAIL','API_ADMIN_PASSWORD'
+          $missing = $names | Where-Object { [string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($_)) }
+          if ($missing) {
+            $labels = $missing | ForEach-Object { if ($_ -like 'API_*') { $_ } else { "MONSTERASP_$_" } }
+            Write-Host "::error::These repository secrets are missing: $($labels -join ', '). See docs/DEPLOY-MONSTERASP.md"
+            exit 1
+          }
+          if ($env:API_JWT_KEY.Length -lt 32) { Write-Host "::error::API_JWT_KEY must be at least 32 characters."; exit 1 }
+
+      - name: Publish the API
+        run: dotnet publish backend/src/SmallMart.Api/SmallMart.Api.csproj -c Release -o publish --nologo
+
+      - name: Write the production settings
+        shell: pwsh
+        env:
+          API_CONNECTION_STRING: ${{ secrets.API_CONNECTION_STRING }}
+          API_JWT_KEY: ${{ secrets.API_JWT_KEY }}
+          API_ADMIN_EMAIL: ${{ secrets.API_ADMIN_EMAIL }}
+          API_ADMIN_PASSWORD: ${{ secrets.API_ADMIN_PASSWORD }}
+          API_CLIENT_URL: ${{ vars.API_CLIENT_URL }}
+          API_ALLOWED_ORIGINS: ${{ vars.API_ALLOWED_ORIGINS }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM_EMAIL: ${{ secrets.SMTP_FROM_EMAIL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          STARTUP_LOGS: ${{ inputs.startup_logs }}
+        run: |
+          $settings = [ordered]@{
+            ConnectionStrings = @{ Default = $env:API_CONNECTION_STRING }
+            Database          = @{ MigrateOnStartup = $true }
+            Jwt               = @{ Key = $env:API_JWT_KEY }
+            Seed              = @{ AdminEmail = $env:API_ADMIN_EMAIL; AdminPassword = $env:API_ADMIN_PASSWORD }
+          }
+          $app = @{}
+          if ($env:API_CLIENT_URL) { $app.ClientUrl = $env:API_CLIENT_URL.TrimEnd('/') }
+          if ($env:API_ALLOWED_ORIGINS) { $app.AllowedOrigins = @($env:API_ALLOWED_ORIGINS -split '[,\s]+' | Where-Object { $_ }) }
+          if ($app.Count) { $settings.App = $app }
+          if ($env:SMTP_HOST) {
+            $settings.Smtp = @{
+              Host = $env:SMTP_HOST; Port = [int]($(if ($env:SMTP_PORT) { $env:SMTP_PORT } else { 587 }))
+              Username = $env:SMTP_USERNAME; Password = $env:SMTP_PASSWORD; FromEmail = $env:SMTP_FROM_EMAIL
+            }
+          }
+          if ($env:OPENAI_API_KEY) { $settings.Ai = @{ OpenAiApiKey = $env:OPENAI_API_KEY } }
+          $settings | ConvertTo-Json -Depth 5 | Set-Content -Path publish/appsettings.Production.json -Encoding utf8
+
+          # Never ship a developer's own settings.
+          Remove-Item publish/appsettings.Development.json, publish/appsettings.Local.json -ErrorAction SilentlyContinue
+
+          if (-not (Test-Path publish/web.config)) { Write-Host "::error::dotnet publish did not create web.config."; exit 1 }
+          if ($env:STARTUP_LOGS -eq 'true') {
+            (Get-Content publish/web.config -Raw) -replace 'stdoutLogEnabled="false"', 'stdoutLogEnabled="true"' | Set-Content publish/web.config -Encoding utf8
+            New-Item -ItemType Directory -Force publish/logs | Out-Null
+            Set-Content publish/logs/readme.txt 'Startup logs appear in this folder. Download them with the file manager or FTP.'
+            Write-Host "::warning::Startup logs are ON. They can contain details about your settings: run the deploy again with them off when you are done."
+          }
+          Get-ChildItem publish | Select-Object -First 12 Name, Length | Format-Table
+
+      - name: Send it to the server
+        uses: rasmusbuchholdt/simply-web-deploy@2.2.0
+        with:
+          website-name: ${{ secrets.MONSTERASP_WEBSITE_NAME }}
+          server-computer-name: ${{ secrets.MONSTERASP_SERVER }}
+          server-username: ${{ secrets.MONSTERASP_USERNAME }}
+          server-password: ${{ secrets.MONSTERASP_PASSWORD }}
+          source-path: '\publish\'
+          # Files that are only on the server (uploaded pictures) are kept.
+          target-delete: 'false'
+
+      - name: Check that the API answers
+        if: ${{ vars.API_URL != '' }}
+        shell: pwsh
+        env:
+          API_URL: ${{ vars.API_URL }}
+        run: |
+          $url = "$($env:API_URL.TrimEnd('/'))/health"
+          for ($i = 1; $i -le 10; $i++) {
+            try {
+              $r = Invoke-WebRequest -Uri $url -TimeoutSec 30 -UseBasicParsing
+              if ($r.StatusCode -eq 200) { Write-Host "The API answered: $($r.Content)"; exit 0 }
+            } catch { Write-Host "Try $i of 10: $($_.Exception.Message)" }
+            Start-Sleep -Seconds 12
+          }
+          Write-Host "::error::The files were sent, but $url did not answer. Run this workflow again with 'startup logs' ticked and read the log file on the server. See docs/DEPLOY-MONSTERASP.md"
+          exit 1

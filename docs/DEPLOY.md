@@ -8,8 +8,8 @@ reported to need a card and may be closed to new users.
 **Status, read this first:** nothing here was run. Free-tier terms change often and the sources disagree, so
 confirm on [Northflank's pricing page](https://northflank.com/pricing) before you start:
 
-- Whether a **payment card is needed**: the pricing page says "No card needed", other sources say a payment method
-  must be added to create resources (not charged inside the free allowance). Be ready for either.
+- A **payment card is needed** to create a service (seen on 17 Nov 2026: "Creating this service requires a card.
+  You will not be charged for this service."). For a route with no card see [DEPLOY-MONSTERASP.md](DEPLOY-MONSTERASP.md).
 - Northflank describes the sandbox as for hobby projects and testing, **not production**. It is good for trying the
   app with real people; plan a small paid plan for a busy shop.
 - I found no per-service memory or CPU numbers. The API is small, but if it runs out of memory pick the largest
@@ -30,8 +30,7 @@ Supabase's free database is 500 MB and pauses after a week with no use. Pictures
 
 ## Step 2: the API on Northflank
 
-1. Sign up at northflank.com with GitHub. Create a project (pick a region near your customers, for example Mumbai if
-   offered, otherwise Singapore).
+1. Sign up at northflank.com with GitHub. Create a project (the free plan offers US - Central and Europe - West; the Asia regions need a paid plan).
 2. **Create new, Service, Combined service** (build and deploy):
    - Repository: this repository, branch `master` (merge `release-pipeline` first).
    - Build: **Dockerfile**, Dockerfile location `/backend/Dockerfile`, build context `/backend`.
@@ -74,6 +73,7 @@ Optional variables, same place: `Smtp__Host`, `Smtp__Port`, `Smtp__Username`, `S
 
 ## Other ways
 
+- [DEPLOY-MONSTERASP.md](DEPLOY-MONSTERASP.md): MonsterASP.NET, free with **no card** (Northflank turned out to need a card to create a service).
 - [DEPLOY-PC.md](DEPLOY-PC.md): run it on your own Windows PC with a Cloudflare Tunnel (needs a domain, PC always on).
 - The same Docker files run on any Ubuntu server (`COMPOSE_PROFILES=server`), for example a 4 to 6 USD a month
   Hetzner or DigitalOcean machine, which is the steadiest option once real customers depend on the app.
