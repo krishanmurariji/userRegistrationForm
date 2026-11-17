@@ -16,7 +16,7 @@ on:
         required: true
         type: string
       api_url:
-        description: 'Address of your hosted API, for example https://api.yourshop.com (or set the API_URL repository variable)'
+        description: 'Address of your hosted API. Leave empty to use the API_URL variable, or else the address in app/src/environments/environment.ts'
         required: false
         type: string
       run_tests:
@@ -56,12 +56,15 @@ jobs:
       api_url: ${{ steps.settings.outputs.api_url }}
       placeholder: ${{ steps.settings.outputs.placeholder }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: app/src/environments
       - name: Check the settings
         id: settings
         env:
           VERSION: ${{ inputs.version }}
           API_INPUT: ${{ inputs.api_url }}
-          API_VARIABLE: ${{ vars.API_URL }}
+          API_VARIABLE: ${{ vars.API_URL || secrets.API_URL }}
           GH_TOKEN: ${{ github.token }}
         run: |
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
@@ -72,10 +75,12 @@ jobs:
             echo "::error::A release for v$VERSION already exists. Choose a higher version number, or delete that release first."
             exit 1
           fi
-          API_URL="${API_INPUT:-$API_VARIABLE}"
+          # The address committed in the app is used when none is given.
+          COMMITTED="$(sed -nE "s/^[[:space:]]*apiUrl: '([^']*)'.*/\1/p" app/src/environments/environment.ts | head -1)"
+          API_URL="${API_INPUT:-${API_VARIABLE:-$COMMITTED}}"
           API_URL="${API_URL%/}"
           PLACEHOLDER=false
-          if [ -z "$API_URL" ]; then
+          if [ -z "$API_URL" ] || [[ "$API_URL" == *api.example.com* ]]; then
             PLACEHOLDER=true
             API_URL="https://api.example.com"
             echo "::warning::No API address was given, so the apps are built against the placeholder $API_URL and cannot sign in. Set the API_URL repository variable or fill in the api_url box. The release is marked as a pre-release."
@@ -152,7 +157,8 @@ jobs:
             app/package-lock.json
             desktop/package-lock.json
       - name: Point the app at the hosted API
-        run: sed -i "s|https://api.example.com|$API_URL|" app/src/environments/environment.ts
+        run: |
+          sed -i -E "s|apiUrl: '[^']*'|apiUrl: '$API_URL'|" app/src/environments/environment.ts
       - name: Build the web app
         working-directory: app
         run: |
@@ -206,7 +212,8 @@ jobs:
           distribution: temurin
           java-version: 21
       - name: Point the app at the hosted API
-        run: sed -i "s|https://api.example.com|$API_URL|" app/src/environments/environment.ts
+        run: |
+          sed -i -E "s|apiUrl: '[^']*'|apiUrl: '$API_URL'|" app/src/environments/environment.ts
       - name: Build the web app into the Android project
         working-directory: app
         run: |
@@ -269,7 +276,8 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
       - name: Point the app at the hosted API
-        run: sed -i '' "s|https://api.example.com|$API_URL|" app/src/environments/environment.ts
+        run: |
+          sed -i '' -E "s|apiUrl: '[^']*'|apiUrl: '$API_URL'|" app/src/environments/environment.ts
       - name: Build the web app into the iOS project
         working-directory: app
         run: |
