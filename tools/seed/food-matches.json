@@ -335,5 +335,94 @@
   "quantity": "200g",
   "image": "https://images.openfoodfacts.org/images/products/400/840/016/3826/front_fr.141.400.jpg",
   "india": false
+ },
+ "Amul Cheese Spread": {
+  "barcode": "8901262060011",
+  "offName": "Cheese Spread",
+  "brands": "Amul",
+  "quantity": "200 g",
+  "image": "https://images.openfoodfacts.org/images/products/890/126/206/0011/front_en.8.400.jpg",
+  "india": true
+ },
+ "Nestle a+ Dahi": {
+  "barcode": "8901058022384",
+  "offName": "Dahi",
+  "brands": "Nestlé",
+  "quantity": "",
+  "image": "https://images.openfoodfacts.org/images/products/890/105/802/2384/front_en.7.400.jpg",
+  "india": true
+ },
+ "Kabuli Chana": {
+  "barcode": "8906055440094",
+  "offName": "Kabuli chana",
+  "brands": "Organic tattva",
+  "quantity": "500 g",
+  "image": "https://images.openfoodfacts.org/images/products/890/605/544/0094/front_en.3.400.jpg",
+  "india": true
+ },
+ "Figaro Olive Oil": {
+  "barcode": "8410125211700",
+  "offName": "Fígaro Extra Virgin Olive Oil (Imported)",
+  "brands": "Figaro",
+  "quantity": "250ml (228g)",
+  "image": "https://images.openfoodfacts.org/images/products/841/012/521/1700/front_en.3.400.jpg",
+  "india": true
+ },
+ "Everest Coriander Powder": null,
+ "MDH Deggi Mirch": {
+  "barcode": "8902167000034",
+  "offName": "Deggi mirch",
+  "brands": "MDH",
+  "quantity": "100g",
+  "image": "https://images.openfoodfacts.org/images/products/890/216/700/0034/front_en.3.400.jpg",
+  "india": false
+ },
+ "Saffola Masala Oats": {
+  "barcode": "8901088068734",
+  "offName": "Saffola Masala Oats - Classic Masala",
+  "brands": "Saffola",
+  "quantity": "38 g",
+  "image": "https://images.openfoodfacts.org/images/products/890/108/806/8734/front_en.19.400.jpg",
+  "india": true
+ },
+ "Tata Tea Gold": {
+  "barcode": "8901052000906",
+  "offName": "Tata tea Gold",
+  "brands": "Tata Tea",
+  "quantity": "500g",
+  "image": "https://images.openfoodfacts.org/images/products/890/105/200/0906/front_en.3.400.jpg",
+  "india": true
+ },
+ "Bru Instant Coffee": {
+  "barcode": "8901030535895",
+  "offName": "Bru Instant Coffee",
+  "brands": "Bru",
+  "quantity": "1.2 g",
+  "image": "https://images.openfoodfacts.org/images/products/890/103/053/5895/front_en.3.400.jpg",
+  "india": true
+ },
+ "Real Fruit Power Mixed Fruit": {
+  "barcode": "8901888006363",
+  "offName": "Real mixed fruit tpk",
+  "brands": null,
+  "quantity": "180ml",
+  "image": "https://images.openfoodfacts.org/images/products/890/188/800/6363/front_fr.15.400.jpg",
+  "india": true
+ },
+ "Sprite": {
+  "barcode": "8901764032912",
+  "offName": "Sprite",
+  "brands": "Coca-Cola, Sprite",
+  "quantity": "250 ml",
+  "image": "https://images.openfoodfacts.org/images/products/890/176/403/2912/front_en.48.400.jpg",
+  "india": true
+ },
+ "Paper Boat Aamras": {
+  "barcode": "8908001705448",
+  "offName": "Paper Boat Aamras drink 200ml",
+  "brands": "",
+  "quantity": "200 ml",
+  "image": "https://images.openfoodfacts.org/images/products/890/800/170/5448/front_fr.50.400.jpg",
+  "india": false
  }
 }

@@ -20,10 +20,18 @@ for category, rows in base.items():
     for row in rows:
         if row['db'] != 'food' or row['name'] in done:
             continue
-        try:
-            products = search(row['search'])
-        except Exception as e:
-            print('ERR', row['name'], e, flush=True); time.sleep(10); continue
+        products = None
+        for attempt in range(4):
+            try:
+                products = search(row['search'])
+                break
+            except Exception as e:
+                # The database is often briefly busy: wait longer each time before trying again.
+                print('busy', row['name'], e, flush=True)
+                time.sleep(15 * (attempt + 1))
+        if products is None:
+            print('ERR', row['name'], flush=True)
+            continue
         best, best_score = None, -1
         brand_word = row['name'].split()[0].lower().strip("'s.")
         for p in products:

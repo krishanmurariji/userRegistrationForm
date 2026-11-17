@@ -25,6 +25,8 @@ by cash on delivery or UPI. See [PLAN.md](PLAN.md) for the full feature plan and
 | Desktop | Windows app (Electron) in `desktop/` | Set up, installer not yet built or run. See [docs/RELEASING.md](docs/RELEASING.md) |
 | Hosting | Dockerfile for free always-on hosting on Northflank + Supabase (guide), plus docker compose for a PC with Cloudflare Tunnel or a server | API tested locally in Production mode; hosting steps not yet run. See [docs/DEPLOY-MONSTERASP.md](docs/DEPLOY-MONSTERASP.md) (free, no card, with a deploy workflow) and [docs/DEPLOY.md](docs/DEPLOY.md) |
 | Web version | Cloudflare Pages (free), rebuilt on every push | Guide written, not yet set up. See [docs/DEPLOY-WEB.md](docs/DEPLOY-WEB.md) |
+| Landing page | Public front page with 3D scroll effects, features, app downloads and sign-in; new logo across web and apps | Done. Live at the website address once deployed |
+| Demo data | "Seed demo data" workflow: one Jaipur kirana with about 130 products and real pack photos | Written and tested locally (photos untested here). See [docs/SEED.md](docs/SEED.md) |
 | Releases | One GitHub Actions workflow builds the Windows, Android and iOS apps into a draft release | Written, not yet run. See [docs/RELEASING.md](docs/RELEASING.md) |
 | Later | Offers and coupons, push and email notifications, native Google and Microsoft sign-in in the apps, saved addresses, support tickets | Not started |
 

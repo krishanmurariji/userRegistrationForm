@@ -1,0 +1,51 @@
+# Fills the live app with a demo shop: "Sharma General Store" in Jaipur with about 130 products, real product photos
+# where Open Food Facts has them and drawn pictures otherwise. Safe to run again: it only adds what is missing.
+#
+# How to use: Actions tab, "Seed demo data", "Run workflow". Guide: docs/SEED.md
+name: Seed demo data
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: seed-demo
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  seed:
+    name: Seed the demo shop
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      API_URL: ${{ vars.API_URL || secrets.API_URL }}
+      ADMIN_EMAIL: ${{ secrets.API_ADMIN_EMAIL }}
+      ADMIN_PASSWORD: ${{ secrets.API_ADMIN_PASSWORD }}
+      OWNER_EMAIL: ${{ secrets.SEED_OWNER_EMAIL }}
+      OWNER_PASSWORD: ${{ secrets.SEED_OWNER_PASSWORD }}
+      SHOP_UPI_ID: ${{ vars.SHOP_UPI_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/seed
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Check the settings
+        run: |
+          missing=""
+          [ -n "$API_URL" ] || missing="$missing API_URL"
+          [ -n "$ADMIN_EMAIL" ] || missing="$missing API_ADMIN_EMAIL"
+          [ -n "$ADMIN_PASSWORD" ] || missing="$missing API_ADMIN_PASSWORD"
+          [ -n "$OWNER_EMAIL" ] || missing="$missing SEED_OWNER_EMAIL"
+          [ -n "$OWNER_PASSWORD" ] || missing="$missing SEED_OWNER_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::These secrets or variables are missing:$missing. See docs/SEED.md"
+            exit 1
+          fi
+      - name: Wake the API up
+        run: curl -s -m 60 -o /dev/null -w "The API answered %{http_code}\n" "${API_URL%/}/health" || true
+      - name: Add the demo shop and its products
+        run: node tools/seed/seed.mjs
