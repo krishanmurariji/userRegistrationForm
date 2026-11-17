@@ -26,6 +26,21 @@ The app already talks to `https://smallmart-api.runasp.net` (set in `app/src/env
 Links such as `/orders` work on refresh: Cloudflare Pages serves `index.html` for unknown paths when the site has
 no `404.html`, which this app does not.
 
+### If Cloudflare offers you a Worker instead of Pages
+
+Cloudflare may open "Set up your application" for a **Worker** (with build and deploy commands). That works too:
+`app/wrangler.jsonc` tells the Worker to serve the built app.
+
+| Setting | Value |
+|---|---|
+| Project name | `smallmart-web` |
+| Build command | `npm ci && npx ng build --configuration production` |
+| Deploy command | `npx wrangler deploy` |
+| Advanced settings, path / root directory | `app` |
+| Advanced settings, build variable | `NODE_VERSION` = `24` |
+
+Your address is then `https://smallmart-web.YOUR-NAME.workers.dev`.
+
 ## Step 2: tell the API about the web address
 
 GitHub, **Settings**, **Secrets and variables**, **Actions**, **Variables** tab, add:

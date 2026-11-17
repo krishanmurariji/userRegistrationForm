@@ -1,0 +1,10 @@
+// Cloudflare Workers settings for the web version (see docs/DEPLOY-WEB.md).
+// The Worker only serves the built Angular files; unknown paths such as /orders get index.html.
+{
+  "name": "smallmart-web",
+  "compatibility_date": "2026-06-01",
+  "assets": {
+    "directory": "./dist/app/browser",
+    "not_found_handling": "single-page-application"
+  }
+}
