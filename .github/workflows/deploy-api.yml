@@ -135,11 +135,23 @@ jobs:
           }
           Get-ChildItem publish | Select-Object -First 12 Name, Length | Format-Table
 
+      # Web Deploy wants the server as https://name:8172. The secret may hold just the name (site12345.siteasp.net).
+      - name: Work out the server address
+        shell: pwsh
+        env:
+          SERVER: ${{ secrets.MONSTERASP_SERVER }}
+        run: |
+          $server = $env:SERVER.Trim().TrimEnd('/')
+          if ($server -notmatch '^https?://') { $server = "https://$server" }
+          if ($server -notmatch ':\d+$') { $server = "${server}:8172" }
+          Write-Host "::add-mask::$server"
+          "SERVER_ADDRESS=$server" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Send it to the server
         uses: rasmusbuchholdt/simply-web-deploy@2.2.0
         with:
           website-name: ${{ secrets.MONSTERASP_WEBSITE_NAME }}
-          server-computer-name: ${{ secrets.MONSTERASP_SERVER }}
+          server-computer-name: ${{ env.SERVER_ADDRESS }}
           server-username: ${{ secrets.MONSTERASP_USERNAME }}
           server-password: ${{ secrets.MONSTERASP_PASSWORD }}
           source-path: '\publish\'

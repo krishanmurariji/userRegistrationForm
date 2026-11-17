@@ -22,11 +22,11 @@ Uploaded pictures are stored on the site's disk (`App_Data`), and a deploy never
 1. In the control panel: **Create new service**, **Website**, the **Free** plan.
 2. Open the new website. Note its **address** (like `https://yourname.runasp.net`).
 3. If it lets you choose, set the runtime to **.NET 10** (ASP.NET Core).
-4. Find **Deploy** or **Web Deploy / Publish profile** and turn Web Deploy **on** (activate). Note the four values:
+4. On the website's page open the **Visual Studio access** tab and set it to **Enabled**. Note the four values:
    | Value | Looks like | Secret name on GitHub |
    |---|---|---|
    | Website name | `site12345` | `MONSTERASP_WEBSITE_NAME` |
-   | Server | `site12345.siteasp.net` | `MONSTERASP_SERVER` |
+   | Server | `site12345.siteasp.net` (the workflow adds `https://` and port `8172` itself) | `MONSTERASP_SERVER` |
    | Login | `site12345` | `MONSTERASP_USERNAME` |
    | Password | shown or set in the panel | `MONSTERASP_PASSWORD` |
 
