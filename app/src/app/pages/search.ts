@@ -1,23 +1,24 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonSearchbar, IonSpinner, IonToolbar } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { chevronForward, searchOutline, storefrontOutline } from 'ionicons/icons';
+import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { CartBar } from '../core/cart-bar';
+import { categoryIcon } from '../core/category-icon';
+import { AppIcon } from '../core/icon';
 import { ProductCard } from '../core/product-card';
-import { fileUrl } from '../core/shop.service';
+import { ShopCard } from '../core/shop-card';
+import { SkeletonProducts } from '../core/skeletons';
 import { StoreSearchResult, StoreShop } from '../core/store.models';
 import { StoreService } from '../core/store.service';
 
 /** Results across all shops, for a typed search (?q=) or a category tile (?category=). */
 @Component({
   selector: 'app-search',
-  imports: [RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonSearchbar, IonContent, IonIcon, IonSpinner, IonFooter, ProductCard, CartBar],
+  imports: [RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonSearchbar, IonContent, IonFooter, ProductCard, CartBar, AppIcon, ShopCard, SkeletonProducts],
   template: `
     <ion-header class="shop-header">
       <ion-toolbar class="search-toolbar with-back">
-        <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>
         <form role="search" (submit)="$event.preventDefault()">
           <ion-searchbar placeholder="Search items and shops" enterkeyhint="search" inputmode="search" [debounce]="350"
             [value]="query()" (ionInput)="type($event.detail.value ?? '')" />
@@ -27,17 +28,19 @@ import { StoreService } from '../core/store.service';
 
     <ion-content class="shop-bg">
       <main class="shop-column">
-        @if (category(); as name) { <h1 class="page-title">{{ name }}</h1> }
+        @if (category(); as name) {
+          <h1 class="page-title with-icon"><span class="head-icon"><app-icon [name]="icon(name)" weight="duotone" /></span>{{ name }}</h1>
+        }
 
         @if (error(); as message) {
           <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         } @else if (loading()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Searching" /></div>
+          <app-skeleton-products />
         } @else if (!query().trim() && !category()) {
-          <div class="card empty-card"><ion-icon name="search-outline" aria-hidden="true" /><p>Type what you are looking for.</p></div>
+          <div class="card empty-card tall"><span class="empty-art"><app-icon name="magnifying-glass" weight="duotone" /></span><p><strong>Search items and shops</strong></p><p>Type what you are looking for.</p></div>
         } @else if (result().items.length === 0 && result().shops.length === 0) {
-          <div class="card empty-card">
-            <ion-icon name="search-outline" aria-hidden="true" />
+          <div class="card empty-card tall">
+            <span class="empty-art"><app-icon name="magnifying-glass" weight="duotone" /></span>
             <p><strong>Nothing found for "{{ query().trim() || category() }}"</strong></p>
             <p>Check the spelling or try a shorter word.</p>
           </div>
@@ -53,20 +56,7 @@ import { StoreService } from '../core/store.service';
           @if (result().shops.length) {
             <h2>Shops</h2>
             <div class="shop-grid">
-              @for (shop of result().shops; track shop.id) {
-                <a class="card shop-card" [routerLink]="['/store', shop.id]" [class.closed]="!shop.isOpen">
-                  <span class="logo">
-                    @if (file(shop.logoUrl); as src) { <img [src]="src" alt="" loading="lazy" /> }
-                    @else { <ion-icon name="storefront-outline" aria-hidden="true" /> }
-                  </span>
-                  <span class="body">
-                    <strong>{{ shop.name }}</strong>
-                    <small>{{ shop.addressLine }}, {{ shop.city }}</small>
-                    <span class="tags"><span class="tag" [class.open]="shop.isOpen">{{ shop.isOpen ? 'Open' : 'Closed' }}</span></span>
-                  </span>
-                  <ion-icon name="chevron-forward" aria-hidden="true" class="go" />
-                </a>
-              }
+              @for (shop of result().shops; track shop.id) { <app-shop-card [shop]="shop" /> }
             </div>
           }
         }
@@ -85,13 +75,10 @@ export class SearchPage {
   protected readonly result = signal<StoreSearchResult>({ items: [], shops: [] });
   protected readonly loading = signal(false);
   protected readonly error = signal('');
-  protected readonly file = fileUrl;
+  protected readonly icon = categoryIcon;
   private readonly shopsById = computed(() => new Map(this.result().shops.map((shop) => [shop.id, shop])));
   private latest = 0;
 
-  constructor() {
-    addIcons({ chevronForward, searchOutline, storefrontOutline });
-  }
 
   protected shopOf(id: string): StoreShop | undefined {
     return this.shopsById().get(id);

@@ -2001,3 +2001,502 @@ ion-footer.shop-footer {
     color: var(--sm-accent);
   }
 }
+
+/* ==========================================================================
+   Account, notifications, search and the bell.
+   ========================================================================== */
+.bell-button {
+  --padding-start: 8px;
+  --padding-end: 8px;
+
+  .bell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    font-size: 24px;
+  }
+
+  .count {
+    position: absolute;
+    top: 0;
+    right: -2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    background: var(--sm-deal);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    animation: sm-pop 0.3s var(--sm-spring) both;
+  }
+}
+
+.shop-header .bell-button .bell {
+  background: var(--sm-card);
+  box-shadow: 0 0 0 1px var(--sm-line);
+}
+
+@media (prefers-color-scheme: dark) {
+  .bell-button .count {
+    background: #d9480f;
+  }
+}
+
+.shop-header .text-button {
+  --color: var(--sm-accent);
+  color: var(--sm-accent);
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* ----- Account ----- */
+.shop-column .profile {
+  margin: 0 0 14px;
+  padding: 22px 18px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 90% 0%, color-mix(in srgb, var(--sm-peach) 55%, transparent), transparent 55%),
+    linear-gradient(135deg, var(--sm-soft), var(--sm-sand));
+
+  .avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 24px;
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+    font-size: 2rem;
+    box-shadow: 0 8px 20px rgba(var(--ion-color-primary-rgb), 0.3);
+  }
+
+  h1 {
+    font-size: 1.35rem;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 2px 0 8px;
+    color: var(--sm-text);
+    opacity: 0.8;
+  }
+
+  .tag {
+    background: var(--sm-card);
+    color: var(--sm-accent);
+  }
+}
+
+.shop-column .menu {
+  padding: 4px 14px;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    font-weight: 700;
+    transition: transform 0.2s var(--sm-ease);
+
+    .what {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+
+      small {
+        color: var(--sm-muted);
+        font-weight: 500;
+      }
+    }
+
+    .pill {
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: var(--sm-deal);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .go {
+      color: var(--sm-muted);
+      font-size: 16px;
+      transition: transform 0.25s var(--sm-spring);
+    }
+
+    &:hover .go {
+      transform: translateX(3px);
+    }
+
+    &:active {
+      transform: scale(0.99);
+    }
+  }
+}
+
+.shop-column .sign-out {
+  --border-color: var(--sm-line);
+  --color: var(--sm-deal);
+  margin-top: 6px;
+
+  app-icon {
+    margin-right: 8px;
+    font-size: 18px;
+  }
+}
+
+/* ----- Notifications ----- */
+.shop-column .notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  .note {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.2s var(--sm-ease), background-color 0.3s;
+
+    .what {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      strong {
+        font-weight: 700;
+      }
+
+      small {
+        color: var(--sm-muted);
+        font-size: 0.78rem;
+      }
+    }
+
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 7px;
+      border-radius: 50%;
+      background: var(--sm-deal);
+    }
+
+    .go {
+      align-self: center;
+      color: var(--sm-muted);
+      font-size: 16px;
+    }
+
+    &.unread {
+      background: color-mix(in srgb, var(--sm-soft) 60%, var(--sm-card));
+      border-color: color-mix(in srgb, var(--sm-accent) 30%, var(--sm-line));
+
+      strong {
+        font-weight: 800;
+      }
+    }
+
+    &:active {
+      transform: scale(0.985);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--ion-color-primary);
+      outline-offset: 2px;
+    }
+  }
+}
+
+.shop-column .page-title.with-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 2px 4px;
+  font-size: 1.5rem;
+  letter-spacing: -0.02em;
+}
+
+/* ==========================================================================
+   Wide screens (1024px and up): a rail on the left replaces the bottom tabs,
+   headers line up with the page column, and several pages use two columns.
+   ========================================================================== */
+app-side-rail {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  ion-app.has-rail {
+    --rail: 92px;
+
+    > ion-router-outlet {
+      left: var(--rail);
+    }
+
+    app-side-rail {
+      display: block;
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: var(--rail);
+      z-index: 20;
+    }
+
+    .bottom-nav {
+      display: none;
+    }
+  }
+
+  .side-rail {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 8px;
+    background: var(--sm-card);
+    border-right: 1px solid var(--sm-line);
+
+    a {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 0;
+      border-radius: 16px;
+      color: var(--sm-muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-decoration: none;
+
+      .icon {
+        position: relative;
+        width: 56px;
+        height: 36px;
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+        transition: background-color 0.3s var(--sm-ease), transform 0.2s var(--sm-spring);
+      }
+
+      .count {
+        position: absolute;
+        top: -3px;
+        right: 4px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        background: var(--sm-peach);
+        color: #2b1d12;
+        font-size: 0.66rem;
+        font-weight: 800;
+      }
+
+      &:hover .icon {
+        background: var(--sm-sand);
+      }
+
+      &.active {
+        color: var(--sm-accent);
+
+        .icon {
+          background: var(--sm-soft);
+        }
+      }
+
+      &:active .icon {
+        transform: scale(0.9);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--ion-color-primary);
+        outline-offset: 2px;
+      }
+    }
+
+    .rail-brand {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 14px;
+      padding: 0;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, var(--sm-peach), var(--sm-soft));
+      color: #9b5227;
+      font-size: 28px;
+    }
+
+    .last {
+      margin-top: auto;
+    }
+  }
+
+  /* Headers and bottom bars line up with the 1120px page column. */
+  ion-header.shop-header ion-toolbar,
+  ion-footer.shop-footer {
+    padding-inline: max(0px, calc((100% - 1120px) / 2));
+  }
+
+  ion-header.shop-header .search-toolbar {
+    padding-inline: max(10px, calc((100% - 1120px) / 2));
+  }
+
+  .shop-column {
+    padding-top: 14px;
+  }
+
+  /* The rail already shows the brand mark and holds the bell. */
+  ion-app.has-rail .shop-header .greeting .brand-mark,
+  ion-app.has-rail .shop-header app-notification-bell {
+    display: none;
+  }
+
+  /* Shop page: categories down the left, products on the right. */
+  .shop-column.store:has(> .pills) {
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 0 24px;
+    align-items: start;
+
+    > * {
+      grid-column: 1 / -1;
+    }
+
+    > .pills {
+      grid-column: 1;
+      position: sticky;
+      top: 12px;
+      flex-direction: column;
+      gap: 6px;
+      margin: 0;
+      padding: 12px;
+      overflow: visible;
+      border-radius: var(--sm-radius);
+      background: var(--sm-card);
+      border: 1px solid var(--sm-line);
+
+      button {
+        width: 100%;
+        justify-content: flex-start;
+        padding-left: 12px;
+
+        &:not(.on) {
+          border-color: transparent;
+          background: transparent;
+        }
+
+        &:hover:not(.on) {
+          background: var(--sm-sand);
+        }
+      }
+    }
+
+    > .product-grid,
+    > app-skeleton-products,
+    > .empty-card {
+      grid-column: 2;
+    }
+
+    > .product-grid {
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+  }
+
+  /* Product page: pictures on the left, details on the right. */
+  .shop-column.product-page {
+    max-width: 1000px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0 24px;
+    align-items: start;
+
+    > * {
+      grid-column: 2;
+    }
+
+    > .gallery-card {
+      grid-column: 1;
+      grid-row: 1 / span 4;
+      position: sticky;
+      top: 12px;
+    }
+
+    > .card:not(.info-card):not(.sold-by-card):first-child,
+    > .sk-product {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* Cart: items on the left, the bill on the right. */
+  .shop-column.cart-page {
+    max-width: 1000px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 0 24px;
+    align-items: start;
+
+    > * {
+      grid-column: 1 / -1;
+    }
+
+    > section.card:not(.bill) {
+      grid-column: 1;
+      grid-row: span 2;
+    }
+
+    > .bill,
+    > .goal {
+      grid-column: 2;
+    }
+  }
+
+  /* Checkout: the form on the left, the summary stays in view on the right. */
+  .shop-column:has(> #checkout-form) {
+    max-width: 1000px;
+  }
+
+  #checkout-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 0 24px;
+    align-items: start;
+
+    > * {
+      grid-column: 1;
+    }
+
+    > .bill {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+      position: sticky;
+      top: 12px;
+    }
+  }
+
+  .pay-bar {
+    max-width: 1000px;
+  }
+
+  /* More breathing room for the home page. */
+  .shop-column.home .hero-title {
+    margin-top: 10px;
+  }
+}

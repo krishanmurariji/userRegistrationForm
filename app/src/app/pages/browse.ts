@@ -7,16 +7,16 @@ import { BottomNav } from '../core/bottom-nav';
 import { CartBar } from '../core/cart-bar';
 import { categoryIcon } from '../core/category-icon';
 import { AppIcon } from '../core/icon';
+import { ShopCard } from '../core/shop-card';
 import { SkeletonList } from '../core/skeletons';
 import { NotificationBell } from '../core/notification-bell';
-import { fileUrl } from '../core/shop.service';
 import { OrderSummary, StoreCategoryTile, StoreShop, statusLabel } from '../core/store.models';
 import { StoreService } from '../core/store.service';
 
 /** The customer home page: search, categories, an order in progress, and the shops. */
 @Component({
   selector: 'app-browse',
-  imports: [RouterLink, IonHeader, IonToolbar, IonButtons, IonContent, IonSearchbar, IonFooter, NotificationBell, CartBar, BottomNav, AppIcon, SkeletonList],
+  imports: [RouterLink, IonHeader, IonToolbar, IonButtons, IonContent, IonSearchbar, IonFooter, NotificationBell, CartBar, BottomNav, AppIcon, SkeletonList, ShopCard],
   template: `
     <ion-header class="shop-header">
       <ion-toolbar>
@@ -74,29 +74,7 @@ import { StoreService } from '../core/store.service';
             </div>
           } @else {
             <div class="shop-grid">
-              @for (shop of shops(); track shop.id) {
-                <a class="card shop-card big" [routerLink]="['/store', shop.id]" [class.closed]="!shop.isOpen">
-                  <span class="cover">
-                    @if (file(shop.coverUrl); as src) { <img [src]="src" alt="" loading="lazy" decoding="async" /> }
-                    @else { <app-icon name="storefront" weight="duotone" /> }
-                    <span class="state" [class.open]="shop.isOpen">{{ shop.isOpen ? 'Open' : 'Closed' }}</span>
-                  </span>
-                  <span class="logo">
-                    @if (file(shop.logoUrl); as src) { <img [src]="src" alt="" loading="lazy" /> }
-                    @else { <app-icon name="storefront" weight="duotone" /> }
-                  </span>
-                  <span class="body">
-                    <strong>{{ shop.name }}</strong>
-                    <small><app-icon name="map-pin" />{{ shop.addressLine }}, {{ shop.city }}</small>
-                    <span class="tags">
-                      <span class="tag"><app-icon name="moped" />{{ shop.deliveryFee ? '₹' + shop.deliveryFee + ' delivery' : 'Free delivery' }}</span>
-                      @if (shop.minimumOrder) { <span class="tag">Min ₹{{ shop.minimumOrder }}</span> }
-                      @if (shop.acceptsUpi) { <span class="tag"><app-icon name="qr-code" />UPI</span> }
-                    </span>
-                  </span>
-                  <span class="go"><app-icon name="caret-right" /></span>
-                </a>
-              }
+              @for (shop of shops(); track shop.id) { <app-shop-card [shop]="shop" /> }
             </div>
           }
         }
@@ -121,7 +99,6 @@ export class BrowsePage {
   protected readonly loading = signal(true);
   protected readonly error = signal('');
   protected readonly firstName = computed(() => this.auth.user()?.fullName.trim().split(/\s+/)[0] ?? 'there');
-  protected readonly file = fileUrl;
   protected readonly icon = categoryIcon;
   protected readonly statusLabel = statusLabel;
 

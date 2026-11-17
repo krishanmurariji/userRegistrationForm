@@ -1,50 +1,53 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonSpinner, IonText, IonTitle, IonToolbar } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { notificationsOutline } from 'ionicons/icons';
+import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
+import { AppIcon } from '../core/icon';
+import { SkeletonList } from '../core/skeletons';
 import { AppNotification, NotificationService } from '../core/notification.service';
 
 @Component({
   selector: 'app-notifications',
-  imports: [DatePipe, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonContent, IonList, IonItem, IonLabel, IonIcon, IonSpinner, IonText],
+  imports: [DatePipe, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonButton, IonContent, AppIcon, SkeletonList],
   template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button defaultHref="/" /></ion-buttons>
+    <ion-header class="shop-header">
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/" text="" /></ion-buttons>
         <ion-title>Notifications</ion-title>
         @if (service.unread()) {
-          <ion-buttons slot="end"><ion-button (click)="readAll()">Mark all read</ion-button></ion-buttons>
+          <ion-buttons slot="end"><ion-button class="text-button" (click)="readAll()">Mark all read</ion-button></ion-buttons>
         }
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column">
+    <ion-content class="shop-bg">
+      <main class="shop-column narrow">
         @if (error(); as message) {
-          <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
-          <ion-button fill="outline" (click)="load()">Try again</ion-button>
+          <div class="card"><p role="alert" class="error-text">{{ message }}</p><button type="button" class="link" (click)="load()">Try again</button></div>
         } @else if (loading()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading notifications" /></div>
+          <app-skeleton-list [count]="4" />
         } @else if (items().length === 0) {
-          <div class="empty">
-            <ion-icon name="notifications-outline" aria-hidden="true" />
-            <h2>No notifications yet</h2>
+          <div class="card empty-card tall">
+            <span class="empty-art"><app-icon name="bell" weight="duotone" /></span>
+            <p><strong>No notifications yet</strong></p>
             <p>News about your orders will appear here.</p>
           </div>
         } @else {
-          <ion-list>
+          <ul class="notes">
             @for (n of items(); track n.id) {
-              <ion-item [button]="true" [detail]="!!n.link" [class.unread]="!n.read" (click)="open(n)">
-                <ion-label class="ion-text-wrap">
-                  <h2>@if (!n.read) { <span class="dot" aria-label="Unread"></span> }{{ n.title }}</h2>
-                  <p>{{ n.body }}</p>
-                  <p class="meta">{{ n.createdAt | date: 'd MMM, h:mm a' }}</p>
-                </ion-label>
-              </ion-item>
+              <li>
+                <button type="button" class="card note" [class.unread]="!n.read" (click)="open(n)">
+                  <span class="head-icon"><app-icon [name]="icon(n.title + ' ' + n.body)" weight="duotone" /></span>
+                  <span class="what">
+                    <strong>@if (!n.read) { <span class="dot" aria-label="Unread"></span> }{{ n.title }}</strong>
+                    <span>{{ n.body }}</span>
+                    <small>{{ n.createdAt | date: 'd MMM, h:mm a' }}</small>
+                  </span>
+                  @if (n.link) { <app-icon class="go" name="caret-right" /> }
+                </button>
+              </li>
             }
-          </ion-list>
+          </ul>
         }
       </main>
     </ion-content>
@@ -58,8 +61,16 @@ export class NotificationsPage {
   protected readonly loading = signal(true);
   protected readonly error = signal('');
 
-  constructor() {
-    addIcons({ notificationsOutline });
+  /** An icon that fits what the notification is about, judged from its words. */
+  protected icon(text: string): string {
+    if (/cancel/i.test(text)) return 'x-circle';
+    if (/payment|upi|paid/i.test(text)) return 'wallet';
+    if (/on its way|out for delivery/i.test(text)) return 'moped';
+    if (/delivered/i.test(text)) return 'house';
+    if (/packed|stock/i.test(text)) return 'package';
+    if (/accepted/i.test(text)) return 'seal-check';
+    if (/order/i.test(text)) return 'receipt';
+    return 'bell';
   }
 
   ionViewWillEnter(): void {
