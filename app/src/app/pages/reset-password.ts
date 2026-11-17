@@ -5,14 +5,15 @@ import { IonButton, IonContent, IonInput, IonInputPasswordToggle, IonSpinner, Io
 import { toApiError } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
 import { PASSWORD_HINT, PASSWORD_PATTERN } from './register';
+import { AuthShell } from '../core/auth-shell';
 
 /** Opened from the link in the password reset email: /reset-password?userId=...&token=... */
 @Component({
   selector: 'app-reset-password',
-  imports: [ReactiveFormsModule, RouterLink, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
+  imports: [AuthShell, ReactiveFormsModule, RouterLink, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
   template: `
-    <ion-content class="ion-padding">
-      <main class="auth-card">
+    <ion-content class="auth-bg">
+      <app-auth-shell>
         @if (done()) {
           <h1>Password changed</h1>
           <p class="lead" role="status">You can now sign in with your new password.</p>
@@ -43,7 +44,7 @@ import { PASSWORD_HINT, PASSWORD_PATTERN } from './register';
           </form>
           <div class="links"><a routerLink="/forgot-password">Request a new link</a></div>
         }
-      </main>
+      </app-auth-shell>
     </ion-content>
   `,
 })

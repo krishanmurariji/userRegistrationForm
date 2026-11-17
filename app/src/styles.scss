@@ -126,6 +126,13 @@
     gap: 4px;
     overflow-x: auto;
     padding: 0 8px 8px;
+    scrollbar-width: none;
+
+    /* Chips keep their full name on one line; the row scrolls sideways instead of squeezing them. */
+    ion-chip {
+      flex: none;
+      white-space: nowrap;
+    }
   }
 
   .mrp {
@@ -2250,3 +2257,4 @@ app-product-card {
 }
 
 @import 'theme/customer';
+@import 'theme/landing';

@@ -1,14 +1,21 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
+import { webSignInUnavailable } from './platform';
 
-/** Pages for signed-in users. Others are sent to sign in and brought back afterwards. */
+/**
+ * Pages for signed-in users. Others are sent to sign in and brought back afterwards. A visitor to the website's
+ * front door sees the public landing page instead; the Android, iOS and Windows apps go straight to sign in.
+ */
 export const signedInGuard: CanActivateFn = (_route, state) => {
   const router = inject(Router);
-  return inject(AuthService).isSignedIn()
-    ? true
-    : router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  if (inject(AuthService).isSignedIn()) return true;
+  if ((state.url === '/' || state.url === '') && !webSignInUnavailable) return router.createUrlTree(['/welcome']);
+  return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
 };
+
+/** The landing page is for the website only: the installed apps open the sign-in page. */
+export const appShellGuard: CanActivateFn = () => (webSignInUnavailable ? inject(Router).createUrlTree(['/login']) : true);
 
 /** Sign-in and sign-up pages. Signed-in users go straight to the home page. */
 export const signedOutGuard: CanActivateFn = () => {

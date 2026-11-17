@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { IonContent, IonSpinner } from '@ionic/angular';
+import { AuthShell } from '../core/auth-shell';
 
 /**
  * Microsoft sends its sign-in window back to this page. It hands the result to the page that opened the
@@ -7,10 +8,10 @@ import { IonContent, IonSpinner } from '@ionic/angular';
  */
 @Component({
   selector: 'app-msal-redirect',
-  imports: [IonContent, IonSpinner],
+  imports: [AuthShell, IonContent, IonSpinner],
   template: `
-    <ion-content class="ion-padding">
-      <main class="auth-card">
+    <ion-content class="auth-bg">
+      <app-auth-shell>
         @if (failed()) {
           <h1>Sign-in window</h1>
           <p class="lead" role="alert">Nothing to finish here. You can close this window and try again.</p>
@@ -18,7 +19,7 @@ import { IonContent, IonSpinner } from '@ionic/angular';
           <h1>Finishing sign-in</h1>
           <ion-spinner name="crescent" aria-label="Please wait" />
         }
-      </main>
+      </app-auth-shell>
     </ion-content>
   `,
 })

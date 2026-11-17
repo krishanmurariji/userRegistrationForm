@@ -2,15 +2,16 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IonContent, IonSpinner } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
+import { AuthShell } from '../core/auth-shell';
 import { AuthService } from '../core/auth.service';
 
 /** Opened from the link in the confirmation email: /confirm-email?userId=...&token=... */
 @Component({
   selector: 'app-confirm-email',
-  imports: [RouterLink, IonContent, IonSpinner],
+  imports: [AuthShell, RouterLink, IonContent, IonSpinner],
   template: `
-    <ion-content class="ion-padding">
-      <main class="auth-card">
+    <ion-content class="auth-bg">
+      <app-auth-shell>
         @switch (state()) {
           @case ('working') {
             <h1>Confirming your email</h1>
@@ -27,7 +28,7 @@ import { AuthService } from '../core/auth.service';
           }
         }
         <div class="links"><a routerLink="/login">Go to sign in</a></div>
-      </main>
+      </app-auth-shell>
     </ion-content>
   `,
 })

@@ -5,6 +5,7 @@ import { IonButton, IonContent, IonInput, IonInputPasswordToggle, IonSpinner, Io
 import { toApiError } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
 import { SocialButtons } from '../core/social-buttons';
+import { AuthShell } from '../core/auth-shell';
 
 /** Mirrors the server's password rule: at least 8 characters with a lowercase letter and a digit. */
 export const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*\d).{8,}$/;
@@ -12,10 +13,10 @@ export const PASSWORD_HINT = 'At least 8 characters, with a lowercase letter and
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink, SocialButtons, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
+  imports: [AuthShell, ReactiveFormsModule, RouterLink, SocialButtons, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
   template: `
-    <ion-content class="ion-padding">
-      <main class="auth-card">
+    <ion-content class="auth-bg">
+      <app-auth-shell>
         @if (sentTo(); as email) {
           <h1>Check your email</h1>
           <p class="lead" role="status">
@@ -57,7 +58,7 @@ export const PASSWORD_HINT = 'At least 8 characters, with a lowercase letter and
             <span>Already have an account? <a routerLink="/login">Sign in</a></span>
           </div>
         }
-      </main>
+      </app-auth-shell>
     </ion-content>
   `,
 })

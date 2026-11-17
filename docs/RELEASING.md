@@ -30,13 +30,20 @@ The first run can take 20 to 40 minutes. iOS uses macOS machines, which cost mor
 | Android | Debug `.apk` for testing on a phone | Signed `.apk` and Play Store `.aab` |
 | iOS | Unsigned `.ipa` for sideloading, and a simulator build (`.zip`) | Signed `.ipa` for TestFlight or the App Store |
 
+## File names and the website's download buttons
+
+Every release uses the same file names (`SmallMart-Android.apk`, `SmallMart-iPhone-unsigned.ipa`,
+`SmallMart-Windows-Setup.exe`, ...), so the website's download buttons always fetch the newest **published** release
+from `https://github.com/krishanmurariji/userRegistrationForm/releases/latest/download/<file name>`. Drafts and
+pre-releases are not "latest": publish the release for the buttons to work.
+
 ## Installing the test builds
 
-**Android (`...-android-debug.apk`):** copy it to the phone, open it, and allow "install unknown apps" when asked.
+**Android (`SmallMart-Android.apk`):** copy it to the phone, open it, and allow "install unknown apps" when asked.
 Each workflow run signs the debug build with a new key, so a newer debug APK cannot update an older one: uninstall
 the old one first. Add the Android keystore secrets below to get builds that update each other.
 
-**iPhone (`...-ios-unsigned.ipa`):** Apple only lets signed apps onto an iPhone. Without a paid developer account
+**iPhone (`SmallMart-iPhone-unsigned.ipa`):** Apple only lets signed apps onto an iPhone. Without a paid developer account
 (99 USD a year) the free way is to sideload it with **Sideloadly** (Windows or Mac) or **AltStore**: they sign the
 `.ipa` with your own free Apple ID while installing. Limits of a free Apple ID: the app stops opening after 7 days
 until you install it again, and at most 3 such apps per phone. Fine for testing; for real customers use a paid

@@ -3,17 +3,18 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IonButton, IonContent, IonInput, IonInputPasswordToggle, IonSpinner, IonText } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
+import { AuthShell } from '../core/auth-shell';
 import { AuthService } from '../core/auth.service';
 import { SocialButtons } from '../core/social-buttons';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, SocialButtons, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
+  imports: [AuthShell, ReactiveFormsModule, RouterLink, SocialButtons, IonContent, IonInput, IonInputPasswordToggle, IonButton, IonSpinner, IonText],
   template: `
-    <ion-content class="ion-padding">
-      <main class="auth-card">
-        <h1>Small Mart</h1>
-        <p class="lead">Sign in to continue</p>
+    <ion-content class="auth-bg">
+      <app-auth-shell>
+        <h1>Welcome back</h1>
+        <p class="lead">Sign in to continue to Small Mart</p>
 
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <ion-input
@@ -50,7 +51,7 @@ import { SocialButtons } from '../core/social-buttons';
           <a routerLink="/forgot-password">Forgot password?</a>
           <span>New here? <a routerLink="/register">Create an account</a></span>
         </div>
-      </main>
+      </app-auth-shell>
     </ion-content>
   `,
 })

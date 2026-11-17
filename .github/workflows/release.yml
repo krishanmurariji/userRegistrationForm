@@ -183,7 +183,7 @@ jobs:
       - name: Name the file
         run: |
           mkdir -p out
-          cp desktop/dist/Small-Mart-Setup-*.exe "out/Small-Mart-$VERSION-windows-setup.exe"
+          cp desktop/dist/Small-Mart-Setup-*.exe "out/SmallMart-Windows-Setup.exe"
           ls -l out
       - uses: actions/upload-artifact@v4
         with:
@@ -246,10 +246,10 @@ jobs:
         run: |
           mkdir -p out
           if [ "$HAS_KEYSTORE" = "true" ]; then
-            cp app/android/app/build/outputs/apk/release/app-release.apk "out/Small-Mart-$VERSION-android.apk"
-            cp app/android/app/build/outputs/bundle/release/app-release.aab "out/Small-Mart-$VERSION-android-play-store.aab"
+            cp app/android/app/build/outputs/apk/release/app-release.apk "out/SmallMart-Android.apk"
+            cp app/android/app/build/outputs/bundle/release/app-release.aab "out/SmallMart-Android-PlayStore.aab"
           else
-            cp app/android/app/build/outputs/apk/debug/app-debug.apk "out/Small-Mart-$VERSION-android-debug.apk"
+            cp app/android/app/build/outputs/apk/debug/app-debug.apk "out/SmallMart-Android.apk"
           fi
           ls -l out
       - uses: actions/upload-artifact@v4
@@ -337,7 +337,7 @@ jobs:
           xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/App.xcarchive" \
             -exportPath "$RUNNER_TEMP/export" -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
           mkdir -p out
-          cp "$RUNNER_TEMP"/export/*.ipa "out/Small-Mart-$VERSION-ios.ipa"
+          cp "$RUNNER_TEMP"/export/*.ipa "out/SmallMart-iPhone.ipa"
       - name: Build for the iOS simulator (not signed)
         if: ${{ env.HAS_SIGNING != 'true' }}
         run: |
@@ -346,7 +346,7 @@ jobs:
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO \
             MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
           mkdir -p out
-          (cd build/Build/Products/Debug-iphonesimulator && zip -qr "$GITHUB_WORKSPACE/out/Small-Mart-$VERSION-ios-simulator.zip" App.app)
+          (cd build/Build/Products/Debug-iphonesimulator && zip -qr "$GITHUB_WORKSPACE/out/SmallMart-iOS-Simulator.zip" App.app)
       # An unsigned build for real iPhones. It cannot be installed as it is: a sideloading tool (Sideloadly or
       # AltStore) signs it with a free Apple ID first. See docs/RELEASING.md.
       - name: Build for iPhones, unsigned (.ipa for sideloading)
@@ -358,7 +358,7 @@ jobs:
             MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
           mkdir -p "$RUNNER_TEMP/ipa/Payload"
           cp -R build-device/Build/Products/Release-iphoneos/App.app "$RUNNER_TEMP/ipa/Payload/"
-          (cd "$RUNNER_TEMP/ipa" && zip -qr "$GITHUB_WORKSPACE/out/Small-Mart-$VERSION-ios-unsigned.ipa" Payload)
+          (cd "$RUNNER_TEMP/ipa" && zip -qr "$GITHUB_WORKSPACE/out/SmallMart-iPhone-unsigned.ipa" Payload)
       - run: ls -l out
       - uses: actions/upload-artifact@v4
         with:
@@ -383,7 +383,10 @@ jobs:
           path: release-files
           merge-multiple: true
       - name: Describe what is in the release
+        env:
+          HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
         run: |
+          if [ "$HAS_KEYSTORE" = "true" ]; then ANDROID_NOTE="Signed with your release key."; else ANDROID_NOTE="Test build signed with a temporary key: uninstall an older one before installing it."; fi
           {
             echo "## Small Mart $VERSION"
             echo
@@ -399,13 +402,12 @@ jobs:
             for f in release-files/*; do
               name="$(basename "$f")"
               case "$name" in
-                *windows-setup.exe) what="Windows installer. Not signed unless a certificate was set up, so Windows may show a SmartScreen warning (More info, then Run anyway)." ;;
-                *android-play-store.aab) what="Android bundle for the Google Play Store." ;;
-                *android-debug.apk) what="Android app for testing. Install it on a phone directly; not signed for the Play Store." ;;
-                *android.apk) what="Android app you can install on a phone directly." ;;
-                *ios-unsigned.ipa) what="iPhone app, not signed. Install it with Sideloadly or AltStore and a free Apple ID (it must be refreshed every 7 days). For the App Store add the Apple signing secrets." ;;
-                *ios.ipa) what="iOS app signed with your Apple certificate, ready for TestFlight or the App Store." ;;
-                *ios-simulator.zip) what="iOS build for the Simulator on a Mac. It cannot be installed on an iPhone; add the Apple signing secrets for that." ;;
+                SmallMart-Windows-Setup.exe) what="Windows installer. Not signed unless a certificate was set up, so Windows may show a SmartScreen warning (More info, then Run anyway)." ;;
+                SmallMart-Android-PlayStore.aab) what="Android bundle for the Google Play Store." ;;
+                SmallMart-Android.apk) what="Android app: install it on a phone directly. $ANDROID_NOTE" ;;
+                SmallMart-iPhone.ipa) what="iPhone app signed with your Apple certificate, ready for TestFlight or the App Store." ;;
+                SmallMart-iPhone-unsigned.ipa) what="iPhone app, not signed. Install it with Sideloadly or AltStore and a free Apple ID (it must be refreshed every 7 days). For the App Store add the Apple signing secrets." ;;
+                SmallMart-iOS-Simulator.zip) what="iOS build for the Simulator on a Mac only." ;;
                 *) what="" ;;
               esac
               echo "| \`$name\` | $what |"

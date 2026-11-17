@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard, customerGuard, shopOwnerGuard, signedInGuard, signedOutGuard } from './core/auth.guard';
+import { adminGuard, appShellGuard, customerGuard, shopOwnerGuard, signedInGuard, signedOutGuard } from './core/auth.guard';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', canActivate: [signedInGuard, customerGuard], loadComponent: () => import('./pages/browse').then((m) => m.BrowsePage) },
@@ -27,6 +27,7 @@ export const routes: Routes = [
   { path: 'admin/users/:userId', canActivate: [signedInGuard, adminGuard], loadComponent: () => import('./pages/admin/user-detail').then((m) => m.AdminUserDetailPage) },
   { path: 'admin/shops/:shopId', canActivate: [signedInGuard, adminGuard], loadComponent: () => import('./pages/admin/shop-detail').then((m) => m.AdminShopDetailPage) },
   { path: 'admin/shop-owners/new', canActivate: [signedInGuard, adminGuard], loadComponent: () => import('./pages/admin/shop-owner-form').then((m) => m.ShopOwnerFormPage) },
+  { path: 'welcome', canActivate: [appShellGuard], loadComponent: () => import('./pages/landing').then((m) => m.LandingPage) },
   { path: 'login', canActivate: [signedOutGuard], loadComponent: () => import('./pages/login').then((m) => m.LoginPage) },
   { path: 'register', canActivate: [signedOutGuard], loadComponent: () => import('./pages/register').then((m) => m.RegisterPage) },
   { path: 'forgot-password', loadComponent: () => import('./pages/forgot-password').then((m) => m.ForgotPasswordPage) },

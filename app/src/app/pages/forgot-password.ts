@@ -3,14 +3,15 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonButton, IonContent, IonInput, IonSpinner, IonText } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
+import { AuthShell } from '../core/auth-shell';
 import { AuthService } from '../core/auth.service';
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [ReactiveFormsModule, RouterLink, IonContent, IonInput, IonButton, IonSpinner, IonText],
+  imports: [AuthShell, ReactiveFormsModule, RouterLink, IonContent, IonInput, IonButton, IonSpinner, IonText],
   template: `
-    <ion-content class="ion-padding">
-      <main class="auth-card">
+    <ion-content class="auth-bg">
+      <app-auth-shell>
         @if (sent()) {
           <h1>Check your email</h1>
           <p class="lead" role="status">
@@ -36,7 +37,7 @@ import { AuthService } from '../core/auth.service';
           </form>
         }
         <div class="links"><a routerLink="/login">Back to sign in</a></div>
-      </main>
+      </app-auth-shell>
     </ion-content>
   `,
 })

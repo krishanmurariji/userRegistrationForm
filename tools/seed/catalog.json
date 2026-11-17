@@ -1,0 +1,1388 @@
+{
+ "Fruits & Vegetables": [
+  {
+   "name": "Onion",
+   "unit": "1 kg",
+   "price": 38,
+   "mrp": 45,
+   "stock": 60,
+   "search": "",
+   "must": "",
+   "db": "none"
+  },
+  {
+   "name": "Potato",
+   "unit": "1 kg",
+   "price": 32,
+   "mrp": 40,
+   "stock": 60,
+   "search": "",
+   "must": "",
+   "db": "none"
+  },
+  {
+   "name": "Tomato",
+   "unit": "1 kg",
+   "price": 40,
+   "mrp": 48,
+   "stock": 40,
+   "search": "",
+   "must": "",
+   "db": "none"
+  },
+  {
+   "name": "Banana (Robusta)",
+   "unit": "6 pieces",
+   "price": 48,
+   "mrp": 55,
+   "stock": 30,
+   "search": "",
+   "must": "",
+   "db": "none"
+  },
+  {
+   "name": "Shimla Apple",
+   "unit": "1 kg",
+   "price": 160,
+   "mrp": 190,
+   "stock": 20,
+   "search": "",
+   "must": "",
+   "db": "none"
+  },
+  {
+   "name": "Lemon",
+   "unit": "250 g",
+   "price": 30,
+   "mrp": 35,
+   "stock": 25,
+   "search": "",
+   "must": "",
+   "db": "none"
+  },
+  {
+   "name": "Ginger",
+   "unit": "250 g",
+   "price": 45,
+   "mrp": 55,
+   "stock": 20,
+   "search": "",
+   "must": "",
+   "db": "none"
+  },
+  {
+   "name": "Green Chilli",
+   "unit": "100 g",
+   "price": 12,
+   "mrp": 15,
+   "stock": 25,
+   "search": "",
+   "must": "",
+   "db": "none"
+  },
+  {
+   "name": "Coriander Leaves",
+   "unit": "1 bunch",
+   "price": 15,
+   "mrp": 20,
+   "stock": 20,
+   "search": "",
+   "must": "",
+   "db": "none"
+  }
+ ],
+ "Dairy, Bread & Eggs": [
+  {
+   "name": "Amul Butter",
+   "unit": "100 g",
+   "price": 58,
+   "mrp": 60,
+   "stock": 40,
+   "search": "amul butter",
+   "must": "butter",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/126/201/0016/front_en.53.400.jpg",
+   "barcode": "8901262010016"
+  },
+  {
+   "name": "Amul Cheese Slices",
+   "unit": "200 g",
+   "price": 140,
+   "mrp": 150,
+   "stock": 20,
+   "search": "amul cheese slices",
+   "must": "cheese",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/126/202/0015/front_en.17.400.jpg",
+   "barcode": "8901262020015"
+  },
+  {
+   "name": "Amul Taaza Toned Milk",
+   "unit": "1 litre",
+   "price": 74,
+   "mrp": 76,
+   "stock": 50,
+   "search": "amul taaza toned milk",
+   "must": "milk",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/126/226/1234/front_en.5.400.jpg",
+   "barcode": "8901262261234"
+  },
+  {
+   "name": "Amul Fresh Paneer",
+   "unit": "200 g",
+   "price": 90,
+   "mrp": 95,
+   "stock": 15,
+   "search": "amul paneer",
+   "must": "paneer",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/126/218/0115/front_en.6.400.jpg",
+   "barcode": "8901262180115"
+  },
+  {
+   "name": "Mother Dairy Classic Dahi",
+   "unit": "400 g",
+   "price": 50,
+   "mrp": 55,
+   "stock": 20,
+   "search": "mother dairy dahi",
+   "must": "dahi",
+   "db": "food"
+  },
+  {
+   "name": "Amul Fresh Cream",
+   "unit": "250 ml",
+   "price": 68,
+   "mrp": 72,
+   "stock": 15,
+   "search": "amul fresh cream",
+   "must": "cream",
+   "db": "food"
+  },
+  {
+   "name": "Britannia Whole Wheat Bread",
+   "unit": "400 g",
+   "price": 55,
+   "mrp": 60,
+   "stock": 20,
+   "search": "britannia whole wheat bread",
+   "must": "bread",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/106/333/8555/front_en.5.400.jpg",
+   "barcode": "8901063338555"
+  },
+  {
+   "name": "Amul Cheese Spread",
+   "unit": "200 g",
+   "price": 105,
+   "mrp": 110,
+   "stock": 15,
+   "search": "amul cheese spread",
+   "must": "spread",
+   "db": "food"
+  },
+  {
+   "name": "Nestle a+ Dahi",
+   "unit": "400 g",
+   "price": 55,
+   "mrp": 60,
+   "stock": 15,
+   "search": "nestle dahi",
+   "must": "dahi",
+   "db": "food"
+  },
+  {
+   "name": "Farm Fresh Eggs",
+   "unit": "6 pieces",
+   "price": 48,
+   "mrp": 54,
+   "stock": 30,
+   "search": "",
+   "must": "",
+   "db": "none"
+  }
+ ],
+ "Atta, Rice & Dal": [
+  {
+   "name": "Aashirvaad Shudh Chakki Atta",
+   "unit": "5 kg",
+   "price": 265,
+   "mrp": 299,
+   "stock": 25,
+   "search": "aashirvaad atta",
+   "must": "atta",
+   "db": "food"
+  },
+  {
+   "name": "Fortune Chakki Fresh Atta",
+   "unit": "5 kg",
+   "price": 245,
+   "mrp": 275,
+   "stock": 20,
+   "search": "fortune chakki fresh atta",
+   "must": "atta",
+   "db": "food"
+  },
+  {
+   "name": "India Gate Basmati Rice",
+   "unit": "1 kg",
+   "price": 155,
+   "mrp": 180,
+   "stock": 25,
+   "search": "india gate basmati rice",
+   "must": "basmati",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/069/022/510/1103/front_en.9.400.jpg",
+   "barcode": "0690225101103"
+  },
+  {
+   "name": "Daawat Rozana Basmati Rice",
+   "unit": "1 kg",
+   "price": 110,
+   "mrp": 130,
+   "stock": 25,
+   "search": "daawat basmati rice",
+   "must": "basmati",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/153/700/7123/front_en.11.400.jpg",
+   "barcode": "8901537007123"
+  },
+  {
+   "name": "Tata Sampann Toor Dal",
+   "unit": "1 kg",
+   "price": 175,
+   "mrp": 199,
+   "stock": 25,
+   "search": "tata sampann toor dal",
+   "must": "dal",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/404/392/6216/front_en.5.400.jpg",
+   "barcode": "8904043926216"
+  },
+  {
+   "name": "Tata Sampann Moong Dal",
+   "unit": "500 g",
+   "price": 85,
+   "mrp": 99,
+   "stock": 20,
+   "search": "tata sampann moong dal",
+   "must": "moong",
+   "db": "food"
+  },
+  {
+   "name": "Tata Sampann Chana Dal",
+   "unit": "1 kg",
+   "price": 105,
+   "mrp": 120,
+   "stock": 20,
+   "search": "tata sampann chana dal",
+   "must": "chana",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/404/392/6643/front_en.3.400.jpg",
+   "barcode": "8904043926643"
+  },
+  {
+   "name": "Rajma Chitra",
+   "unit": "500 g",
+   "price": 95,
+   "mrp": 110,
+   "stock": 15,
+   "search": "rajma",
+   "must": "rajma",
+   "db": "food"
+  },
+  {
+   "name": "Kabuli Chana",
+   "unit": "500 g",
+   "price": 85,
+   "mrp": 99,
+   "stock": 15,
+   "search": "kabuli chana",
+   "must": "chana",
+   "db": "food"
+  },
+  {
+   "name": "Besan (Gram Flour)",
+   "unit": "500 g",
+   "price": 55,
+   "mrp": 65,
+   "stock": 20,
+   "search": "besan",
+   "must": "besan",
+   "db": "food"
+  },
+  {
+   "name": "Bombay Rava (Sooji)",
+   "unit": "500 g",
+   "price": 35,
+   "mrp": 42,
+   "stock": 20,
+   "search": "sooji rava",
+   "must": "rava",
+   "db": "food"
+  },
+  {
+   "name": "Poha (Flattened Rice)",
+   "unit": "500 g",
+   "price": 40,
+   "mrp": 48,
+   "stock": 20,
+   "search": "poha",
+   "must": "poha",
+   "db": "food"
+  },
+  {
+   "name": "Tata Salt",
+   "unit": "1 kg",
+   "price": 28,
+   "mrp": 30,
+   "stock": 50,
+   "search": "tata salt",
+   "must": "salt",
+   "db": "food"
+  },
+  {
+   "name": "Sugar",
+   "unit": "1 kg",
+   "price": 46,
+   "mrp": 52,
+   "stock": 40,
+   "search": "sugar",
+   "must": "sugar",
+   "db": "food"
+  }
+ ],
+ "Oils & Ghee": [
+  {
+   "name": "Fortune Sunlite Sunflower Oil",
+   "unit": "1 litre",
+   "price": 155,
+   "mrp": 175,
+   "stock": 25,
+   "search": "fortune sunflower oil",
+   "must": "oil",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/600/728/0242/front_en.18.400.jpg",
+   "barcode": "8906007280242"
+  },
+  {
+   "name": "Saffola Gold Oil",
+   "unit": "1 litre",
+   "price": 195,
+   "mrp": 215,
+   "stock": 20,
+   "search": "saffola gold",
+   "must": "saffola",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/108/801/7381/front_en.8.400.jpg",
+   "barcode": "8901088017381"
+  },
+  {
+   "name": "Fortune Kachi Ghani Mustard Oil",
+   "unit": "1 litre",
+   "price": 175,
+   "mrp": 195,
+   "stock": 20,
+   "search": "fortune mustard oil",
+   "must": "mustard",
+   "db": "food"
+  },
+  {
+   "name": "Amul Pure Ghee",
+   "unit": "500 ml",
+   "price": 315,
+   "mrp": 335,
+   "stock": 15,
+   "search": "amul ghee",
+   "must": "ghee",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/126/203/0151/front_fr.9.400.jpg",
+   "barcode": "8901262030151"
+  },
+  {
+   "name": "Patanjali Cow Ghee",
+   "unit": "500 ml",
+   "price": 330,
+   "mrp": 355,
+   "stock": 10,
+   "search": "patanjali cow ghee",
+   "must": "ghee",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/442/270/2233/front_en.8.400.jpg",
+   "barcode": "8904422702233"
+  },
+  {
+   "name": "Figaro Olive Oil",
+   "unit": "500 ml",
+   "price": 499,
+   "mrp": 560,
+   "stock": 8,
+   "search": "figaro olive oil",
+   "must": "olive",
+   "db": "food"
+  }
+ ],
+ "Masala & Spices": [
+  {
+   "name": "Everest Garam Masala",
+   "unit": "100 g",
+   "price": 82,
+   "mrp": 90,
+   "stock": 20,
+   "search": "everest garam masala",
+   "must": "masala",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/178/610/0507/front_en.4.400.jpg",
+   "barcode": "8901786100507"
+  },
+  {
+   "name": "MDH Chana Masala",
+   "unit": "100 g",
+   "price": 78,
+   "mrp": 85,
+   "stock": 20,
+   "search": "mdh chana masala",
+   "must": "masala",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/216/700/0812/front_en.3.400.jpg",
+   "barcode": "8902167000812"
+  },
+  {
+   "name": "Catch Turmeric Powder",
+   "unit": "100 g",
+   "price": 38,
+   "mrp": 42,
+   "stock": 25,
+   "search": "catch turmeric powder",
+   "must": "turmeric",
+   "db": "food"
+  },
+  {
+   "name": "Everest Kashmirilal Chilli Powder",
+   "unit": "100 g",
+   "price": 72,
+   "mrp": 80,
+   "stock": 20,
+   "search": "everest kashmirilal chilli",
+   "must": "chilli",
+   "db": "food"
+  },
+  {
+   "name": "MDH Kitchen King Masala",
+   "unit": "100 g",
+   "price": 85,
+   "mrp": 92,
+   "stock": 15,
+   "search": "mdh kitchen king",
+   "must": "kitchen king",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/216/700/0751/front_en.4.400.jpg",
+   "barcode": "8902167000751"
+  },
+  {
+   "name": "Catch Jeera (Cumin)",
+   "unit": "100 g",
+   "price": 70,
+   "mrp": 78,
+   "stock": 15,
+   "search": "catch jeera cumin",
+   "must": "cumin",
+   "db": "food"
+  },
+  {
+   "name": "Everest Coriander Powder",
+   "unit": "100 g",
+   "price": 40,
+   "mrp": 45,
+   "stock": 20,
+   "search": "everest coriander powder",
+   "must": "coriander",
+   "db": "food"
+  },
+  {
+   "name": "MDH Deggi Mirch",
+   "unit": "100 g",
+   "price": 88,
+   "mrp": 95,
+   "stock": 15,
+   "search": "mdh deggi mirch",
+   "must": "mirch",
+   "db": "food"
+  }
+ ],
+ "Breakfast & Spreads": [
+  {
+   "name": "Kellogg's Corn Flakes",
+   "unit": "475 g",
+   "price": 199,
+   "mrp": 220,
+   "stock": 15,
+   "search": "kelloggs corn flakes",
+   "must": "corn flakes",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/315/947/000/0120/front_en.147.400.jpg",
+   "barcode": "3159470000120"
+  },
+  {
+   "name": "Quaker Oats",
+   "unit": "1 kg",
+   "price": 199,
+   "mrp": 225,
+   "stock": 15,
+   "search": "quaker oats",
+   "must": "oats",
+   "db": "food"
+  },
+  {
+   "name": "Saffola Masala Oats",
+   "unit": "500 g",
+   "price": 175,
+   "mrp": 190,
+   "stock": 15,
+   "search": "saffola masala oats",
+   "must": "oats",
+   "db": "food"
+  },
+  {
+   "name": "Kellogg's Chocos",
+   "unit": "375 g",
+   "price": 185,
+   "mrp": 205,
+   "stock": 12,
+   "search": "kelloggs chocos",
+   "must": "chocos",
+   "db": "food"
+  },
+  {
+   "name": "Kissan Mixed Fruit Jam",
+   "unit": "500 g",
+   "price": 145,
+   "mrp": 160,
+   "stock": 15,
+   "search": "kissan mixed fruit jam",
+   "must": "jam",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/103/083/1690/front_en.32.400.jpg",
+   "barcode": "8901030831690"
+  },
+  {
+   "name": "Cadbury Bournvita",
+   "unit": "500 g",
+   "price": 225,
+   "mrp": 245,
+   "stock": 15,
+   "search": "bournvita",
+   "must": "bournvita",
+   "db": "food"
+  },
+  {
+   "name": "Horlicks Classic Malt",
+   "unit": "500 g",
+   "price": 245,
+   "mrp": 265,
+   "stock": 12,
+   "search": "horlicks",
+   "must": "horlicks",
+   "db": "food"
+  },
+  {
+   "name": "Nutella Hazelnut Spread",
+   "unit": "350 g",
+   "price": 365,
+   "mrp": 399,
+   "stock": 10,
+   "search": "nutella",
+   "must": "nutella",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/301/762/042/5035/front_en.583.400.jpg",
+   "barcode": "3017620425035"
+  },
+  {
+   "name": "Dabur Honey",
+   "unit": "500 g",
+   "price": 215,
+   "mrp": 235,
+   "stock": 12,
+   "search": "dabur honey",
+   "must": "honey",
+   "db": "food"
+  },
+  {
+   "name": "Pintola Peanut Butter",
+   "unit": "350 g",
+   "price": 179,
+   "mrp": 199,
+   "stock": 10,
+   "search": "peanut butter",
+   "must": "peanut",
+   "db": "food"
+  }
+ ],
+ "Tea, Coffee & Drinks": [
+  {
+   "name": "Tata Tea Gold",
+   "unit": "500 g",
+   "price": 280,
+   "mrp": 310,
+   "stock": 20,
+   "search": "tata tea gold",
+   "must": "tea",
+   "db": "food"
+  },
+  {
+   "name": "Brooke Bond Red Label Tea",
+   "unit": "500 g",
+   "price": 270,
+   "mrp": 295,
+   "stock": 20,
+   "search": "red label tea",
+   "must": "tea",
+   "db": "food"
+  },
+  {
+   "name": "Taj Mahal Tea",
+   "unit": "250 g",
+   "price": 175,
+   "mrp": 190,
+   "stock": 12,
+   "search": "taj mahal tea",
+   "must": "tea",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/103/062/4230/front_en.9.400.jpg",
+   "barcode": "8901030624230"
+  },
+  {
+   "name": "Nescafe Classic Coffee",
+   "unit": "100 g",
+   "price": 315,
+   "mrp": 345,
+   "stock": 12,
+   "search": "nescafe classic",
+   "must": "nescafe",
+   "db": "food"
+  },
+  {
+   "name": "Bru Instant Coffee",
+   "unit": "100 g",
+   "price": 245,
+   "mrp": 265,
+   "stock": 12,
+   "search": "bru instant coffee",
+   "must": "coffee",
+   "db": "food"
+  },
+  {
+   "name": "Tropicana Orange Juice",
+   "unit": "1 litre",
+   "price": 125,
+   "mrp": 140,
+   "stock": 12,
+   "search": "tropicana orange",
+   "must": "orange",
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/350/211/000/9449/front_en.151.400.jpg",
+   "barcode": "3502110009449"
+  },
+  {
+   "name": "Real Fruit Power Mixed Fruit",
+   "unit": "1 litre",
+   "price": 115,
+   "mrp": 130,
+   "stock": 12,
+   "search": "real mixed fruit juice",
+   "must": "fruit",
+   "db": "food"
+  },
+  {
+   "name": "Frooti Mango Drink",
+   "unit": "600 ml",
+   "price": 38,
+   "mrp": 40,
+   "stock": 30,
+   "search": "frooti",
+   "must": "frooti",
+   "db": "food"
+  },
+  {
+   "name": "Maaza Mango Drink",
+   "unit": "600 ml",
+   "price": 40,
+   "mrp": 42,
+   "stock": 30,
+   "search": "maaza",
+   "must": "maaza",
+   "db": "food"
+  },
+  {
+   "name": "Coca-Cola",
+   "unit": "750 ml",
+   "price": 40,
+   "mrp": 42,
+   "stock": 30,
+   "search": "coca cola",
+   "must": "coca",
+   "db": "food"
+  },
+  {
+   "name": "Thums Up",
+   "unit": "750 ml",
+   "price": 40,
+   "mrp": 42,
+   "stock": 30,
+   "search": "thums up",
+   "must": "thums",
+   "db": "food"
+  },
+  {
+   "name": "Sprite",
+   "unit": "750 ml",
+   "price": 40,
+   "mrp": 42,
+   "stock": 25,
+   "search": "sprite",
+   "must": "sprite",
+   "db": "food"
+  },
+  {
+   "name": "Paper Boat Aamras",
+   "unit": "250 ml",
+   "price": 35,
+   "mrp": 40,
+   "stock": 20,
+   "search": "paper boat aamras",
+   "must": "aamras",
+   "db": "food"
+  },
+  {
+   "name": "Bisleri Mineral Water",
+   "unit": "1 litre",
+   "price": 20,
+   "mrp": 20,
+   "stock": 60,
+   "search": "bisleri",
+   "must": "bisleri",
+   "db": "food"
+  },
+  {
+   "name": "Red Bull Energy Drink",
+   "unit": "250 ml",
+   "price": 125,
+   "mrp": 125,
+   "stock": 15,
+   "search": "red bull",
+   "must": "red bull",
+   "db": "food"
+  }
+ ],
+ "Biscuits & Snacks": [
+  {
+   "name": "Parle-G Gold Biscuits",
+   "unit": "1 kg",
+   "price": 135,
+   "mrp": 150,
+   "stock": 20,
+   "search": "parle g",
+   "must": "parle",
+   "db": "food"
+  },
+  {
+   "name": "Britannia Good Day Cashew",
+   "unit": "200 g",
+   "price": 40,
+   "mrp": 45,
+   "stock": 25,
+   "search": "britannia good day",
+   "must": "good day",
+   "db": "food"
+  },
+  {
+   "name": "Britannia Marie Gold",
+   "unit": "250 g",
+   "price": 38,
+   "mrp": 42,
+   "stock": 25,
+   "search": "britannia marie gold",
+   "must": "marie",
+   "db": "food"
+  },
+  {
+   "name": "Oreo Chocolate Cream",
+   "unit": "120 g",
+   "price": 35,
+   "mrp": 40,
+   "stock": 25,
+   "search": "oreo",
+   "must": "oreo",
+   "db": "food"
+  },
+  {
+   "name": "Parle Hide & Seek",
+   "unit": "100 g",
+   "price": 30,
+   "mrp": 35,
+   "stock": 20,
+   "search": "hide and seek",
+   "must": "hide",
+   "db": "food"
+  },
+  {
+   "name": "Britannia Bourbon",
+   "unit": "150 g",
+   "price": 30,
+   "mrp": 35,
+   "stock": 20,
+   "search": "bourbon biscuits",
+   "must": "bourbon",
+   "db": "food"
+  },
+  {
+   "name": "Parle Monaco",
+   "unit": "200 g",
+   "price": 35,
+   "mrp": 40,
+   "stock": 20,
+   "search": "monaco",
+   "must": "monaco",
+   "db": "food"
+  },
+  {
+   "name": "Lay's India's Magic Masala",
+   "unit": "52 g",
+   "price": 20,
+   "mrp": 20,
+   "stock": 40,
+   "search": "lays magic masala",
+   "must": "masala",
+   "db": "food"
+  },
+  {
+   "name": "Kurkure Masala Munch",
+   "unit": "90 g",
+   "price": 20,
+   "mrp": 20,
+   "stock": 40,
+   "search": "kurkure masala munch",
+   "must": "kurkure",
+   "db": "food"
+  },
+  {
+   "name": "Bingo Mad Angles",
+   "unit": "72 g",
+   "price": 20,
+   "mrp": 20,
+   "stock": 30,
+   "search": "bingo mad angles",
+   "must": "mad angles",
+   "db": "food"
+  },
+  {
+   "name": "Haldiram's Aloo Bhujia",
+   "unit": "400 g",
+   "price": 105,
+   "mrp": 115,
+   "stock": 20,
+   "search": "haldiram aloo bhujia",
+   "must": "bhujia",
+   "db": "food"
+  },
+  {
+   "name": "Haldiram's Moong Dal",
+   "unit": "200 g",
+   "price": 55,
+   "mrp": 60,
+   "stock": 20,
+   "search": "haldiram moong dal",
+   "must": "moong",
+   "db": "food"
+  },
+  {
+   "name": "Act II Butter Popcorn",
+   "unit": "90 g",
+   "price": 40,
+   "mrp": 45,
+   "stock": 15,
+   "search": "act ii popcorn",
+   "must": "popcorn",
+   "db": "food"
+  },
+  {
+   "name": "Pringles Original",
+   "unit": "107 g",
+   "price": 110,
+   "mrp": 120,
+   "stock": 12,
+   "search": "pringles original",
+   "must": "pringles",
+   "db": "food"
+  }
+ ],
+ "Noodles, Sauces & Ready to Eat": [
+  {
+   "name": "Maggi 2-Minute Masala Noodles",
+   "unit": "280 g",
+   "price": 56,
+   "mrp": 60,
+   "stock": 40,
+   "search": "maggi masala noodles",
+   "must": "maggi",
+   "db": "food"
+  },
+  {
+   "name": "Sunfeast YiPPee! Magic Masala",
+   "unit": "280 g",
+   "price": 52,
+   "mrp": 56,
+   "stock": 25,
+   "search": "yippee noodles",
+   "must": "yippee",
+   "db": "food"
+  },
+  {
+   "name": "Top Ramen Curry Noodles",
+   "unit": "280 g",
+   "price": 52,
+   "mrp": 56,
+   "stock": 20,
+   "search": "top ramen curry",
+   "must": "ramen",
+   "db": "food"
+  },
+  {
+   "name": "Kissan Fresh Tomato Ketchup",
+   "unit": "1 kg",
+   "price": 145,
+   "mrp": 160,
+   "stock": 15,
+   "search": "kissan tomato ketchup",
+   "must": "ketchup",
+   "db": "food"
+  },
+  {
+   "name": "Maggi Hot & Sweet Sauce",
+   "unit": "500 g",
+   "price": 130,
+   "mrp": 145,
+   "stock": 12,
+   "search": "maggi hot sweet",
+   "must": "sauce",
+   "db": "food"
+  },
+  {
+   "name": "Ching's Schezwan Chutney",
+   "unit": "250 g",
+   "price": 95,
+   "mrp": 105,
+   "stock": 12,
+   "search": "chings schezwan chutney",
+   "must": "schezwan",
+   "db": "food"
+  },
+  {
+   "name": "Knorr Classic Tomato Soup",
+   "unit": "53 g",
+   "price": 60,
+   "mrp": 65,
+   "stock": 15,
+   "search": "knorr tomato soup",
+   "must": "soup",
+   "db": "food"
+  },
+  {
+   "name": "MTR Ready to Eat Dal Makhani",
+   "unit": "300 g",
+   "price": 115,
+   "mrp": 125,
+   "stock": 12,
+   "search": "mtr dal makhani",
+   "must": "makhani",
+   "db": "food"
+  },
+  {
+   "name": "Dr. Oetker FunFoods Veg Mayonnaise",
+   "unit": "250 g",
+   "price": 95,
+   "mrp": 105,
+   "stock": 12,
+   "search": "funfoods mayonnaise",
+   "must": "mayonnaise",
+   "db": "food"
+  },
+  {
+   "name": "Del Monte Eggless Mayo",
+   "unit": "275 g",
+   "price": 99,
+   "mrp": 110,
+   "stock": 10,
+   "search": "del monte mayo",
+   "must": "mayo",
+   "db": "food"
+  }
+ ],
+ "Chocolates & Sweets": [
+  {
+   "name": "Cadbury Dairy Milk Silk",
+   "unit": "60 g",
+   "price": 90,
+   "mrp": 95,
+   "stock": 25,
+   "search": "dairy milk silk",
+   "must": "silk",
+   "db": "food"
+  },
+  {
+   "name": "Cadbury Dairy Milk",
+   "unit": "50 g",
+   "price": 50,
+   "mrp": 50,
+   "stock": 30,
+   "search": "cadbury dairy milk",
+   "must": "dairy milk",
+   "db": "food"
+  },
+  {
+   "name": "Nestle KitKat",
+   "unit": "37 g",
+   "price": 30,
+   "mrp": 30,
+   "stock": 30,
+   "search": "kitkat",
+   "must": "kitkat",
+   "db": "food"
+  },
+  {
+   "name": "Cadbury 5 Star",
+   "unit": "40 g",
+   "price": 20,
+   "mrp": 20,
+   "stock": 30,
+   "search": "cadbury 5 star",
+   "must": "star",
+   "db": "food"
+  },
+  {
+   "name": "Nestle Munch",
+   "unit": "30 g",
+   "price": 10,
+   "mrp": 10,
+   "stock": 40,
+   "search": "nestle munch",
+   "must": "munch",
+   "db": "food"
+  },
+  {
+   "name": "Cadbury Perk",
+   "unit": "28 g",
+   "price": 10,
+   "mrp": 10,
+   "stock": 40,
+   "search": "cadbury perk",
+   "must": "perk",
+   "db": "food"
+  },
+  {
+   "name": "Cadbury Gems",
+   "unit": "17.8 g",
+   "price": 10,
+   "mrp": 10,
+   "stock": 40,
+   "search": "cadbury gems",
+   "must": "gems",
+   "db": "food"
+  },
+  {
+   "name": "Haldiram's Rasgulla",
+   "unit": "1 kg",
+   "price": 199,
+   "mrp": 220,
+   "stock": 10,
+   "search": "haldiram rasgulla",
+   "must": "rasgulla",
+   "db": "food"
+  },
+  {
+   "name": "Amul Dark Chocolate",
+   "unit": "150 g",
+   "price": 150,
+   "mrp": 160,
+   "stock": 12,
+   "search": "amul dark chocolate",
+   "must": "dark",
+   "db": "food"
+  },
+  {
+   "name": "Ferrero Rocher",
+   "unit": "16 pieces",
+   "price": 650,
+   "mrp": 699,
+   "stock": 6,
+   "search": "ferrero rocher",
+   "must": "rocher",
+   "db": "food"
+  }
+ ],
+ "Personal Care": [
+  {
+   "name": "Dove Cream Beauty Bathing Bar",
+   "unit": "3 x 100 g",
+   "price": 189,
+   "mrp": 210,
+   "stock": 15,
+   "search": "dove beauty bar",
+   "must": "dove",
+   "db": "beauty"
+  },
+  {
+   "name": "Lux Soft Rose Soap",
+   "unit": "4 x 100 g",
+   "price": 155,
+   "mrp": 170,
+   "stock": 15,
+   "search": "lux soap",
+   "must": "lux",
+   "db": "beauty"
+  },
+  {
+   "name": "Lifebuoy Total 10 Soap",
+   "unit": "4 x 100 g",
+   "price": 120,
+   "mrp": 135,
+   "stock": 20,
+   "search": "lifebuoy soap",
+   "must": "lifebuoy",
+   "db": "beauty"
+  },
+  {
+   "name": "Dettol Original Soap",
+   "unit": "3 x 125 g",
+   "price": 165,
+   "mrp": 180,
+   "stock": 15,
+   "search": "dettol original soap",
+   "must": "dettol",
+   "db": "beauty"
+  },
+  {
+   "name": "Colgate Strong Teeth Toothpaste",
+   "unit": "200 g",
+   "price": 115,
+   "mrp": 125,
+   "stock": 20,
+   "search": "colgate strong teeth",
+   "must": "colgate",
+   "db": "beauty"
+  },
+  {
+   "name": "Pepsodent Germicheck Toothpaste",
+   "unit": "150 g",
+   "price": 92,
+   "mrp": 99,
+   "stock": 15,
+   "search": "pepsodent",
+   "must": "pepsodent",
+   "db": "beauty"
+  },
+  {
+   "name": "Clinic Plus Strength & Shine Shampoo",
+   "unit": "340 ml",
+   "price": 195,
+   "mrp": 215,
+   "stock": 12,
+   "search": "clinic plus shampoo",
+   "must": "clinic",
+   "db": "beauty"
+  },
+  {
+   "name": "Head & Shoulders Anti-Dandruff Shampoo",
+   "unit": "340 ml",
+   "price": 375,
+   "mrp": 410,
+   "stock": 10,
+   "search": "head shoulders shampoo",
+   "must": "head",
+   "db": "beauty"
+  },
+  {
+   "name": "Parachute Coconut Oil",
+   "unit": "500 ml",
+   "price": 230,
+   "mrp": 250,
+   "stock": 15,
+   "search": "parachute coconut oil",
+   "must": "parachute",
+   "db": "beauty"
+  },
+  {
+   "name": "Nivea Soft Light Moisturising Cream",
+   "unit": "100 ml",
+   "price": 199,
+   "mrp": 215,
+   "stock": 10,
+   "search": "nivea soft",
+   "must": "nivea",
+   "db": "beauty"
+  },
+  {
+   "name": "Vaseline Intensive Care Lotion",
+   "unit": "400 ml",
+   "price": 365,
+   "mrp": 399,
+   "stock": 8,
+   "search": "vaseline intensive care",
+   "must": "vaseline",
+   "db": "beauty"
+  },
+  {
+   "name": "Himalaya Purifying Neem Face Wash",
+   "unit": "150 ml",
+   "price": 175,
+   "mrp": 190,
+   "stock": 12,
+   "search": "himalaya neem face wash",
+   "must": "neem",
+   "db": "beauty"
+  },
+  {
+   "name": "Dettol Liquid Handwash",
+   "unit": "200 ml",
+   "price": 99,
+   "mrp": 109,
+   "stock": 15,
+   "search": "dettol handwash",
+   "must": "dettol",
+   "db": "beauty"
+  },
+  {
+   "name": "Gillette Guard Razor",
+   "unit": "1 piece",
+   "price": 35,
+   "mrp": 40,
+   "stock": 15,
+   "search": "gillette guard",
+   "must": "gillette",
+   "db": "beauty"
+  }
+ ],
+ "Household & Cleaning": [
+  {
+   "name": "Surf Excel Easy Wash Detergent",
+   "unit": "1 kg",
+   "price": 135,
+   "mrp": 150,
+   "stock": 15,
+   "search": "surf excel",
+   "must": "surf",
+   "db": "products"
+  },
+  {
+   "name": "Ariel Matic Front Load Detergent",
+   "unit": "1 kg",
+   "price": 299,
+   "mrp": 330,
+   "stock": 10,
+   "search": "ariel matic",
+   "must": "ariel",
+   "db": "products"
+  },
+  {
+   "name": "Rin Detergent Bar",
+   "unit": "4 x 250 g",
+   "price": 105,
+   "mrp": 115,
+   "stock": 15,
+   "search": "rin bar",
+   "must": "rin",
+   "db": "products"
+  },
+  {
+   "name": "Vim Dishwash Bar",
+   "unit": "3 x 155 g",
+   "price": 60,
+   "mrp": 66,
+   "stock": 20,
+   "search": "vim bar",
+   "must": "vim",
+   "db": "products"
+  },
+  {
+   "name": "Vim Dishwash Liquid Gel",
+   "unit": "500 ml",
+   "price": 115,
+   "mrp": 125,
+   "stock": 12,
+   "search": "vim liquid",
+   "must": "vim",
+   "db": "products"
+  },
+  {
+   "name": "Harpic Power Plus Toilet Cleaner",
+   "unit": "1 litre",
+   "price": 215,
+   "mrp": 235,
+   "stock": 12,
+   "search": "harpic",
+   "must": "harpic",
+   "db": "products"
+  },
+  {
+   "name": "Lizol Floor Cleaner Citrus",
+   "unit": "975 ml",
+   "price": 225,
+   "mrp": 245,
+   "stock": 10,
+   "search": "lizol",
+   "must": "lizol",
+   "db": "products"
+  },
+  {
+   "name": "Colin Glass Cleaner",
+   "unit": "500 ml",
+   "price": 115,
+   "mrp": 125,
+   "stock": 10,
+   "search": "colin glass cleaner",
+   "must": "colin",
+   "db": "products"
+  },
+  {
+   "name": "Good Knight Gold Flash Refill",
+   "unit": "45 ml",
+   "price": 89,
+   "mrp": 95,
+   "stock": 15,
+   "search": "good knight",
+   "must": "knight",
+   "db": "products"
+  },
+  {
+   "name": "Scotch-Brite Scrub Pad",
+   "unit": "3 pieces",
+   "price": 55,
+   "mrp": 60,
+   "stock": 20,
+   "search": "scotch brite",
+   "must": "scotch",
+   "db": "products"
+  },
+  {
+   "name": "Odonil Air Freshener Blocks",
+   "unit": "4 x 50 g",
+   "price": 175,
+   "mrp": 190,
+   "stock": 10,
+   "search": "odonil",
+   "must": "odonil",
+   "db": "products"
+  },
+  {
+   "name": "Garbage Bags Medium",
+   "unit": "30 bags",
+   "price": 99,
+   "mrp": 120,
+   "stock": 15,
+   "search": "",
+   "must": "",
+   "db": "none"
+  }
+ ]
+}

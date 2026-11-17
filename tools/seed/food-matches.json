@@ -1,0 +1,339 @@
+{
+ "Amul Butter": {
+  "barcode": "8901262010016",
+  "offName": "Amul Pasteurized Butter",
+  "brands": "Amul",
+  "quantity": "100.0 g",
+  "image": "https://images.openfoodfacts.org/images/products/890/126/201/0016/front_en.53.400.jpg",
+  "india": true
+ },
+ "Amul Cheese Slices": {
+  "barcode": "8901262020015",
+  "offName": "Cheese slices",
+  "brands": "Amul",
+  "quantity": "200 g",
+  "image": "https://images.openfoodfacts.org/images/products/890/126/202/0015/front_en.17.400.jpg",
+  "india": true
+ },
+ "Amul Taaza Toned Milk": {
+  "barcode": "8901262261234",
+  "offName": "Taaza Pasteurised Homogenised Toned Milk",
+  "brands": "Amul",
+  "quantity": "170 mL",
+  "image": "https://images.openfoodfacts.org/images/products/890/126/226/1234/front_en.5.400.jpg",
+  "india": true
+ },
+ "Amul Fresh Paneer": {
+  "barcode": "8901262180115",
+  "offName": "malai paneer fresh",
+  "brands": "Amul",
+  "quantity": "200g",
+  "image": "https://images.openfoodfacts.org/images/products/890/126/218/0115/front_en.6.400.jpg",
+  "india": true
+ },
+ "Britannia Whole Wheat Bread": {
+  "barcode": "8901063338555",
+  "offName": "100% Whole Wheat Bread",
+  "brands": "Britannia",
+  "quantity": "",
+  "image": "https://images.openfoodfacts.org/images/products/890/106/333/8555/front_en.5.400.jpg",
+  "india": true
+ },
+ "India Gate Basmati Rice": {
+  "barcode": "0690225101103",
+  "offName": "India gate super Basmati rice 1.5 kg",
+  "brands": "KRBL limited",
+  "quantity": "1.5 kg",
+  "image": "https://images.openfoodfacts.org/images/products/069/022/510/1103/front_en.9.400.jpg",
+  "india": true
+ },
+ "Daawat Rozana Basmati Rice": {
+  "barcode": "8901537007123",
+  "offName": "Dwt rozana supr basmati rice 1 kg",
+  "brands": "Daawat",
+  "quantity": "1kg",
+  "image": "https://images.openfoodfacts.org/images/products/890/153/700/7123/front_en.11.400.jpg",
+  "india": true
+ },
+ "Tata Sampann Toor Dal": {
+  "barcode": "8904043926216",
+  "offName": "Unpolished Toor Dal",
+  "brands": "Tata Sampann",
+  "quantity": "1 kg",
+  "image": "https://images.openfoodfacts.org/images/products/890/404/392/6216/front_en.5.400.jpg",
+  "india": true
+ },
+ "Tata Sampann Chana Dal": {
+  "barcode": "8904043926643",
+  "offName": "Unpolished Chana Dal",
+  "brands": "Tata Sampann",
+  "quantity": "1kg",
+  "image": "https://images.openfoodfacts.org/images/products/890/404/392/6643/front_en.3.400.jpg",
+  "india": true
+ },
+ "Rajma Chitra": {
+  "barcode": "8903363010704",
+  "offName": "DMart Premia Rajma Kashmiri",
+  "brands": "DMart",
+  "quantity": "",
+  "image": "https://images.openfoodfacts.org/images/products/890/336/301/0704/front_en.3.400.jpg",
+  "india": true
+ },
+ "Besan (Gram Flour)": {
+  "barcode": "8906016350202",
+  "offName": "Chana Besan",
+  "brands": "Samrat",
+  "quantity": "200g",
+  "image": "https://images.openfoodfacts.org/images/products/890/601/635/0202/front_en.6.400.jpg",
+  "india": true
+ },
+ "Bombay Rava (Sooji)": {
+  "barcode": "9555070601035",
+  "offName": "Maculex semolina Rava sooji powder",
+  "brands": null,
+  "quantity": "500gm",
+  "image": "https://images.openfoodfacts.org/images/products/955/507/060/1035/front_en.3.400.jpg",
+  "india": false
+ },
+ "Poha (Flattened Rice)": {
+  "barcode": "8908003872537",
+  "offName": "Poha",
+  "brands": null,
+  "quantity": null,
+  "image": "https://images.openfoodfacts.org/images/products/890/800/387/2537/front_en.4.400.jpg",
+  "india": true
+ },
+ "Sugar": {
+  "barcode": "8410376009392",
+  "offName": "gullon fibre zero sugar free",
+  "brands": "GALLETAS GULLON S.A.",
+  "quantity": "170 g",
+  "image": "https://images.openfoodfacts.org/images/products/841/037/600/9392/front_en.104.400.jpg",
+  "india": false
+ },
+ "Fortune Sunlite Sunflower Oil": {
+  "barcode": "8906007280242",
+  "offName": "refined sunflower oil",
+  "brands": "fortune",
+  "quantity": "1 l",
+  "image": "https://images.openfoodfacts.org/images/products/890/600/728/0242/front_en.18.400.jpg",
+  "india": true
+ },
+ "Saffola Gold Oil": {
+  "barcode": "8901088017381",
+  "offName": "Saffola Gold 1 Ltr pouch",
+  "brands": "Saffola",
+  "quantity": null,
+  "image": "https://images.openfoodfacts.org/images/products/890/108/801/7381/front_en.8.400.jpg",
+  "india": true
+ },
+ "Amul Pure Ghee": {
+  "barcode": "8901262030151",
+  "offName": "Amul Ghee 1ltr",
+  "brands": "Amul",
+  "quantity": "1 ltr",
+  "image": "https://images.openfoodfacts.org/images/products/890/126/203/0151/front_fr.9.400.jpg",
+  "india": true
+ },
+ "Patanjali Cow Ghee": {
+  "barcode": "8904422702233",
+  "offName": "cow ghee",
+  "brands": "Patanjali",
+  "quantity": "1 ltr",
+  "image": "https://images.openfoodfacts.org/images/products/890/442/270/2233/front_en.8.400.jpg",
+  "india": true
+ },
+ "Everest Garam Masala": {
+  "barcode": "8901786100507",
+  "offName": "EVEREST Garam Masala",
+  "brands": "Everest",
+  "quantity": "50gm",
+  "image": "https://images.openfoodfacts.org/images/products/890/178/610/0507/front_en.4.400.jpg",
+  "india": true
+ },
+ "MDH Chana Masala": {
+  "barcode": "8902167000812",
+  "offName": "CHANA MASALA mdh",
+  "brands": null,
+  "quantity": null,
+  "image": "https://images.openfoodfacts.org/images/products/890/216/700/0812/front_en.3.400.jpg",
+  "india": true
+ },
+ "Everest Kashmirilal Chilli Powder": null,
+ "MDH Kitchen King Masala": {
+  "barcode": "8902167000751",
+  "offName": "KITCHEN KING 10% EXTRA",
+  "brands": "MDH",
+  "quantity": "50gm",
+  "image": "https://images.openfoodfacts.org/images/products/890/216/700/0751/front_en.4.400.jpg",
+  "india": true
+ },
+ "Kellogg's Corn Flakes": {
+  "barcode": "3159470000120",
+  "offName": "CORN FLAKES",
+  "brands": "KELLOGG S PRODUITS ALIMENT SAS",
+  "quantity": "500 g",
+  "image": "https://images.openfoodfacts.org/images/products/315/947/000/0120/front_en.147.400.jpg",
+  "india": false
+ },
+ "Kissan Mixed Fruit Jam": {
+  "barcode": "8901030831690",
+  "offName": "kissan mixed fruit jam",
+  "brands": "kissan",
+  "quantity": "200g",
+  "image": "https://images.openfoodfacts.org/images/products/890/103/083/1690/front_en.32.400.jpg",
+  "india": true
+ },
+ "Nutella Hazelnut Spread": {
+  "barcode": "3017620425035",
+  "offName": "Nutella",
+  "brands": "Nutella, FERRERO FRANCE COMMERCIALE",
+  "quantity": "1 kg",
+  "image": "https://images.openfoodfacts.org/images/products/301/762/042/5035/front_en.583.400.jpg",
+  "india": true
+ },
+ "Pintola Peanut Butter": {
+  "barcode": "3327272107259",
+  "offName": "Peanut Butter Creamy",
+  "brands": "Menguy's",
+  "quantity": "454 g",
+  "image": "https://images.openfoodfacts.org/images/products/332/727/210/7259/front_en.49.400.jpg",
+  "india": false
+ },
+ "Taj Mahal Tea": {
+  "barcode": "8901030624230",
+  "offName": "Brooke Bond  taj mahal tea",
+  "brands": "Brooke Bond",
+  "quantity": "",
+  "image": "https://images.openfoodfacts.org/images/products/890/103/062/4230/front_en.9.400.jpg",
+  "india": true
+ },
+ "Tropicana Orange Juice": {
+  "barcode": "3502110009449",
+  "offName": "Orangensaft",
+  "brands": "Tropicana",
+  "quantity": "1000 ml",
+  "image": "https://images.openfoodfacts.org/images/products/350/211/000/9449/front_en.151.400.jpg",
+  "india": false
+ },
+ "Frooti Mango Drink": {
+  "barcode": "8902579103170",
+  "offName": "Frooti",
+  "brands": "Frooti, Parle Agro",
+  "quantity": "600 ml",
+  "image": "https://images.openfoodfacts.org/images/products/890/257/910/3170/front_en.69.400.jpg",
+  "india": true
+ },
+ "Thums Up": {
+  "barcode": "8901764042911",
+  "offName": "Thums up",
+  "brands": "Thums Up",
+  "quantity": "250 ml",
+  "image": "https://images.openfoodfacts.org/images/products/890/176/404/2911/front_en.41.400.jpg",
+  "india": true
+ },
+ "Parle Monaco": {
+  "barcode": "8901719135118",
+  "offName": "MONACO",
+  "brands": "Parle",
+  "quantity": null,
+  "image": "https://images.openfoodfacts.org/images/products/890/171/913/5118/front_en.24.400.jpg",
+  "india": true
+ },
+ "Haldiram's Moong Dal": {
+  "barcode": "8904004403718",
+  "offName": "Moong Dal",
+  "brands": "Haldiram's",
+  "quantity": "18",
+  "image": "https://images.openfoodfacts.org/images/products/890/400/440/3718/front_en.4.400.jpg",
+  "india": true
+ },
+ "Maggi 2-Minute Masala Noodles": {
+  "barcode": "8901058023800",
+  "offName": "Maggi 2-minute noodles Masala",
+  "brands": "Maggi, Nestlé",
+  "quantity": "8 x 70g (560g)",
+  "image": "https://images.openfoodfacts.org/images/products/890/105/802/3800/front_en.3.400.jpg",
+  "india": true
+ },
+ "Maggi Hot & Sweet Sauce": {
+  "barcode": "8901058013658",
+  "offName": "Hot and Sweet Tomato Chilli Sauce",
+  "brands": "Maggi, Nestle India Ltd.",
+  "quantity": "500 g",
+  "image": "https://images.openfoodfacts.org/images/products/890/105/801/3658/front_en.8.400.jpg",
+  "india": true
+ },
+ "Ching's Schezwan Chutney": {
+  "barcode": "8901595862962",
+  "offName": "Schezwan Chutney",
+  "brands": "Ching's Secret",
+  "quantity": "250 g",
+  "image": "https://images.openfoodfacts.org/images/products/890/159/586/2962/front_en.51.400.jpg",
+  "india": true
+ },
+ "Knorr Classic Tomato Soup": {
+  "barcode": "8909106048553",
+  "offName": "Cup-a-Soup Tomato Chatpata",
+  "brands": "Knorr",
+  "quantity": "13.5g",
+  "image": "https://images.openfoodfacts.org/images/products/890/910/604/8553/front_en.7.400.jpg",
+  "india": true
+ },
+ "Dr. Oetker FunFoods Veg Mayonnaise": {
+  "barcode": "8906002000494",
+  "offName": "Dr Oetker Funfoods Veg Mayonnaise",
+  "brands": "Dr. Oetker, Funfoods",
+  "quantity": "250",
+  "image": "https://images.openfoodfacts.org/images/products/890/600/200/0494/front_en.4.400.jpg",
+  "india": true
+ },
+ "Del Monte Eggless Mayo": {
+  "barcode": "8901246004444",
+  "offName": "Eggless mayo",
+  "brands": "Del Monte",
+  "quantity": "450g",
+  "image": "https://images.openfoodfacts.org/images/products/890/124/600/4444/front_en.7.400.jpg",
+  "india": true
+ },
+ "Cadbury Dairy Milk Silk": {
+  "barcode": "0025293001817",
+  "offName": "Silk Zero sugar Almond",
+  "brands": "Silk",
+  "quantity": "946 mL",
+  "image": "https://images.openfoodfacts.org/images/products/002/529/300/1817/front_en.57.400.jpg",
+  "india": false
+ },
+ "Nestle Munch": {
+  "barcode": "8901058009439",
+  "offName": "munch",
+  "brands": "Nestlé",
+  "quantity": "",
+  "image": "https://images.openfoodfacts.org/images/products/890/105/800/9439/front_en.10.400.jpg",
+  "india": true
+ },
+ "Cadbury Gems": {
+  "barcode": "7622202216695",
+  "offName": "Gems",
+  "brands": "Cadbury",
+  "quantity": "7.11g",
+  "image": "https://images.openfoodfacts.org/images/products/762/220/221/6695/front_en.3.400.jpg",
+  "india": true
+ },
+ "Amul Dark Chocolate": {
+  "barcode": "8901262070454",
+  "offName": "Amul Dark Chocolate",
+  "brands": "Amul",
+  "quantity": "40g",
+  "image": "https://images.openfoodfacts.org/images/products/890/126/207/0454/front_en.4.400.jpg",
+  "india": true
+ },
+ "Ferrero Rocher": {
+  "barcode": "4008400163826",
+  "offName": "Ferrero Rocher x 16",
+  "brands": "Ferrero",
+  "quantity": "200g",
+  "image": "https://images.openfoodfacts.org/images/products/400/840/016/3826/front_fr.141.400.jpg",
+  "india": false
+ }
+}
