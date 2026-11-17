@@ -31,7 +31,7 @@ cat('Dairy, Bread & Eggs', [
     ('Farm Fresh Eggs', '6 pieces', 48, 54, 30, '', '', 'none'),
 ])
 cat('Atta, Rice & Dal', [
-    ('Aashirvaad Shudh Chakki Atta', '5 kg', 265, 299, 25, 'aashirvaad atta', 'atta', 'food'),
+    ('Aashirvaad Superior MP Atta', '5 kg', 265, 299, 25, 'aashirvaad atta', 'atta', 'food'),
     ('Fortune Chakki Fresh Atta', '5 kg', 245, 275, 20, 'fortune chakki fresh atta', 'atta', 'food'),
     ('India Gate Basmati Rice', '1 kg', 155, 180, 25, 'india gate basmati rice', 'basmati', 'food'),
     ('Daawat Rozana Basmati Rice', '1 kg', 110, 130, 25, 'daawat basmati rice', 'basmati', 'food'),
@@ -39,8 +39,8 @@ cat('Atta, Rice & Dal', [
     ('Tata Sampann Moong Dal', '500 g', 85, 99, 20, 'tata sampann moong dal', 'moong', 'food'),
     ('Tata Sampann Chana Dal', '1 kg', 105, 120, 20, 'tata sampann chana dal', 'chana', 'food'),
     ('Rajma Chitra', '500 g', 95, 110, 15, 'rajma', 'rajma', 'food'),
-    ('Kabuli Chana', '500 g', 85, 99, 15, 'kabuli chana', 'chana', 'food'),
-    ('Besan (Gram Flour)', '500 g', 55, 65, 20, 'besan', 'besan', 'food'),
+    ('Organic Tattva Kabuli Chana', '500 g', 85, 99, 15, 'kabuli chana', 'chana', 'food'),
+    ('Samrat Chana Besan', '500 g', 55, 65, 20, 'besan', 'besan', 'food'),
     ('Bombay Rava (Sooji)', '500 g', 35, 42, 20, 'sooji rava', 'rava', 'food'),
     ('Poha (Flattened Rice)', '500 g', 40, 48, 20, 'poha', 'poha', 'food'),
     ('Tata Salt', '1 kg', 28, 30, 50, 'tata salt', 'salt', 'food'),
@@ -73,7 +73,7 @@ cat('Breakfast & Spreads', [
     ('Cadbury Bournvita', '500 g', 225, 245, 15, 'bournvita', 'bournvita', 'food'),
     ('Horlicks Classic Malt', '500 g', 245, 265, 12, 'horlicks', 'horlicks', 'food'),
     ('Nutella Hazelnut Spread', '350 g', 365, 399, 10, 'nutella', 'nutella', 'food'),
-    ('Dabur Honey', '500 g', 215, 235, 12, 'dabur honey', 'honey', 'food'),
+    ('Dabur Honey Squeezy Pack', '500 g', 215, 235, 12, 'dabur honey', 'honey', 'food'),
     ('Pintola Peanut Butter', '350 g', 179, 199, 10, 'peanut butter', 'peanut', 'food'),
 ])
 cat('Tea, Coffee & Drinks', [
@@ -103,7 +103,7 @@ cat('Biscuits & Snacks', [
     ('Parle Monaco', '200 g', 35, 40, 20, 'monaco', 'monaco', 'food'),
     ("Lay's India's Magic Masala", '52 g', 20, 20, 40, 'lays magic masala', 'masala', 'food'),
     ('Kurkure Masala Munch', '90 g', 20, 20, 40, 'kurkure masala munch', 'kurkure', 'food'),
-    ('Bingo Mad Angles', '72 g', 20, 20, 30, 'bingo mad angles', 'mad angles', 'food'),
+    ('Bingo Mad Angles Achaari Masti', '72 g', 20, 20, 30, 'bingo mad angles', 'mad angles', 'food'),
     ("Haldiram's Aloo Bhujia", '400 g', 105, 115, 20, 'haldiram aloo bhujia', 'bhujia', 'food'),
     ("Haldiram's Moong Dal", '200 g', 55, 60, 20, 'haldiram moong dal', 'moong', 'food'),
     ('Act II Butter Popcorn', '90 g', 40, 45, 15, 'act ii popcorn', 'popcorn', 'food'),
@@ -116,7 +116,7 @@ cat('Noodles, Sauces & Ready to Eat', [
     ('Kissan Fresh Tomato Ketchup', '1 kg', 145, 160, 15, 'kissan tomato ketchup', 'ketchup', 'food'),
     ('Maggi Hot & Sweet Sauce', '500 g', 130, 145, 12, 'maggi hot sweet', 'sauce', 'food'),
     ("Ching's Schezwan Chutney", '250 g', 95, 105, 12, 'chings schezwan chutney', 'schezwan', 'food'),
-    ('Knorr Classic Tomato Soup', '53 g', 60, 65, 15, 'knorr tomato soup', 'soup', 'food'),
+    ('Knorr Tomato Chatpata Cup-a-Soup', '53 g', 60, 65, 15, 'knorr tomato soup', 'soup', 'food'),
     ('MTR Ready to Eat Dal Makhani', '300 g', 115, 125, 12, 'mtr dal makhani', 'makhani', 'food'),
     ("Dr. Oetker FunFoods Veg Mayonnaise", '250 g', 95, 105, 12, 'funfoods mayonnaise', 'mayonnaise', 'food'),
     ('Del Monte Eggless Mayo', '275 g', 99, 110, 10, 'del monte mayo', 'mayo', 'food'),

@@ -158,7 +158,9 @@
    "stock": 15,
    "search": "amul fresh cream",
    "must": "cream",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/126/215/1863/front_en.6.400.jpg",
+   "barcode": "8901262151863"
   },
   {
    "name": "Britannia Whole Wheat Bread",
@@ -180,7 +182,9 @@
    "stock": 15,
    "search": "amul cheese spread",
    "must": "spread",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/126/206/0011/front_en.8.400.jpg",
+   "barcode": "8901262060011"
   },
   {
    "name": "Nestle a+ Dahi",
@@ -190,7 +194,9 @@
    "stock": 15,
    "search": "nestle dahi",
    "must": "dahi",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/105/802/2384/front_en.7.400.jpg",
+   "barcode": "8901058022384"
   },
   {
    "name": "Farm Fresh Eggs",
@@ -205,14 +211,16 @@
  ],
  "Atta, Rice & Dal": [
   {
-   "name": "Aashirvaad Shudh Chakki Atta",
+   "name": "Aashirvaad Superior MP Atta",
    "unit": "5 kg",
    "price": 265,
    "mrp": 299,
    "stock": 25,
    "search": "aashirvaad atta",
    "must": "atta",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/172/512/1747/front_en.4.400.jpg",
+   "barcode": "8901725121747"
   },
   {
    "name": "Fortune Chakki Fresh Atta",
@@ -268,7 +276,9 @@
    "stock": 20,
    "search": "tata sampann moong dal",
    "must": "moong",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/404/392/6315/front_en.23.400.jpg",
+   "barcode": "8904043926315"
   },
   {
    "name": "Tata Sampann Chana Dal",
@@ -293,24 +303,28 @@
    "db": "food"
   },
   {
-   "name": "Kabuli Chana",
+   "name": "Organic Tattva Kabuli Chana",
    "unit": "500 g",
    "price": 85,
    "mrp": 99,
    "stock": 15,
    "search": "kabuli chana",
    "must": "chana",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/605/544/0094/front_en.3.400.jpg",
+   "barcode": "8906055440094"
   },
   {
-   "name": "Besan (Gram Flour)",
+   "name": "Samrat Chana Besan",
    "unit": "500 g",
    "price": 55,
    "mrp": 65,
    "stock": 20,
    "search": "besan",
    "must": "besan",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/601/635/0202/front_en.6.400.jpg",
+   "barcode": "8906016350202"
   },
   {
    "name": "Bombay Rava (Sooji)",
@@ -386,7 +400,9 @@
    "stock": 20,
    "search": "fortune mustard oil",
    "must": "mustard",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/600/728/0969/front_en.32.400.jpg",
+   "barcode": "8906007280969"
   },
   {
    "name": "Amul Pure Ghee",
@@ -420,7 +436,9 @@
    "stock": 8,
    "search": "figaro olive oil",
    "must": "olive",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/841/012/521/1700/front_en.3.400.jpg",
+   "barcode": "8410125211700"
   }
  ],
  "Masala & Spices": [
@@ -508,7 +526,9 @@
    "stock": 15,
    "search": "mdh deggi mirch",
    "must": "mirch",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/216/700/0034/front_en.3.400.jpg",
+   "barcode": "8902167000034"
   }
  ],
  "Breakfast & Spreads": [
@@ -520,9 +540,7 @@
    "stock": 15,
    "search": "kelloggs corn flakes",
    "must": "corn flakes",
-   "db": "food",
-   "image": "https://images.openfoodfacts.org/images/products/315/947/000/0120/front_en.147.400.jpg",
-   "barcode": "3159470000120"
+   "db": "food"
   },
   {
    "name": "Quaker Oats",
@@ -532,7 +550,9 @@
    "stock": 15,
    "search": "quaker oats",
    "must": "oats",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/500/010/847/8119/front_en.88.400.jpg",
+   "barcode": "5000108478119"
   },
   {
    "name": "Saffola Masala Oats",
@@ -542,7 +562,9 @@
    "stock": 15,
    "search": "saffola masala oats",
    "must": "oats",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/108/806/8734/front_en.19.400.jpg",
+   "barcode": "8901088068734"
   },
   {
    "name": "Kellogg's Chocos",
@@ -552,7 +574,9 @@
    "stock": 12,
    "search": "kelloggs chocos",
    "must": "chocos",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/149/900/8169/front_en.16.400.jpg",
+   "barcode": "8901499008169"
   },
   {
    "name": "Kissan Mixed Fruit Jam",
@@ -584,7 +608,9 @@
    "stock": 12,
    "search": "horlicks",
    "must": "horlicks",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/103/098/6321/front_en.7.400.jpg",
+   "barcode": "8901030986321"
   },
   {
    "name": "Nutella Hazelnut Spread",
@@ -599,14 +625,16 @@
    "barcode": "3017620425035"
   },
   {
-   "name": "Dabur Honey",
+   "name": "Dabur Honey Squeezy Pack",
    "unit": "500 g",
    "price": 215,
    "mrp": 235,
    "stock": 12,
    "search": "dabur honey",
    "must": "honey",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/120/700/5527/front_en.12.400.jpg",
+   "barcode": "8901207005527"
   },
   {
    "name": "Pintola Peanut Butter",
@@ -628,7 +656,9 @@
    "stock": 20,
    "search": "tata tea gold",
    "must": "tea",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/105/200/0906/front_en.3.400.jpg",
+   "barcode": "8901052000906"
   },
   {
    "name": "Brooke Bond Red Label Tea",
@@ -638,7 +668,9 @@
    "stock": 20,
    "search": "red label tea",
    "must": "tea",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/103/087/7179/front_en.3.400.jpg",
+   "barcode": "8901030877179"
   },
   {
    "name": "Taj Mahal Tea",
@@ -660,7 +692,9 @@
    "stock": 12,
    "search": "nescafe classic",
    "must": "nescafe",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/000/008/900/9758/front_en.3.400.jpg",
+   "barcode": "89009758"
   },
   {
    "name": "Bru Instant Coffee",
@@ -670,7 +704,9 @@
    "stock": 12,
    "search": "bru instant coffee",
    "must": "coffee",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/103/053/5895/front_en.3.400.jpg",
+   "barcode": "8901030535895"
   },
   {
    "name": "Tropicana Orange Juice",
@@ -680,9 +716,7 @@
    "stock": 12,
    "search": "tropicana orange",
    "must": "orange",
-   "db": "food",
-   "image": "https://images.openfoodfacts.org/images/products/350/211/000/9449/front_en.151.400.jpg",
-   "barcode": "3502110009449"
+   "db": "food"
   },
   {
    "name": "Real Fruit Power Mixed Fruit",
@@ -692,7 +726,9 @@
    "stock": 12,
    "search": "real mixed fruit juice",
    "must": "fruit",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/188/800/6363/front_fr.15.400.jpg",
+   "barcode": "8901888006363"
   },
   {
    "name": "Frooti Mango Drink",
@@ -702,7 +738,9 @@
    "stock": 30,
    "search": "frooti",
    "must": "frooti",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/257/910/3170/front_en.69.400.jpg",
+   "barcode": "8902579103170"
   },
   {
    "name": "Maaza Mango Drink",
@@ -712,7 +750,9 @@
    "stock": 30,
    "search": "maaza",
    "must": "maaza",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/176/409/2206/front_en.98.400.jpg",
+   "barcode": "8901764092206"
   },
   {
    "name": "Coca-Cola",
@@ -722,7 +762,9 @@
    "stock": 30,
    "search": "coca cola",
    "must": "coca",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/544/900/005/4227/front_en.563.400.jpg",
+   "barcode": "5449000054227"
   },
   {
    "name": "Thums Up",
@@ -732,7 +774,9 @@
    "stock": 30,
    "search": "thums up",
    "must": "thums",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/176/404/2911/front_en.41.400.jpg",
+   "barcode": "8901764042911"
   },
   {
    "name": "Sprite",
@@ -742,7 +786,9 @@
    "stock": 25,
    "search": "sprite",
    "must": "sprite",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/176/403/2912/front_en.48.400.jpg",
+   "barcode": "8901764032912"
   },
   {
    "name": "Paper Boat Aamras",
@@ -752,7 +798,9 @@
    "stock": 20,
    "search": "paper boat aamras",
    "must": "aamras",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/800/170/5448/front_fr.50.400.jpg",
+   "barcode": "8908001705448"
   },
   {
    "name": "Bisleri Mineral Water",
@@ -762,7 +810,9 @@
    "stock": 60,
    "search": "bisleri",
    "must": "bisleri",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/601/729/0040/front_en.8.400.jpg",
+   "barcode": "8906017290040"
   },
   {
    "name": "Red Bull Energy Drink",
@@ -772,7 +822,9 @@
    "stock": 15,
    "search": "red bull",
    "must": "red bull",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/000/009/016/2602/front_en.151.400.jpg",
+   "barcode": "90162602"
   }
  ],
  "Biscuits & Snacks": [
@@ -784,7 +836,9 @@
    "stock": 20,
    "search": "parle g",
    "must": "parle",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/171/913/4852/front_en.25.400.jpg",
+   "barcode": "8901719134852"
   },
   {
    "name": "Britannia Good Day Cashew",
@@ -794,7 +848,9 @@
    "stock": 25,
    "search": "britannia good day",
    "must": "good day",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/106/309/3287/front_en.18.400.jpg",
+   "barcode": "8901063093287"
   },
   {
    "name": "Britannia Marie Gold",
@@ -804,7 +860,9 @@
    "stock": 25,
    "search": "britannia marie gold",
    "must": "marie",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/106/316/2532/front_en.5.400.jpg",
+   "barcode": "8901063162532"
   },
   {
    "name": "Oreo Chocolate Cream",
@@ -814,7 +872,9 @@
    "stock": 25,
    "search": "oreo",
    "must": "oreo",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/762/220/222/5512/front_en.28.400.jpg",
+   "barcode": "7622202225512"
   },
   {
    "name": "Parle Hide & Seek",
@@ -824,7 +884,9 @@
    "stock": 20,
    "search": "hide and seek",
    "must": "hide",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/171/911/7183/front_en.26.400.jpg",
+   "barcode": "8901719117183"
   },
   {
    "name": "Britannia Bourbon",
@@ -834,7 +896,9 @@
    "stock": 20,
    "search": "bourbon biscuits",
    "must": "bourbon",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/106/313/9329/front_en.14.400.jpg",
+   "barcode": "8901063139329"
   },
   {
    "name": "Parle Monaco",
@@ -844,7 +908,9 @@
    "stock": 20,
    "search": "monaco",
    "must": "monaco",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/171/913/5118/front_en.24.400.jpg",
+   "barcode": "8901719135118"
   },
   {
    "name": "Lay's India's Magic Masala",
@@ -854,7 +920,9 @@
    "stock": 40,
    "search": "lays magic masala",
    "must": "masala",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/149/150/3020/front_en.35.400.jpg",
+   "barcode": "8901491503020"
   },
   {
    "name": "Kurkure Masala Munch",
@@ -864,17 +932,21 @@
    "stock": 40,
    "search": "kurkure masala munch",
    "must": "kurkure",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/149/136/1026/front_en.51.400.jpg",
+   "barcode": "8901491361026"
   },
   {
-   "name": "Bingo Mad Angles",
+   "name": "Bingo Mad Angles Achaari Masti",
    "unit": "72 g",
    "price": 20,
    "mrp": 20,
    "stock": 30,
    "search": "bingo mad angles",
    "must": "mad angles",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/172/501/3684/front_en.24.400.jpg",
+   "barcode": "8901725013684"
   },
   {
    "name": "Haldiram's Aloo Bhujia",
@@ -884,7 +956,9 @@
    "stock": 20,
    "search": "haldiram aloo bhujia",
    "must": "bhujia",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/400/440/0731/front_en.28.400.jpg",
+   "barcode": "8904004400731"
   },
   {
    "name": "Haldiram's Moong Dal",
@@ -894,7 +968,9 @@
    "stock": 20,
    "search": "haldiram moong dal",
    "must": "moong",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/400/440/3718/front_en.4.400.jpg",
+   "barcode": "8904004403718"
   },
   {
    "name": "Act II Butter Popcorn",
@@ -904,7 +980,9 @@
    "stock": 15,
    "search": "act ii popcorn",
    "must": "popcorn",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/151/256/2609/front_en.3.400.jpg",
+   "barcode": "8901512562609"
   },
   {
    "name": "Pringles Original",
@@ -914,7 +992,9 @@
    "stock": 12,
    "search": "pringles original",
    "must": "pringles",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/505/399/010/7339/front_de.289.400.jpg",
+   "barcode": "5053990107339"
   }
  ],
  "Noodles, Sauces & Ready to Eat": [
@@ -926,7 +1006,9 @@
    "stock": 40,
    "search": "maggi masala noodles",
    "must": "maggi",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/105/802/3800/front_en.3.400.jpg",
+   "barcode": "8901058023800"
   },
   {
    "name": "Sunfeast YiPPee! Magic Masala",
@@ -936,7 +1018,9 @@
    "stock": 25,
    "search": "yippee noodles",
    "must": "yippee",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/172/500/5924/front_en.3.400.jpg",
+   "barcode": "8901725005924"
   },
   {
    "name": "Top Ramen Curry Noodles",
@@ -946,7 +1030,9 @@
    "stock": 20,
    "search": "top ramen curry",
    "must": "ramen",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/101/400/0395/front_en.4.400.jpg",
+   "barcode": "8901014000395"
   },
   {
    "name": "Kissan Fresh Tomato Ketchup",
@@ -956,7 +1042,9 @@
    "stock": 15,
    "search": "kissan tomato ketchup",
    "must": "ketchup",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/103/090/2932/front_en.5.400.jpg",
+   "barcode": "8901030902932"
   },
   {
    "name": "Maggi Hot & Sweet Sauce",
@@ -966,7 +1054,9 @@
    "stock": 12,
    "search": "maggi hot sweet",
    "must": "sauce",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/105/801/3658/front_en.8.400.jpg",
+   "barcode": "8901058013658"
   },
   {
    "name": "Ching's Schezwan Chutney",
@@ -976,17 +1066,21 @@
    "stock": 12,
    "search": "chings schezwan chutney",
    "must": "schezwan",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/159/586/2962/front_en.51.400.jpg",
+   "barcode": "8901595862962"
   },
   {
-   "name": "Knorr Classic Tomato Soup",
+   "name": "Knorr Tomato Chatpata Cup-a-Soup",
    "unit": "53 g",
    "price": 60,
    "mrp": 65,
    "stock": 15,
    "search": "knorr tomato soup",
    "must": "soup",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/910/604/8553/front_en.7.400.jpg",
+   "barcode": "8909106048553"
   },
   {
    "name": "MTR Ready to Eat Dal Makhani",
@@ -996,7 +1090,9 @@
    "stock": 12,
    "search": "mtr dal makhani",
    "must": "makhani",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/104/295/7517/front_en.21.400.jpg",
+   "barcode": "8901042957517"
   },
   {
    "name": "Dr. Oetker FunFoods Veg Mayonnaise",
@@ -1006,7 +1102,9 @@
    "stock": 12,
    "search": "funfoods mayonnaise",
    "must": "mayonnaise",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/600/200/0494/front_en.4.400.jpg",
+   "barcode": "8906002000494"
   },
   {
    "name": "Del Monte Eggless Mayo",
@@ -1016,7 +1114,9 @@
    "stock": 10,
    "search": "del monte mayo",
    "must": "mayo",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/124/600/4444/front_en.7.400.jpg",
+   "barcode": "8901246004444"
   }
  ],
  "Chocolates & Sweets": [
@@ -1038,7 +1138,9 @@
    "stock": 30,
    "search": "cadbury dairy milk",
    "must": "dairy milk",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/762/220/227/2639/front_en.3.400.jpg",
+   "barcode": "7622202272639"
   },
   {
    "name": "Nestle KitKat",
@@ -1048,7 +1150,9 @@
    "stock": 30,
    "search": "kitkat",
    "must": "kitkat",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/105/800/5233/front_en.26.400.jpg",
+   "barcode": "8901058005233"
   },
   {
    "name": "Cadbury 5 Star",
@@ -1058,7 +1162,9 @@
    "stock": 30,
    "search": "cadbury 5 star",
    "must": "star",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/762/220/231/8078/front_en.14.400.jpg",
+   "barcode": "7622202318078"
   },
   {
    "name": "Nestle Munch",
@@ -1068,7 +1174,9 @@
    "stock": 40,
    "search": "nestle munch",
    "must": "munch",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/105/800/9439/front_en.10.400.jpg",
+   "barcode": "8901058009439"
   },
   {
    "name": "Cadbury Perk",
@@ -1078,7 +1186,9 @@
    "stock": 40,
    "search": "cadbury perk",
    "must": "perk",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/762/220/233/4511/front_en.35.400.jpg",
+   "barcode": "7622202334511"
   },
   {
    "name": "Cadbury Gems",
@@ -1088,7 +1198,9 @@
    "stock": 40,
    "search": "cadbury gems",
    "must": "gems",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/762/220/221/6695/front_en.3.400.jpg",
+   "barcode": "7622202216695"
   },
   {
    "name": "Haldiram's Rasgulla",
@@ -1098,7 +1210,9 @@
    "stock": 10,
    "search": "haldiram rasgulla",
    "must": "rasgulla",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/400/440/5729/front_en.7.400.jpg",
+   "barcode": "8904004405729"
   },
   {
    "name": "Amul Dark Chocolate",
@@ -1108,7 +1222,9 @@
    "stock": 12,
    "search": "amul dark chocolate",
    "must": "dark",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/890/126/207/0454/front_en.4.400.jpg",
+   "barcode": "8901262070454"
   },
   {
    "name": "Ferrero Rocher",
@@ -1118,7 +1234,9 @@
    "stock": 6,
    "search": "ferrero rocher",
    "must": "rocher",
-   "db": "food"
+   "db": "food",
+   "image": "https://images.openfoodfacts.org/images/products/400/840/016/3826/front_fr.141.400.jpg",
+   "barcode": "4008400163826"
   }
  ],
  "Personal Care": [

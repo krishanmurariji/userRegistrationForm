@@ -1,15 +1,15 @@
 # Builds catalog.json: the product list plus, for food, the Open Food Facts photo that was found for it.
 # A match is only kept when it is clearly the same product: the brand must appear in the database's name or brand,
 # so a branded item never shows another brand's pack. Unbranded staples always get the drawn picture.
-import json, re
+import json, re, unicodedata
 
 base = json.load(open('catalog.base.json'))
 matches = json.load(open('food-matches.json'))
 
-GENERIC = {'Rajma Chitra', 'Kabuli Chana', 'Besan (Gram Flour)', 'Bombay Rava (Sooji)', 'Poha (Flattened Rice)', 'Sugar'}
+GENERIC = set()  # unbranded staples whose match was not right are set to null in food-matches.json
 ALIASES = {"kellogg's": 'kellogg', "lay's": 'lay', "haldiram's": 'haldiram', "ching's": 'ching', 'dr.': 'funfoods',
-           'coca-cola': 'coca', 'india': 'india gate', 'paper': 'paper boat', 'red': 'red bull', 'top': 'top ramen',
-           'sunfeast': 'yippee', 'brooke': 'brooke bond', 'del': 'del monte', 'real': 'real', 'act': 'act ii', 'farm': None}
+           'coca-cola': 'coca', 'india': 'india gate', 'organic': 'organic tattva', 'samrat': 'samrat', 'paper': 'paper boat', 'red': 'red bull', 'top': 'top ramen',
+           'sunfeast': 'yippee', 'brooke': ('brooke bond', 'red label'), 'del': 'del monte', 'real': 'real', 'act': 'act ii', 'farm': None}
 
 def brand_of(name):
     first = name.split()[0].lower()
@@ -23,8 +23,10 @@ for rows in base.values():
             if m: dropped += 1
             continue
         brand = brand_of(row['name'])
-        haystack = (m.get('offName') or '').lower() + ' ' + (m.get('brands') or '').lower()
-        if brand and re.sub(r'[^a-z ]', '', brand) not in re.sub(r'[^a-z ]', '', haystack):
+        plain = lambda t: re.sub(r'[^a-z ]', '', unicodedata.normalize('NFKD', t.lower()).encode('ascii', 'ignore').decode())
+        haystack = plain((m.get('offName') or '') + ' ' + (m.get('brands') or ''))
+        options = brand if isinstance(brand, tuple) else (brand,)
+        if brand and not any(plain(b) in haystack for b in options):
             dropped += 1
             print('different brand, using the drawn picture:', row['name'], '<-', m.get('offName'), '/', m.get('brands'))
             continue

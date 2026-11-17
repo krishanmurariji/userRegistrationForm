@@ -195,7 +195,7 @@
  ],
  "Atta, Rice & Dal": [
   {
-   "name": "Aashirvaad Shudh Chakki Atta",
+   "name": "Aashirvaad Superior MP Atta",
    "unit": "5 kg",
    "price": 265,
    "mrp": 299,
@@ -275,7 +275,7 @@
    "db": "food"
   },
   {
-   "name": "Kabuli Chana",
+   "name": "Organic Tattva Kabuli Chana",
    "unit": "500 g",
    "price": 85,
    "mrp": 99,
@@ -285,7 +285,7 @@
    "db": "food"
   },
   {
-   "name": "Besan (Gram Flour)",
+   "name": "Samrat Chana Besan",
    "unit": "500 g",
    "price": 55,
    "mrp": 65,
@@ -561,7 +561,7 @@
    "db": "food"
   },
   {
-   "name": "Dabur Honey",
+   "name": "Dabur Honey Squeezy Pack",
    "unit": "500 g",
    "price": 215,
    "mrp": 235,
@@ -825,7 +825,7 @@
    "db": "food"
   },
   {
-   "name": "Bingo Mad Angles",
+   "name": "Bingo Mad Angles Achaari Masti",
    "unit": "72 g",
    "price": 20,
    "mrp": 20,
@@ -937,7 +937,7 @@
    "db": "food"
   },
   {
-   "name": "Knorr Classic Tomato Soup",
+   "name": "Knorr Tomato Chatpata Cup-a-Soup",
    "unit": "53 g",
    "price": 60,
    "mrp": 65,
