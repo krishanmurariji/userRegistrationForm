@@ -953,3 +953,587 @@ ion-footer.shop-footer {
     color: var(--ion-color-medium-shade);
   }
 }
+
+/* ==========================================================================
+   Product page, cart and checkout.
+   ========================================================================== */
+
+/* Small rounded icon in front of a card's heading. */
+.shop-column .head-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: inline-grid;
+  place-items: center;
+  background: var(--sm-soft);
+  color: var(--sm-accent);
+  font-size: 21px;
+}
+
+/* ----- Product page ----- */
+.shop-column .gallery-card {
+  position: relative;
+  margin: 0 0 14px;
+  padding: 0;
+  border-radius: 26px;
+  border: 1px solid var(--sm-line);
+  overflow: hidden;
+  background: var(--sm-card);
+
+  > .deal {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    background: var(--sm-deal-soft);
+    color: var(--sm-deal);
+    font-size: 0.8rem;
+    font-weight: 800;
+  }
+}
+
+.shop-column .gallery {
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  max-height: 440px;
+  background: linear-gradient(160deg, var(--sm-soft), var(--sm-sand));
+  color: color-mix(in srgb, var(--sm-accent) 45%, transparent);
+  font-size: 96px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--ion-color-primary);
+    outline-offset: -3px;
+  }
+
+  img {
+    position: static;
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 1;
+    scroll-snap-align: center;
+  }
+
+  .none {
+    flex: 0 0 100%;
+    display: grid;
+    place-items: center;
+  }
+}
+
+.shop-column .gallery-card .dots {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: -20px;
+  padding-bottom: 12px;
+  pointer-events: none;
+
+  i {
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    background: rgba(43, 29, 18, 0.25);
+    transition: width 0.3s var(--sm-ease), background-color 0.3s;
+
+    &.on {
+      width: 20px;
+      background: var(--ion-color-primary);
+    }
+  }
+}
+
+.shop-column .thumbs {
+  padding: 12px;
+  gap: 10px;
+
+  button {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    transition: transform 0.2s var(--sm-spring), border-color 0.2s;
+
+    &.on {
+      transform: scale(1.06);
+    }
+  }
+}
+
+.shop-column .info-card {
+  h1 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .unit {
+    margin: 4px 0 12px;
+  }
+
+  .price-line {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+
+    strong {
+      font-size: 1.9rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+  }
+
+  .save {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--sm-deal-soft);
+    color: var(--sm-deal);
+    font-size: 0.82rem;
+    font-weight: 800;
+  }
+
+  .few {
+    margin: 10px 0 0;
+  }
+}
+
+.shop-column .sold-by-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.25s var(--sm-ease), box-shadow 0.25s;
+
+  .shop-icon {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    background: var(--sm-soft);
+    color: var(--sm-accent);
+    font-size: 28px;
+  }
+
+  .sold-by {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    color: var(--sm-text);
+    font-size: 1rem;
+
+    small {
+      color: var(--sm-muted);
+      font-size: 0.78rem;
+    }
+
+    .closed {
+      color: var(--sm-deal);
+      font-weight: 700;
+    }
+  }
+
+  .go {
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--sm-sand);
+    color: var(--sm-accent);
+    font-size: 16px;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(80, 50, 20, 0.14);
+  }
+}
+
+.sk-product {
+  .sk-photo {
+    width: 100%;
+    aspect-ratio: 1;
+    max-height: 440px;
+    margin: 0 0 16px;
+    border-radius: 26px;
+  }
+
+  .sk-line {
+    height: 18px;
+    margin: 0 0 12px;
+    border-radius: 9px;
+
+    &.short {
+      width: 45%;
+    }
+  }
+}
+
+/* ----- The bar with the main action ----- */
+.pay-bar {
+  padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+
+  > span strong {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  ion-button {
+    --border-radius: 999px;
+    --padding-start: 22px;
+    --padding-end: 18px;
+    --box-shadow: 0 8px 20px rgba(var(--ion-color-primary-rgb), 0.3);
+    min-height: 50px;
+    font-size: 1rem;
+    text-transform: none;
+    letter-spacing: 0;
+
+    app-icon {
+      margin-left: 8px;
+      font-size: 18px;
+    }
+  }
+
+  .add-wide {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 50px;
+    border-radius: 999px;
+    color: var(--ion-color-primary-contrast);
+    font-size: 1rem;
+    letter-spacing: 0;
+    box-shadow: 0 8px 20px rgba(var(--ion-color-primary-rgb), 0.3);
+    transition: transform 0.2s var(--sm-spring);
+    animation: sm-pop 0.28s var(--sm-spring) both;
+
+    app-icon {
+      font-size: 20px;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+.qty {
+  border-radius: 999px;
+  color: var(--ion-color-primary-contrast);
+
+  button:active {
+    transform: scale(0.85);
+  }
+}
+
+.qty.big {
+  height: 50px;
+  animation: sm-pop 0.28s var(--sm-spring) both;
+
+  button {
+    width: 50px;
+    font-size: 20px;
+  }
+}
+
+/* ----- Cart ----- */
+.shop-column .card-head {
+  h2 {
+    min-width: 0;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: var(--sm-soft);
+  }
+}
+
+.shop-column .cart-lines,
+.shop-column .order-lines {
+  li {
+    gap: 12px;
+    padding: 14px 0;
+  }
+
+  .thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    font-size: 30px;
+  }
+
+  .what strong {
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .line-total {
+    font-weight: 800;
+  }
+
+  .line-in {
+    animation: sm-rise 0.3s var(--sm-ease) both;
+  }
+
+  .line-out {
+    animation: sm-line-out 0.28s var(--sm-ease) both;
+  }
+}
+
+@keyframes sm-line-out {
+  to {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+
+.shop-column .bill {
+  dl {
+    gap: 10px 16px;
+  }
+
+  .grand {
+    padding-top: 12px;
+    font-size: 1.2rem;
+  }
+
+  .saving {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--sm-ok) 12%, transparent);
+    color: var(--sm-ok);
+  }
+}
+
+.shop-column .goal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.92rem;
+
+  .goal-icon {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: var(--sm-soft);
+    color: var(--sm-accent);
+    font-size: 26px;
+  }
+
+  .goal-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .bar {
+    display: block;
+    height: 8px;
+    margin-top: 10px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--sm-sand);
+
+    i {
+      display: block;
+      height: 100%;
+      border-radius: 4px;
+      background: var(--ion-color-primary);
+      transform-origin: left center;
+      transition: transform 0.6s var(--sm-ease), background-color 0.3s;
+    }
+  }
+
+  &.done {
+    .goal-icon {
+      background: color-mix(in srgb, var(--sm-ok) 14%, transparent);
+      color: var(--sm-ok);
+    }
+
+    .bar i {
+      background: var(--sm-ok);
+    }
+  }
+}
+
+.shop-column .empty-card .empty-art {
+  width: 116px;
+  height: 116px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(145deg, var(--sm-soft), var(--sm-sand));
+  color: var(--sm-accent);
+  font-size: 62px;
+  animation: sm-float 3s ease-in-out infinite alternate;
+}
+
+@keyframes sm-float {
+  to {
+    transform: translateY(-8px);
+  }
+}
+
+/* ----- Checkout ----- */
+.shop-column .steps {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 4px 0 16px;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sm-muted);
+    font-size: 0.85rem;
+    font-weight: 700;
+
+    span {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--sm-line);
+      background: var(--sm-card);
+      font-size: 0.8rem;
+    }
+
+    & + li::before {
+      content: '';
+      width: 28px;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--sm-line);
+    }
+
+    &.done {
+      color: var(--sm-ok);
+
+      span {
+        border-color: var(--sm-ok);
+        background: var(--sm-ok);
+        color: var(--sm-card);
+        font-size: 15px;
+      }
+    }
+
+    &.now {
+      color: var(--sm-text);
+
+      span {
+        border-color: var(--ion-color-primary);
+        background: var(--ion-color-primary);
+        color: var(--ion-color-primary-contrast);
+      }
+
+      &::before {
+        background: var(--sm-ok);
+      }
+    }
+  }
+}
+
+.shop-column {
+  ion-input,
+  ion-textarea {
+    --border-radius: 14px;
+    --border-color: var(--sm-line);
+    --background: var(--sm-card);
+    --highlight-color-focused: var(--ion-color-primary);
+  }
+}
+
+.shop-column .pay-option {
+  padding: 14px;
+  border-radius: 18px;
+  transition: border-color 0.2s, background-color 0.2s, transform 0.2s var(--sm-spring);
+
+  ion-radio::part(label) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-inline-start: 12px;
+  }
+
+  .pay-icon {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: var(--sm-sand);
+    color: var(--sm-accent);
+    font-size: 26px;
+    transition: background-color 0.2s;
+  }
+
+  &.on {
+    transform: scale(1.01);
+
+    .pay-icon {
+      background: var(--sm-card);
+    }
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+/* The stepper in the bottom bar is a row, unlike the price text beside it. */
+.pay-bar > .qty.big {
+  flex: none;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* On wide screens the action bar lines up with the page column instead of stretching edge to edge. */
+.pay-bar {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.shop-column ion-button {
+  --border-radius: 999px;
+  --padding-start: 22px;
+  --padding-end: 22px;
+  min-height: 46px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}

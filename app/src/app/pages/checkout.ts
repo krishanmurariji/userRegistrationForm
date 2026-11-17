@@ -5,17 +5,18 @@ import { Router } from '@angular/router';
 import { IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonInput, IonRadio, IonRadioGroup, IonSpinner, IonTextarea, IonTitle, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { AuthService } from '../core/auth.service';
+import { AppIcon } from '../core/icon';
 import { CartService } from '../core/cart.service';
 import { PaymentMethod } from '../core/store.models';
 import { StoreService } from '../core/store.service';
 
 @Component({
   selector: 'app-checkout',
-  imports: [CurrencyPipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonFooter, IonInput, IonTextarea, IonRadioGroup, IonRadio, IonButton, IonSpinner],
+  imports: [CurrencyPipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonFooter, IonInput, IonTextarea, IonRadioGroup, IonRadio, IonButton, IonSpinner, AppIcon],
   template: `
     <ion-header class="shop-header">
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/cart" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/cart" text="" /></ion-buttons>
         <ion-title>Checkout</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -23,9 +24,14 @@ import { StoreService } from '../core/store.service';
     <ion-content class="shop-bg">
       <main class="shop-column narrow">
         @if (cart.cart(); as c) {
+          <ol class="steps" aria-label="Checkout progress">
+            <li class="done"><span><app-icon name="check" /></span>Cart</li>
+            <li class="now" aria-current="step"><span>2</span>Details</li>
+            <li><span>3</span>Done</li>
+          </ol>
           <form id="checkout-form" [formGroup]="form" (ngSubmit)="place()" novalidate>
             <section class="card">
-              <h2><span class="step">1</span>Delivery details</h2>
+              <h2><span class="head-icon"><app-icon name="map-pin" weight="duotone" /></span>Delivery details</h2>
               <div class="stack">
                 <ion-input formControlName="customerName" label="Name" labelPlacement="stacked" fill="outline"
                   autocomplete="name" errorText="Enter the name for delivery" />
@@ -45,16 +51,18 @@ import { StoreService } from '../core/store.service';
             </section>
 
             <section class="card">
-              <h2><span class="step">2</span>Payment</h2>
+              <h2><span class="head-icon"><app-icon name="wallet" weight="duotone" /></span>Payment</h2>
               <ion-radio-group formControlName="paymentMethod" class="pay-options">
                 <label class="pay-option" [class.on]="form.controls.paymentMethod.value === 'CashOnDelivery'">
                   <ion-radio value="CashOnDelivery" labelPlacement="end" justify="start">
+                    <span class="pay-icon"><app-icon name="money" weight="duotone" /></span>
                     <span class="pay-text"><strong>Cash on delivery</strong><small>Pay when your order arrives</small></span>
                   </ion-radio>
                 </label>
                 @if (c.shop.acceptsUpi) {
                   <label class="pay-option" [class.on]="form.controls.paymentMethod.value === 'Upi'">
                     <ion-radio value="Upi" labelPlacement="end" justify="start">
+                      <span class="pay-icon"><app-icon name="qr-code" weight="duotone" /></span>
                       <span class="pay-text"><strong>UPI</strong><small>Pay now with any UPI app; the shop confirms it</small></span>
                     </ion-radio>
                   </label>
@@ -64,7 +72,7 @@ import { StoreService } from '../core/store.service';
             </section>
 
             <section class="card bill">
-              <h2><span class="step">3</span>Order summary</h2>
+              <h2><span class="head-icon"><app-icon name="receipt" weight="duotone" /></span>Order summary</h2>
               <p class="hint">{{ cart.count() }} {{ cart.count() === 1 ? 'item' : 'items' }} from {{ c.shop.name }}</p>
               <dl>
                 <dt>Items total</dt><dd>{{ cart.subtotal() | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
@@ -91,7 +99,7 @@ import { StoreService } from '../core/store.service';
         <div class="pay-bar">
           <span><small>To pay</small><strong>{{ cart.total() | currency: 'INR' : 'symbol' : '1.0-2' }}</strong></span>
           <ion-button [disabled]="busy() || !c.shop.isOpen || cart.belowMinimum()" (click)="place()">
-            @if (busy()) { <ion-spinner name="crescent" aria-label="Placing order" /> } @else { Place order }
+            @if (busy()) { <ion-spinner name="crescent" aria-label="Placing order" /> } @else { Place order<app-icon slot="end" name="arrow-right" /> }
           </ion-button>
         </div>
       </ion-footer>

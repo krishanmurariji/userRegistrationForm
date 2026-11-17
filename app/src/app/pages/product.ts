@@ -1,13 +1,12 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonIcon, IonSpinner, IonTitle, IonToolbar } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { addOutline, imageOutline, removeOutline } from 'ionicons/icons';
+import { IonBackButton, IonButtons, IonContent, IonFooter, IonHeader, IonSkeletonText, IonTitle, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { CartActions } from '../core/cart-actions';
 import { CartBar } from '../core/cart-bar';
 import { CartService, maxFor } from '../core/cart.service';
+import { AppIcon } from '../core/icon';
 import { fileUrl } from '../core/shop.service';
 import { StoreItemDetail, discountPercent } from '../core/store.models';
 import { StoreService } from '../core/store.service';
@@ -15,35 +14,38 @@ import { StoreService } from '../core/store.service';
 /** One product: a gallery of its pictures, the price and the add-to-cart control. */
 @Component({
   selector: 'app-product',
-  imports: [CurrencyPipe, RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonIcon, IonSpinner, IonFooter, CartBar],
+  imports: [CurrencyPipe, RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonSkeletonText, IonFooter, CartBar, AppIcon],
   template: `
     <ion-header class="shop-header">
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/store/' + shopId" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/store/' + shopId" text="" /></ion-buttons>
         <ion-title>{{ detail()?.item?.name ?? 'Product' }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="shop-bg">
-      <main class="shop-column narrow">
+      <main class="shop-column narrow product-page">
         @if (error(); as message) {
           <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         } @else if (detail(); as d) {
-          <section class="card gallery-card">
-            <div class="gallery" role="group" aria-label="Pictures of this product">
+          <section class="gallery-card">
+            <div #scroller class="gallery" role="group" aria-label="Pictures of this product" tabindex="0" (scroll)="onScroll(scroller)">
               @for (url of pictures(); track url; let index = $index) {
-                <img [src]="url" [alt]="d.item.name + ', picture ' + (index + 1) + ' of ' + pictures().length" [class.on]="index === current()" loading="lazy" />
+                <img [src]="url" [alt]="d.item.name + ', picture ' + (index + 1) + ' of ' + pictures().length" [attr.loading]="index ? 'lazy' : 'eager'" />
               } @empty {
-                <span class="none"><ion-icon name="image-outline" aria-hidden="true" /></span>
+                <span class="none"><app-icon name="basket" weight="duotone" /></span>
               }
-              @if (discount(); as percent) { <span class="deal">{{ percent }}% OFF</span> }
             </div>
+            @if (discount(); as percent) { <span class="deal">{{ percent }}% off</span> }
             @if (pictures().length > 1) {
+              <div class="dots" aria-hidden="true">
+                @for (url of pictures(); track url; let index = $index) { <i [class.on]="index === current()"></i> }
+              </div>
               <ul class="thumbs" aria-label="Choose a picture">
                 @for (url of pictures(); track url; let index = $index) {
                   <li>
                     <button type="button" [class.on]="index === current()" [attr.aria-label]="'Show picture ' + (index + 1)"
-                      [attr.aria-pressed]="index === current()" (click)="current.set(index)">
+                      [attr.aria-pressed]="index === current()" (click)="show(index, scroller)">
                       <img [src]="url" alt="" loading="lazy" />
                     </button>
                   </li>
@@ -52,19 +54,37 @@ import { StoreService } from '../core/store.service';
             }
           </section>
 
-          <section class="card">
+          <section class="card info-card">
             <h1>{{ d.item.name }}</h1>
             <p class="unit">{{ d.item.unit }}</p>
             <p class="price-line">
               <strong>{{ d.item.price | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
-              @if (discount()) { <s>{{ d.item.mrp | currency: 'INR' : 'symbol' : '1.0-2' }}</s> }
+              @if (discount()) {
+                <s>{{ d.item.mrp | currency: 'INR' : 'symbol' : '1.0-2' }}</s>
+                <span class="save"><app-icon name="tag" />Save {{ d.item.mrp! - d.item.price | currency: 'INR' : 'symbol' : '1.0-2' }}</span>
+              }
             </p>
             @if (d.item.available !== null && d.item.available > 0 && d.item.available <= 5) { <p class="few">Only {{ d.item.available }} left</p> }
-            @if (d.item.description) { <p class="about">{{ d.item.description }}</p> }
-            <p class="sold-by">Sold by <a [routerLink]="['/store', d.shop.id]">{{ d.shop.name }}</a>@if (!d.shop.isOpen) { · closed right now }</p>
           </section>
+
+          @if (d.item.description) {
+            <section class="card">
+              <h2>About this item</h2>
+              <p class="about">{{ d.item.description }}</p>
+            </section>
+          }
+
+          <a class="card sold-by-card" [routerLink]="['/store', d.shop.id]">
+            <span class="shop-icon"><app-icon name="storefront" weight="duotone" /></span>
+            <span class="sold-by"><small>Sold by</small><strong>{{ d.shop.name }}</strong>@if (!d.shop.isOpen) { <small class="closed">Closed right now</small> }</span>
+            <span class="go"><app-icon name="caret-right" /></span>
+          </a>
         } @else {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading" /></div>
+          <div class="sk-product" aria-hidden="true">
+            <ion-skeleton-text animated class="sk-photo" />
+            <ion-skeleton-text animated class="sk-line" />
+            <ion-skeleton-text animated class="sk-line short" />
+          </div>
         }
       </main>
     </ion-content>
@@ -80,12 +100,12 @@ import { StoreService } from '../core/store.service';
             <span><small>Price</small><strong>{{ d.item.price | currency: 'INR' : 'symbol' : '1.0-2' }}</strong></span>
             @if (quantity(); as q) {
               <span class="qty big" role="group" aria-label="Quantity">
-                <button type="button" aria-label="Remove one" (click)="set(q - 1)"><ion-icon name="remove-outline" /></button>
+                <button type="button" aria-label="Remove one" (click)="set(q - 1)"><app-icon name="minus" /></button>
                 <span aria-live="polite">{{ q }}</span>
-                <button type="button" [disabled]="q >= max()" aria-label="Add one more" (click)="set(q + 1)"><ion-icon name="add-outline" /></button>
+                <button type="button" [disabled]="q >= max()" aria-label="Add one more" (click)="set(q + 1)"><app-icon name="plus" /></button>
               </span>
             } @else {
-              <button type="button" class="add-wide" (click)="set(1)">ADD TO CART</button>
+              <button type="button" class="add-wide" (click)="set(1)"><app-icon name="shopping-bag" weight="fill" />Add to cart</button>
             }
           </div>
         }
@@ -113,10 +133,6 @@ export class ProductPage {
     return d && this.cart.cart()?.shop.id === d.shop.id ? this.cart.quantityOf(d.item.id) : 0;
   });
 
-  constructor() {
-    addIcons({ addOutline, imageOutline, removeOutline });
-  }
-
   async ionViewWillEnter(): Promise<void> {
     this.error.set('');
     try {
@@ -124,6 +140,16 @@ export class ProductPage {
     } catch (e) {
       this.error.set(toApiError(e).message);
     }
+  }
+
+  /** Swiping the gallery moves the dots and the highlighted thumbnail. */
+  protected onScroll(scroller: HTMLElement): void {
+    if (scroller.clientWidth) this.current.set(Math.round(scroller.scrollLeft / scroller.clientWidth));
+  }
+
+  protected show(index: number, scroller: HTMLElement): void {
+    this.current.set(index);
+    scroller.scrollTo({ left: index * scroller.clientWidth, behavior: 'smooth' });
   }
 
   protected set(quantity: number): void {
