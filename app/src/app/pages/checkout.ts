@@ -161,7 +161,7 @@ export class CheckoutPage {
         note: value.note.trim() || null,
         expectedTotal: this.cart.total(),
       });
-      await this.router.navigate(['/orders', order.id], { replaceUrl: true });
+      await this.router.navigate(['/orders', order.id], { replaceUrl: true, queryParams: { placed: 1 } });
       this.cart.clear();
     } catch (e) {
       const { code, message } = toApiError(e);

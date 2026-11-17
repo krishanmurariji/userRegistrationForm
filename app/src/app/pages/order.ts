@@ -2,9 +2,11 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSpinner, IonTitle, IonToolbar } from '@ionic/angular';
+import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSkeletonText, IonSpinner, IonTitle, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
 import { CartActions } from '../core/cart-actions';
+import { AppIcon } from '../core/icon';
+import { OrderHero } from '../core/order-hero';
 import { OrderTracker } from '../core/order-tracker';
 import { Order, paymentColor, paymentLabel } from '../core/store.models';
 import { StoreService } from '../core/store.service';
@@ -12,24 +14,26 @@ import { StoreService } from '../core/store.service';
 /** A customer's view of one order: where it is, how to pay by UPI, and what was ordered. */
 @Component({
   selector: 'app-order',
-  imports: [CurrencyPipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonButton, IonSpinner, OrderTracker],
+  imports: [CurrencyPipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonButton, IonSpinner, IonSkeletonText, OrderTracker, OrderHero, AppIcon],
   template: `
     <ion-header class="shop-header">
       <ion-toolbar>
-        <ion-buttons slot="start"><ion-back-button defaultHref="/orders" /></ion-buttons>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/orders" text="" /></ion-buttons>
         <ion-title>{{ order()?.number ?? 'Order' }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content class="shop-bg">
-      <main class="shop-column narrow">
+      <main class="shop-column narrow order-page">
         @if (error(); as message) {
           <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         }
         @if (order(); as o) {
+          <app-order-hero [status]="o.status" [number]="o.number" [shopName]="o.shopName" [reason]="o.cancelReason" />
+
           <section class="card">
             <header class="card-head">
-              <h1>{{ o.shopName }}</h1>
+              <h2><span class="head-icon"><app-icon name="clock" weight="duotone" /></span>Progress</h2>
               <span class="status" [attr.data-color]="paymentColor(o)">{{ paymentLabel(o) }}</span>
             </header>
             <app-order-tracker [order]="o" />
@@ -39,11 +43,11 @@ import { StoreService } from '../core/store.service';
             <section class="card pay-card">
               @switch (o.paymentStatus) {
                 @case ('Paid') {
-                  <h2>Payment confirmed</h2>
+                  <h2><span class="head-icon ok"><app-icon name="seal-check" weight="duotone" /></span>Payment confirmed</h2>
                   <p>The shop received {{ o.total | currency: 'INR' : 'symbol' : '1.0-2' }} by UPI (transaction ID {{ o.upiReference }}).</p>
                 }
                 @case ('AwaitingVerification') {
-                  <h2>The shop is checking your payment</h2>
+                  <h2><span class="head-icon"><app-icon name="clock" weight="duotone" /></span>The shop is checking your payment</h2>
                   <p>You sent transaction ID {{ o.upiReference }}. You will see the result here once the shop has checked.</p>
                 }
                 @default {
@@ -55,7 +59,9 @@ import { StoreService } from '../core/store.service';
                   }
                   @if (o.upi; as upi) {
                     <h2><span class="step">1</span>Pay {{ upi.amount | currency: 'INR' : 'symbol' : '1.0-2' }} by UPI</h2>
-                    <p>Pay to <strong class="selectable">{{ upi.upiId }}</strong> ({{ upi.payeeName }}).</p>
+                    <p class="upi-id">Pay to <strong class="selectable">{{ upi.upiId }}</strong> ({{ upi.payeeName }})
+                      <button type="button" class="copy" (click)="copy(upi.upiId)"><app-icon [name]="copied() ? 'check' : 'copy'" />{{ copied() ? 'Copied' : 'Copy' }}</button>
+                    </p>
                     <div class="upi-pay">
                       @if (qr(); as src) { <img [src]="src" width="180" height="180" alt="UPI QR code for this payment" /> }
                       <div>
@@ -89,7 +95,7 @@ import { StoreService } from '../core/store.service';
           }
 
           <section class="card">
-            <h2>{{ o.items.length }} {{ o.items.length === 1 ? 'item' : 'items' }}</h2>
+            <h2><span class="head-icon"><app-icon name="shopping-bag" weight="duotone" /></span>{{ o.items.length }} {{ o.items.length === 1 ? 'item' : 'items' }}</h2>
             <ul class="order-lines">
               @for (line of o.items; track $index) {
                 <li>
@@ -102,7 +108,7 @@ import { StoreService } from '../core/store.service';
           </section>
 
           <section class="card bill">
-            <h2>Bill details</h2>
+            <h2><span class="head-icon"><app-icon name="receipt" weight="duotone" /></span>Bill details</h2>
             <dl>
               <dt>Items total</dt><dd>{{ o.subtotal | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
               <dt>Delivery fee</dt><dd>{{ o.deliveryFee ? (o.deliveryFee | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}</dd>
@@ -111,18 +117,18 @@ import { StoreService } from '../core/store.service';
           </section>
 
           <section class="card">
-            <h2>Delivering to</h2>
+            <h2><span class="head-icon"><app-icon name="map-pin" weight="duotone" /></span>Delivering to</h2>
             <p class="address"><strong>{{ o.customerName }}</strong><br />{{ o.addressLine }}, {{ o.city }} {{ o.pincode }}<br />{{ o.phone }}</p>
             @if (o.note) { <p class="hint">Note: {{ o.note }}</p> }
           </section>
 
           <section class="card">
-            <h2>Need help?</h2>
+            <h2><span class="head-icon"><app-icon name="phone-call" weight="duotone" /></span>Need help?</h2>
             <p>Call {{ o.shopName }} on <a [href]="'tel:' + o.shopPhone">{{ o.shopPhone }}</a>.</p>
             @if (notice(); as message) { <p role="status" class="hint">{{ message }}</p> }
             <div class="actions">
               @if (o.status === 'Delivered' || o.status === 'Cancelled') {
-                <ion-button fill="outline" [disabled]="busy()" (click)="again()">Order again</ion-button>
+                <ion-button fill="outline" [disabled]="busy()" (click)="again()"><app-icon slot="start" name="arrow-clockwise" />Order again</ion-button>
               }
               @if (o.status === 'Placed') {
                 <ion-button fill="outline" color="danger" [disabled]="busy()" (click)="cancel()">Cancel order</ion-button>
@@ -130,17 +136,37 @@ import { StoreService } from '../core/store.service';
             </div>
           </section>
         } @else if (!error()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading order" /></div>
+          <div class="sk-order" aria-hidden="true">
+            <ion-skeleton-text animated class="sk-hero" />
+            <ion-skeleton-text animated class="sk-block" />
+            <ion-skeleton-text animated class="sk-block short" />
+          </div>
         }
       </main>
     </ion-content>
+
+    @if (celebrate()) {
+      <div class="placed-overlay" role="status" (click)="celebrate.set(false)">
+        <div class="placed-card">
+          <svg class="tick" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="36" /><path d="M24 41l11 11 21-23" /></svg>
+          <h2>Order placed!</h2>
+          <p>{{ order()?.shopName ? order()!.shopName + ' has your order.' : 'The shop has your order.' }}</p>
+          <small>Tap to continue</small>
+        </div>
+      </div>
+    }
   `,
 })
 export class OrderPage {
   private readonly store = inject(StoreService);
   private readonly alerts = inject(AlertController);
   private readonly cartActions = inject(CartActions);
-  private readonly orderId = inject(ActivatedRoute).snapshot.paramMap.get('orderId')!;
+  private readonly route = inject(ActivatedRoute).snapshot;
+  private readonly orderId = this.route.paramMap.get('orderId')!;
+
+  /** True right after checkout: shows the "Order placed" moment once. */
+  protected readonly celebrate = signal(this.route.queryParamMap.has('placed'));
+  protected readonly copied = signal(false);
 
   protected readonly order = signal<Order | null>(null);
   protected readonly qr = signal<string | null>(null);
@@ -158,6 +184,7 @@ export class OrderPage {
 
   ionViewWillEnter(): void {
     void this.load();
+    if (this.celebrate()) void this.party();
     // The shop changes the order from its side, so look again every 20 seconds while this page is open.
     this.timer = setInterval(() => void this.load(true), 20_000);
   }
@@ -165,6 +192,30 @@ export class OrderPage {
   ionViewWillLeave(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
+  }
+
+  /** Confetti and a tick for a new order. People who ask for less motion get the tick only. */
+  private async party(): Promise<void> {
+    setTimeout(() => this.celebrate.set(false), 3200);
+    if (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    try {
+      const { default: confetti } = await import('canvas-confetti');
+      const colors = ['#9b5227', '#ffab85', '#ffe1cc', '#f3e3ce', '#2f6b3f'];
+      void confetti({ particleCount: 90, spread: 75, startVelocity: 38, origin: { y: 0.62 }, colors, disableForReducedMotion: true });
+      setTimeout(() => void confetti({ particleCount: 50, spread: 110, startVelocity: 28, origin: { y: 0.55 }, colors, disableForReducedMotion: true }), 260);
+    } catch {
+      // The tick alone is enough when the confetti cannot load.
+    }
+  }
+
+  protected async copy(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    } catch {
+      // Copying is a convenience; the UPI ID is also shown as selectable text.
+    }
   }
 
   private async load(quiet = false): Promise<void> {

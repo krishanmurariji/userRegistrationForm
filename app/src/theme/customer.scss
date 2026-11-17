@@ -1537,3 +1537,467 @@ ion-footer.shop-footer {
   text-transform: none;
   letter-spacing: 0;
 }
+
+/* ==========================================================================
+   Order tracking: the status at the top, the timeline, the "order placed"
+   moment and the list of orders.
+   ========================================================================== */
+.order-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 14px;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 18px 18px 22px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 88% 0%, color-mix(in srgb, var(--sm-peach) 55%, transparent), transparent 55%),
+    linear-gradient(135deg, var(--sm-soft), var(--sm-sand));
+  color: var(--sm-text);
+  overflow: hidden;
+
+  .pulse {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 22px;
+    display: grid;
+    place-items: center;
+    background: var(--sm-card);
+    color: var(--sm-accent);
+    font-size: 36px;
+    box-shadow: var(--sm-shadow);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 2px solid var(--sm-accent);
+      opacity: 0;
+      animation: sm-ring 2s ease-out infinite;
+    }
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 2px 0 2px;
+    font-size: 0.95rem;
+  }
+
+  small {
+    color: var(--sm-muted);
+    font-size: 0.8rem;
+  }
+
+  .road {
+    grid-column: 1 / -1;
+    position: relative;
+    height: 6px;
+    margin: 30px 16px 4px;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--sm-accent) 18%, var(--sm-card));
+
+    .fill {
+      position: absolute;
+      inset: 0;
+      border-radius: 3px;
+      background: var(--ion-color-primary);
+      transform-origin: left center;
+      transform: scaleX(var(--progress));
+      transition: transform 0.9s var(--sm-ease);
+    }
+
+    i {
+      position: absolute;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      margin: -6px 0 0 -6px;
+      border-radius: 50%;
+      background: var(--sm-card);
+      border: 2px solid color-mix(in srgb, var(--sm-accent) 30%, var(--sm-card));
+      transition: background-color 0.4s, border-color 0.4s;
+
+      &.on {
+        background: var(--ion-color-primary);
+        border-color: var(--ion-color-primary);
+      }
+    }
+
+    .rider {
+      position: absolute;
+      top: -30px;
+      left: calc(var(--progress) * 100%);
+      width: 34px;
+      height: 34px;
+      margin-left: -17px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--sm-card);
+      color: var(--sm-accent);
+      font-size: 22px;
+      box-shadow: 0 4px 12px rgba(80, 50, 20, 0.22);
+      transition: left 0.9s var(--sm-ease);
+      animation: sm-ride 1.1s ease-in-out infinite alternate;
+    }
+  }
+
+  &.delivered {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--sm-ok) 16%, var(--sm-card)), var(--sm-sand));
+
+    .pulse,
+    .rider {
+      color: var(--sm-ok);
+    }
+
+    .pulse::after,
+    .rider {
+      animation: none;
+    }
+
+    .road .fill,
+    .road i.on {
+      background: var(--sm-ok);
+      border-color: var(--sm-ok);
+    }
+  }
+
+  &.cancelled {
+    background: color-mix(in srgb, var(--ion-color-danger) 9%, var(--sm-card));
+    padding-bottom: 18px;
+
+    .pulse {
+      color: var(--ion-color-danger);
+
+      &::after {
+        animation: none;
+      }
+    }
+  }
+}
+
+@keyframes sm-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@keyframes sm-ride {
+  to {
+    transform: translateY(-3px) rotate(-3deg);
+  }
+}
+
+/* ----- Timeline ----- */
+.tracker {
+  li {
+    gap: 14px;
+    padding-bottom: 22px;
+
+    &:not(:last-child)::before {
+      left: 19px;
+      top: 40px;
+      width: 2px;
+      border-radius: 1px;
+    }
+  }
+
+  .mark {
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    font-size: 20px;
+    color: var(--sm-muted);
+    transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+  }
+
+  .text {
+    padding-top: 8px;
+  }
+
+  .done .mark {
+    color: var(--ion-color-primary-contrast);
+  }
+
+  .current .mark {
+    color: var(--ion-color-primary-contrast);
+    box-shadow: none;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      border: 2px solid var(--ion-color-primary);
+      animation: sm-ring 2s ease-out infinite;
+    }
+  }
+}
+
+.tracker-cancelled {
+  border-radius: 16px;
+
+  app-icon {
+    flex: none;
+    font-size: 30px;
+  }
+}
+
+.shop-column .head-icon.ok {
+  background: color-mix(in srgb, var(--sm-ok) 14%, transparent);
+  color: var(--sm-ok);
+}
+
+/* ----- Paying by UPI ----- */
+.shop-column .pay-card {
+  .upi-id {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+  }
+
+  .copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--sm-soft);
+    color: var(--sm-accent);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s var(--sm-spring);
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  .upi-pay img {
+    padding: 8px;
+    border-radius: 18px;
+  }
+}
+
+.sk-order {
+  .sk-hero {
+    height: 150px;
+    margin: 0 0 14px;
+    border-radius: 26px;
+  }
+
+  .sk-block {
+    height: 220px;
+    margin: 0 0 14px;
+    border-radius: var(--sm-radius);
+
+    &.short {
+      height: 110px;
+    }
+  }
+}
+
+/* ----- "Order placed" ----- */
+.placed-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--sm-page) 82%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: sm-fade 0.25s ease both;
+  cursor: pointer;
+
+  .placed-card {
+    width: min(320px, 100%);
+    padding: 30px 24px 24px;
+    border-radius: 30px;
+    background: var(--sm-card);
+    border: 1px solid var(--sm-line);
+    box-shadow: 0 24px 60px rgba(80, 50, 20, 0.25);
+    color: var(--sm-text);
+    text-align: center;
+    animation: sm-pop 0.45s var(--sm-spring) both;
+  }
+
+  .tick {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 12px;
+
+    circle {
+      fill: color-mix(in srgb, var(--sm-ok) 14%, transparent);
+      stroke: var(--sm-ok);
+      stroke-width: 4;
+      stroke-dasharray: 227;
+      stroke-dashoffset: 227;
+      stroke-linecap: round;
+      transform: rotate(-90deg);
+      transform-origin: center;
+      animation: sm-draw 0.6s 0.15s var(--sm-ease) forwards;
+    }
+
+    path {
+      fill: none;
+      stroke: var(--sm-ok);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 50;
+      stroke-dashoffset: 50;
+      animation: sm-draw 0.35s 0.65s var(--sm-ease) forwards;
+    }
+  }
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0 0 14px;
+    color: var(--sm-muted);
+  }
+
+  small {
+    color: var(--sm-muted);
+    font-size: 0.78rem;
+  }
+}
+
+@keyframes sm-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sm-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* With reduced motion the tick is simply shown, already drawn. */
+@media (prefers-reduced-motion: reduce) {
+  .placed-overlay .tick circle,
+  .placed-overlay .tick path {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ----- List of orders ----- */
+.shop-column .order-card {
+  position: relative;
+  gap: 8px;
+  transition: transform 0.25s var(--sm-ease), box-shadow 0.25s;
+
+  .top {
+    justify-content: flex-start;
+
+    strong {
+      flex: 1;
+      font-weight: 800;
+    }
+  }
+
+  .order-icon {
+    flex: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: var(--sm-soft);
+    color: var(--sm-accent);
+    font-size: 24px;
+
+    &[data-color='success'] {
+      background: color-mix(in srgb, var(--sm-ok) 14%, transparent);
+      color: var(--sm-ok);
+    }
+
+    &[data-color='danger'] {
+      background: color-mix(in srgb, var(--ion-color-danger) 10%, transparent);
+      color: var(--ion-color-danger);
+    }
+  }
+
+  .mid {
+    color: var(--sm-muted);
+  }
+
+  .bottom {
+    align-items: center;
+    padding-top: 10px;
+  }
+
+  .view {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .mini-road {
+    display: block;
+    height: 5px;
+    border-radius: 3px;
+    overflow: hidden;
+    background: var(--sm-sand);
+
+    i {
+      display: block;
+      height: 100%;
+      border-radius: 3px;
+      background: var(--ion-color-primary);
+      transform-origin: left center;
+      transition: transform 0.6s var(--sm-ease);
+    }
+  }
+
+  &.live {
+    border-color: color-mix(in srgb, var(--sm-accent) 35%, var(--sm-line));
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(80, 50, 20, 0.14);
+  }
+}
+
+/* Status pills: success uses the green, the rest stay in the warm palette. */
+.shop-column .status {
+  &[data-color='success'] {
+    background: color-mix(in srgb, var(--sm-ok) 14%, transparent);
+    color: var(--sm-ok);
+  }
+
+  &[data-color='primary'] {
+    background: var(--sm-soft);
+    color: var(--sm-accent);
+  }
+}
