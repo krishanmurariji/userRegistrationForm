@@ -28,7 +28,19 @@ The first run can take 20 to 40 minutes. iOS uses macOS machines, which cost mor
 |---|---|---|
 | Windows | Installer, not signed (SmartScreen warning) | Signed installer |
 | Android | Debug `.apk` for testing on a phone | Signed `.apk` and Play Store `.aab` |
-| iOS | Simulator build (`.zip`), Mac only | Signed `.ipa` for TestFlight or the App Store |
+| iOS | Unsigned `.ipa` for sideloading, and a simulator build (`.zip`) | Signed `.ipa` for TestFlight or the App Store |
+
+## Installing the test builds
+
+**Android (`...-android-debug.apk`):** copy it to the phone, open it, and allow "install unknown apps" when asked.
+Each workflow run signs the debug build with a new key, so a newer debug APK cannot update an older one: uninstall
+the old one first. Add the Android keystore secrets below to get builds that update each other.
+
+**iPhone (`...-ios-unsigned.ipa`):** Apple only lets signed apps onto an iPhone. Without a paid developer account
+(99 USD a year) the free way is to sideload it with **Sideloadly** (Windows or Mac) or **AltStore**: they sign the
+`.ipa` with your own free Apple ID while installing. Limits of a free Apple ID: the app stops opening after 7 days
+until you install it again, and at most 3 such apps per phone. Fine for testing; for real customers use a paid
+account and TestFlight or the App Store.
 
 ## Optional secrets (Settings, Secrets and variables, Actions, Secrets)
 

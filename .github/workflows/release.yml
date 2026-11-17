@@ -347,6 +347,18 @@ jobs:
             MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
           mkdir -p out
           (cd build/Build/Products/Debug-iphonesimulator && zip -qr "$GITHUB_WORKSPACE/out/Small-Mart-$VERSION-ios-simulator.zip" App.app)
+      # An unsigned build for real iPhones. It cannot be installed as it is: a sideloading tool (Sideloadly or
+      # AltStore) signs it with a free Apple ID first. See docs/RELEASING.md.
+      - name: Build for iPhones, unsigned (.ipa for sideloading)
+        if: ${{ env.HAS_SIGNING != 'true' }}
+        run: |
+          xcodebuild -project app/ios/App/App.xcodeproj -scheme App -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build-device CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" build
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R build-device/Build/Products/Release-iphoneos/App.app "$RUNNER_TEMP/ipa/Payload/"
+          (cd "$RUNNER_TEMP/ipa" && zip -qr "$GITHUB_WORKSPACE/out/Small-Mart-$VERSION-ios-unsigned.ipa" Payload)
       - run: ls -l out
       - uses: actions/upload-artifact@v4
         with:
@@ -391,6 +403,7 @@ jobs:
                 *android-play-store.aab) what="Android bundle for the Google Play Store." ;;
                 *android-debug.apk) what="Android app for testing. Install it on a phone directly; not signed for the Play Store." ;;
                 *android.apk) what="Android app you can install on a phone directly." ;;
+                *ios-unsigned.ipa) what="iPhone app, not signed. Install it with Sideloadly or AltStore and a free Apple ID (it must be refreshed every 7 days). For the App Store add the Apple signing secrets." ;;
                 *ios.ipa) what="iOS app signed with your Apple certificate, ready for TestFlight or the App Store." ;;
                 *ios-simulator.zip) what="iOS build for the Simulator on a Mac. It cannot be installed on an iPhone; add the Apple signing secrets for that." ;;
                 *) what="" ;;
