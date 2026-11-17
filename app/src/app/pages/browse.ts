@@ -21,7 +21,7 @@ import { StoreService } from '../core/store.service';
     <ion-header class="shop-header">
       <ion-toolbar>
         <div class="greeting" slot="start">
-          <span class="brand-mark"><app-icon name="shopping-bag" weight="duotone" /></span>
+          <img class="brand-mark" src="brand/logo-mark.svg" alt="Small Mart" />
           <span class="who">
             <small>Welcome back</small>
             <strong>{{ firstName() }}</strong>

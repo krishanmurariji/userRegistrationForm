@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><defs>
+    <linearGradient id="sm-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c2703a"/>
+      <stop offset="1" stop-color="#8a4420"/>
+    </linearGradient>
+    <linearGradient id="sm-bag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffaf3"/>
+      <stop offset="1" stop-color="#ffe6d2"/>
+    </linearGradient>
+  </defs><g transform="translate(256 262) scale(0.64) translate(-256 -262)">
+  
+  <!-- handle -->
+  <path d="M178 214 C178 112 334 112 334 214" fill="none" stroke="#fffaf3" stroke-width="24" stroke-linecap="round"/>
+  <!-- bag -->
+  <path d="M150 196 H362 a22 22 0 0 1 22 20 L398 380 a42 42 0 0 1 -42 46 H156 a42 42 0 0 1 -42 -46 L128 216 a22 22 0 0 1 22 -20 Z" fill="url(#sm-bag)"/>
+  <!-- smile -->
+  <path d="M190 296 Q256 352 322 296" fill="none" stroke="#a6532a" stroke-width="24" stroke-linecap="round"/>
+  <!-- leaf -->
+  <path d="M366 204 C362 156 396 120 446 116 C452 166 420 204 372 210 Z" fill="#ffab85"/>
+  <path d="M372 206 C390 178 408 160 430 136" fill="none" stroke="#c2703a" stroke-width="6" stroke-linecap="round"/>
+</g></svg>

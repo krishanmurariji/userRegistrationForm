@@ -40,13 +40,9 @@ ion-header.shop-header {
     .brand-mark {
       width: 42px;
       height: 42px;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, var(--sm-peach), var(--sm-soft));
-      color: #9b5227;
-      font-size: 26px;
-      box-shadow: var(--sm-shadow);
+      border-radius: 13px;
+      display: block;
+      box-shadow: 0 4px 12px rgba(138, 68, 32, 0.25);
     }
 
     .who {
@@ -2336,12 +2332,15 @@ app-side-rail {
       height: 48px;
       margin-bottom: 14px;
       padding: 0;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, var(--sm-peach), var(--sm-soft));
-      color: #9b5227;
-      font-size: 28px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(138, 68, 32, 0.25);
+
+      img {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
     }
 
     .last {

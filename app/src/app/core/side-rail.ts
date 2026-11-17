@@ -10,7 +10,7 @@ import { NotificationService } from './notification.service';
   imports: [RouterLink, RouterLinkActive, AppIcon],
   template: `
     <nav class="side-rail" aria-label="Main">
-      <a routerLink="/" class="rail-brand" aria-label="Small Mart home"><app-icon name="shopping-bag" weight="duotone" /></a>
+      <a routerLink="/" class="rail-brand" aria-label="Small Mart home"><img src="brand/logo-mark.svg" alt="" /></a>
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" #home="routerLinkActive">
         <span class="icon"><app-icon name="house" [weight]="home.isActive ? 'fill' : 'regular'" /></span><span class="label">Home</span>
       </a>

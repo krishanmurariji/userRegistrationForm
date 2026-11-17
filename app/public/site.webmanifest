@@ -1,0 +1,14 @@
+{
+  "name": "Small Mart",
+  "short_name": "Small Mart",
+  "description": "Order from the shops near you: groceries, daily needs and more, delivered.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbf3e8",
+  "theme_color": "#9b5227",
+  "icons": [
+    { "src": "brand/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "brand/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "brand/logo-mark.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
