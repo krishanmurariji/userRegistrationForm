@@ -84,6 +84,11 @@ Run the same workflow again whenever you want to publish new code.
 
 ## If it does not work
 
+- **"The SSL connection could not be established" / "HTTPS does not work for this address yet":** the app is
+  running but the address has no HTTPS certificate yet. In the control panel open the website, then **HTTPS**, and
+  add the free (Let's Encrypt) certificate for `yourname.runasp.net`. The Android and iOS apps only talk to an
+  `https://` address, so this is required.
+
 - **The workflow fails at "Send it to the server":** a Web Deploy value is wrong, or Web Deploy is not activated
   in the control panel.
 - **The files arrive but the site shows an error (500.30 or similar):** run the workflow again with

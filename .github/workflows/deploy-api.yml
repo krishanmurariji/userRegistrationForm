@@ -168,13 +168,36 @@ jobs:
             Write-Host "::notice::Add the API_URL variable (your site address) to have this step check that the API answers."
             exit 0
           }
-          $url = "$($env:API_URL.TrimEnd('/'))/health"
-          for ($i = 1; $i -le 10; $i++) {
+          $base = $env:API_URL.TrimEnd('/')
+          $url = "$base/health"
+          $lastError = ''
+          for ($i = 1; $i -le 8; $i++) {
             try {
               $r = Invoke-WebRequest -Uri $url -TimeoutSec 30 -UseBasicParsing
               if ($r.StatusCode -eq 200) { Write-Host "The API answered: $($r.Content)"; exit 0 }
-            } catch { Write-Host "Try $i of 10: $($_.Exception.Message)" }
+            } catch {
+              $e = $_.Exception
+              $lastError = if ($e.InnerException) { "$($e.Message) $($e.InnerException.Message)" } else { $e.Message }
+              Write-Host "Try $i of 8: $lastError"
+            }
             Start-Sleep -Seconds 12
           }
-          Write-Host "::error::The files were sent, but $url did not answer. Run this workflow again with 'startup logs' ticked and read the log file on the server. See docs/DEPLOY-MONSTERASP.md"
+
+          # Tell an HTTPS problem apart from an app that does not start: ask the plain http address without
+          # following redirects. Any answer from the app (200, or a redirect to https) means it is running.
+          $plain = ($url -replace '^https://', 'http://')
+          $status = 0
+          try {
+            $handler = [System.Net.Http.HttpClientHandler]::new()
+            $handler.AllowAutoRedirect = $false
+            $client = [System.Net.Http.HttpClient]::new($handler)
+            $client.Timeout = [TimeSpan]::FromSeconds(30)
+            $status = [int]$client.GetAsync($plain).GetAwaiter().GetResult().StatusCode
+          } catch { Write-Host "The http address did not answer either: $($_.Exception.Message)" }
+
+          if ($status -eq 200 -or ($status -ge 301 -and $status -le 308)) {
+            Write-Host "::error::The API is running (the http address answered $status), but HTTPS does not work for this address yet. In the MonsterASP.NET control panel open the website, then HTTPS, and add the free certificate for this address. Then run this workflow again. See docs/DEPLOY-MONSTERASP.md"
+          } else {
+            Write-Host "::error::The files were sent, but the API did not answer ($lastError). Run this workflow again with 'startup logs' ticked and read the newest file in the logs folder on the server. See docs/DEPLOY-MONSTERASP.md"
+          }
           exit 1
