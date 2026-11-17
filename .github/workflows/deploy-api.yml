@@ -158,12 +158,16 @@ jobs:
           # Files that are only on the server (uploaded pictures) are kept.
           target-delete: 'false'
 
+      # API_URL may be saved as a repository variable (preferred) or as a secret.
       - name: Check that the API answers
-        if: ${{ vars.API_URL != '' }}
         shell: pwsh
         env:
-          API_URL: ${{ vars.API_URL }}
+          API_URL: ${{ vars.API_URL || secrets.API_URL }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:API_URL)) {
+            Write-Host "::notice::Add the API_URL variable (your site address) to have this step check that the API answers."
+            exit 0
+          }
           $url = "$($env:API_URL.TrimEnd('/'))/health"
           for ($i = 1; $i -le 10; $i++) {
             try {
