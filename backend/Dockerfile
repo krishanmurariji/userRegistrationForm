@@ -17,4 +17,6 @@ ENV ASPNETCORE_FORWARDEDHEADERS_ENABLED=true \
 # Folder for uploaded pictures when they are kept on disk (a volume is mounted here).
 RUN mkdir -p /data && chown $APP_UID /data
 USER $APP_UID
+# Tells hosts such as Northflank which port the API listens on by default.
+EXPOSE 8080
 ENTRYPOINT ["/bin/sh", "-c", "ASPNETCORE_URLS=http://+:${PORT:-8080} exec dotnet SmallMart.Api.dll"]
