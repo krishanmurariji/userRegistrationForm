@@ -84,6 +84,10 @@ Run the same workflow again whenever you want to publish new code.
 
 ## If it does not work
 
+- **Publish only with the workflow, not from Visual Studio.** Visual Studio uploads your own `appsettings.Local.json`,
+  which the app reads last, so your local database settings would replace the real ones. Each workflow run sends an
+  empty `appsettings.Local.json` to undo that.
+
 - **"The SSL connection could not be established" / "HTTPS does not work for this address yet":** the app is
   running but the address has no HTTPS certificate yet. In the control panel open the website, then **HTTPS**, and
   add the free (Let's Encrypt) certificate for `yourname.runasp.net`. The Android and iOS apps only talk to an

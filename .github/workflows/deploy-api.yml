@@ -123,8 +123,11 @@ jobs:
           if ($env:OPENAI_API_KEY) { $settings.Ai = @{ OpenAiApiKey = $env:OPENAI_API_KEY } }
           $settings | ConvertTo-Json -Depth 5 | Set-Content -Path publish/appsettings.Production.json -Encoding utf8
 
-          # Never ship a developer's own settings.
-          Remove-Item publish/appsettings.Development.json, publish/appsettings.Local.json -ErrorAction SilentlyContinue
+          # Never ship a developer's own settings. appsettings.Local.json is read last and overrides everything, and a
+          # deploy never deletes files on the server, so an empty one is sent to replace any copy uploaded earlier
+          # (for example by publishing from Visual Studio).
+          Remove-Item publish/appsettings.Development.json -ErrorAction SilentlyContinue
+          Set-Content -Path publish/appsettings.Local.json -Value '{}' -Encoding utf8
 
           if (-not (Test-Path publish/web.config)) { Write-Host "::error::dotnet publish did not create web.config."; exit 1 }
           if ($env:STARTUP_LOGS -eq 'true') {
