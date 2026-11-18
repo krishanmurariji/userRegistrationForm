@@ -1,58 +1,82 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { IonButton, IonItem, IonLabel, IonList, IonSearchbar, IonSegment, IonSegmentButton, IonSpinner, IonText } from '@ionic/angular';
+import { IonButton, IonSearchbar, IonSpinner } from '@ionic/angular';
 import { AdminService, AuditEntry } from '../../core/admin.service';
 import { toApiError } from '../../core/api-error';
+import { AppIcon } from '../../core/icon';
 import { PagedList } from '../../core/paged-list';
+import { SkeletonList } from '../../core/skeletons';
+import { activityLook } from './admin-ui';
+
+const FILTERS = [
+  { value: '', label: 'All', icon: 'pulse' },
+  { value: 'user.sign', label: 'Sign-ins', icon: 'sign-in' },
+  { value: 'user.', label: 'Users', icon: 'users-three' },
+  { value: 'shop.', label: 'Shops', icon: 'storefront' },
+];
 
 @Component({
   selector: 'app-admin-activity',
-  imports: [DatePipe, IonSearchbar, IonSegment, IonSegmentButton, IonLabel, IonList, IonItem, IonButton, IonSpinner, IonText],
+  imports: [DatePipe, AppIcon, SkeletonList, IonSearchbar, IonButton, IonSpinner],
   template: `
-    <ion-button fill="outline" [disabled]="exporting()" (click)="exportCsv()" class="ion-margin-bottom">
-      {{ exporting() ? 'Preparing…' : 'Export to Excel (CSV)' }}
-    </ion-button>
-    <ion-searchbar placeholder="Search by email or description" [debounce]="300"
-      (ionInput)="search.set($event.detail.value ?? ''); list.reload()" />
-    <ion-segment [value]="action()" (ionChange)="action.set($any($event.detail.value)); list.reload()" [scrollable]="true">
-      <ion-segment-button value=""><ion-label>All</ion-label></ion-segment-button>
-      <ion-segment-button value="user.sign"><ion-label>Sign-ins</ion-label></ion-segment-button>
-      <ion-segment-button value="user."><ion-label>Users</ion-label></ion-segment-button>
-      <ion-segment-button value="shop."><ion-label>Shops</ion-label></ion-segment-button>
-    </ion-segment>
+    <div class="admin-bar">
+      <ion-searchbar class="owner-search" placeholder="Search by email or description" [debounce]="300"
+        (ionInput)="search.set($event.detail.value ?? ''); list.reload()" />
+      <div class="admin-buttons">
+        <ion-button fill="outline" [disabled]="exporting()" (click)="exportCsv()">
+          @if (exporting()) { <ion-spinner slot="start" name="crescent" aria-hidden="true" />Preparing… }
+          @else { <app-icon slot="start" name="export" />Export CSV }
+        </ion-button>
+      </div>
+    </div>
+    <div class="pills" role="group" aria-label="Filter activity">
+      @for (f of filters; track f.value) {
+        <button type="button" [class.on]="action() === f.value" (click)="action.set(f.value); list.reload()"><app-icon [name]="f.icon" weight="duotone" />{{ f.label }}</button>
+      }
+    </div>
 
     @if (list.error(); as message) {
-      <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
+      <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
     }
 
-    <p class="count">{{ list.total() }} {{ list.total() === 1 ? 'entry' : 'entries' }}</p>
-    <ion-list>
-      @for (entry of list.items(); track entry.id) {
-        <ion-item>
-          <ion-label>
-            <h2 [class.failed]="isFailure(entry)">{{ entry.summary }}</h2>
-            <p>{{ entry.actorEmail ?? 'Unknown user' }}</p>
-            <p class="meta">
-              {{ entry.at | date: 'd MMM y, h:mm:ss a' }} · {{ entry.action }}
-              @if (entry.ipAddress) { · {{ entry.ipAddress }} }
-            </p>
-          </ion-label>
-        </ion-item>
-      }
-    </ion-list>
+    <p class="admin-count">{{ list.total() }} {{ list.total() === 1 ? 'entry' : 'entries' }}</p>
+    @if (list.items().length) {
+      <ol class="card admin-timeline">
+        @for (entry of list.items(); track entry.id) {
+          @let look = lookOf(entry.action);
+          <li [attr.data-tone]="look.tone">
+            <span class="dot"><app-icon [name]="look.icon" weight="duotone" /></span>
+            <span class="what">
+              <strong [class.failed]="isFailure(entry)">{{ entry.summary }}</strong>
+              <small>{{ entry.actorEmail ?? 'Unknown user' }}</small>
+              <small class="meta">
+                {{ entry.at | date: 'd MMM y, h:mm a' }} · <code>{{ entry.action }}</code>
+                @if (entry.ipAddress) { · {{ entry.ipAddress }} }
+              </small>
+            </span>
+          </li>
+        }
+      </ol>
+    }
 
     @if (list.loading()) {
-      <div class="centered"><ion-spinner name="crescent" aria-label="Loading activity" /></div>
+      <app-skeleton-list [count]="3" />
     } @else if (list.items().length === 0 && !list.error()) {
-      <p class="muted">No activity matches.</p>
+      <div class="card empty-card">
+        <span class="empty-art small"><app-icon name="pulse" weight="duotone" /></span>
+        <p><strong>No activity matches</strong></p>
+        <p>Try another search or filter.</p>
+      </div>
     } @else if (list.hasMore) {
-      <ion-button expand="block" fill="clear" (click)="list.more()">Load more</ion-button>
+      <button type="button" class="admin-more" (click)="list.more()">Load more<app-icon name="caret-right" /></button>
     }
   `,
 })
 export class AdminActivity {
   private readonly admin = inject(AdminService);
 
+  protected readonly filters = FILTERS;
+  protected readonly lookOf = activityLook;
   protected readonly search = signal('');
   protected readonly action = signal('');
   protected readonly list = new PagedList<AuditEntry>((skip, take) =>

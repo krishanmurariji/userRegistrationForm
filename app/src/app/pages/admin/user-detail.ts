@@ -2,101 +2,138 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { AlertController, IonBackButton, IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonList, IonSpinner, IonText, IonTitle, IonToolbar } from '@ionic/angular';
+import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar } from '@ionic/angular';
 import { AdminService, AdminUserDetail } from '../../core/admin.service';
 import { toApiError } from '../../core/api-error';
+import { AppIcon } from '../../core/icon';
+import { SkeletonList } from '../../core/skeletons';
+import { activityLook, initials, kindColor, kindLabel, userKind } from './admin-ui';
 
 const METHOD_NAMES: Record<string, string> = { password: 'Email and password', google: 'Google', microsoft: 'Microsoft' };
 
 /** Everything the admin can see and do for one user. */
 @Component({
   selector: 'app-admin-user-detail',
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonBadge, IonInput, IonButton, IonList, IonItem, IonLabel, IonSpinner, IonText],
+  imports: [DatePipe, ReactiveFormsModule, RouterLink, AppIcon, SkeletonList, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonButton],
   template: `
-    <ion-header>
-      <ion-toolbar color="dark">
-        <ion-buttons slot="start"><ion-back-button defaultHref="/admin" /></ion-buttons>
+    <ion-header class="shop-header">
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-back-button defaultHref="/admin" text="" /></ion-buttons>
         <ion-title>User</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column">
+    <ion-content class="shop-bg">
+      <main class="shop-column narrow admin">
         @if (error(); as message) {
-          <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
+          <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         }
         @if (notice(); as message) {
-          <ion-text color="success" role="status"><p>{{ message }}</p></ion-text>
+          <div class="card ok-card admin-notice" role="status"><app-icon name="check-circle" weight="duotone" /><span>{{ message }}</span></div>
         }
         @if (detail(); as d) {
-          <h1>{{ d.user.fullName }}</h1>
-          <div class="badges">
-            @if (isAdmin()) { <ion-badge color="dark">Admin</ion-badge> }
-            @if (isOwner()) { <ion-badge color="primary">Shop owner</ion-badge> }
-            @if (d.user.roles.includes('Customer')) { <ion-badge color="light">Customer</ion-badge> }
-            @if (d.user.suspended) { <ion-badge color="danger">Suspended</ion-badge> }
-            @if (!d.user.emailConfirmed) { <ion-badge color="warning">Email not confirmed</ion-badge> }
-          </div>
-          <dl class="facts">
-            <dt>Email</dt><dd>{{ d.user.email }}</dd>
-            <dt>Joined</dt><dd>{{ d.user.createdAt | date: 'd MMM y, h:mm a' }}</dd>
-            <dt>Signs in with</dt><dd>{{ methods() }}</dd>
-            <dt>Orders placed</dt><dd>{{ d.orderCount }}</dd>
-          </dl>
+          <section class="card admin-profile" [class.off]="d.user.suspended">
+            <span class="avatar big" [attr.data-kind]="kind(d.user)">{{ initials(d.user.fullName) }}</span>
+            <h1>{{ d.user.fullName }}</h1>
+            <p class="email">{{ d.user.email }}</p>
+            <span class="flags">
+              <span class="flag" [attr.data-color]="kindColor(d.user)">{{ kindLabel(d.user) }}</span>
+              @if (d.user.suspended) { <span class="flag" data-color="danger">Suspended</span> }
+              @if (!d.user.emailConfirmed) { <span class="flag" data-color="warning">Email not confirmed</span> }
+            </span>
+          </section>
+
+          <section class="card">
+            <h2><span class="head-icon"><app-icon name="identification-card" weight="duotone" /></span>Account</h2>
+            <dl class="admin-facts">
+              <div><dt><app-icon name="calendar-blank" />Joined</dt><dd>{{ d.user.createdAt | date: 'd MMM y, h:mm a' }}</dd></div>
+              <div><dt><app-icon name="key" />Signs in with</dt><dd>{{ methods() }}</dd></div>
+              <div><dt><app-icon name="receipt" />Orders placed</dt><dd>{{ d.orderCount }}</dd></div>
+            </dl>
+          </section>
 
           @if (!isAdmin()) {
-            <h2 class="section-title">Edit details</h2>
-            <form [formGroup]="form" (ngSubmit)="save()" novalidate class="stack">
-              <ion-input formControlName="fullName" label="Full name" labelPlacement="stacked" fill="outline" errorText="Enter a name" />
-              <ion-input formControlName="email" type="email" label="Email" labelPlacement="stacked" fill="outline"
-                helperText="Changing the email signs this user out on every device" errorText="Enter a valid email address" />
-              <ion-button type="submit" [disabled]="busy() || form.pristine">Save changes</ion-button>
-            </form>
+            <section class="card">
+              <h2><span class="head-icon"><app-icon name="pen" weight="duotone" /></span>Edit details</h2>
+              <form [formGroup]="form" (ngSubmit)="save()" novalidate class="stack">
+                <ion-input formControlName="fullName" label="Full name" labelPlacement="stacked" fill="outline" errorText="Enter a name" />
+                <ion-input formControlName="email" type="email" label="Email" labelPlacement="stacked" fill="outline"
+                  helperText="Changing the email signs this user out on every device" errorText="Enter a valid email address" />
+                <ion-button type="submit" [disabled]="busy() || form.pristine">Save changes<app-icon slot="end" name="check" /></ion-button>
+              </form>
+            </section>
 
-            <h2 class="section-title">Actions</h2>
-            <div class="actions">
-              <ion-button fill="outline" [disabled]="busy()" (click)="sendReset()">Send password reset link</ion-button>
-              @if (isOwner()) {
-                <ion-button fill="outline" [disabled]="busy()" (click)="changeType(false)">Change to customer</ion-button>
-              } @else {
-                <ion-button fill="outline" [disabled]="busy()" (click)="changeType(true)">Change to shop owner</ion-button>
-              }
-              @if (d.user.suspended) {
-                <ion-button fill="outline" color="success" [disabled]="busy()" (click)="run(admin.setSuspended(d.user.id, false), 'Account reactivated.')">Reactivate account</ion-button>
-              } @else {
-                <ion-button fill="outline" color="danger" [disabled]="busy()" (click)="suspend()">Suspend account</ion-button>
-              }
-            </div>
+            <section class="card">
+              <h2><span class="head-icon"><app-icon name="gear" weight="duotone" /></span>Actions</h2>
+              <div class="admin-actions">
+                <button type="button" [disabled]="busy()" (click)="sendReset()">
+                  <span class="act-icon"><app-icon name="envelope-simple" weight="duotone" /></span>
+                  <span class="what"><strong>Send password reset link</strong><small>Emails a link that works for 24 hours</small></span>
+                  <app-icon class="go" name="caret-right" />
+                </button>
+                <button type="button" [disabled]="busy()" (click)="changeType(!isOwner())">
+                  <span class="act-icon"><app-icon name="user-switch" weight="duotone" /></span>
+                  <span class="what"><strong>{{ isOwner() ? 'Change to customer' : 'Change to shop owner' }}</strong><small>Signs them out so they sign in again as the new type</small></span>
+                  <app-icon class="go" name="caret-right" />
+                </button>
+                @if (d.user.suspended) {
+                  <button type="button" class="ok" [disabled]="busy()" (click)="run(admin.setSuspended(d.user.id, false), 'Account reactivated.')">
+                    <span class="act-icon"><app-icon name="check-circle" weight="duotone" /></span>
+                    <span class="what"><strong>Reactivate account</strong><small>They can sign in again</small></span>
+                    <app-icon class="go" name="caret-right" />
+                  </button>
+                } @else {
+                  <button type="button" class="bad" [disabled]="busy()" (click)="suspend()">
+                    <span class="act-icon"><app-icon name="prohibit" weight="duotone" /></span>
+                    <span class="what"><strong>Suspend account</strong><small>Signs them out everywhere until reactivated</small></span>
+                    <app-icon class="go" name="caret-right" />
+                  </button>
+                }
+              </div>
+            </section>
           }
 
           @if (d.shops.length) {
-            <h2 class="section-title">Shops owned</h2>
-            <ion-list>
-              @for (shop of d.shops; track shop.id) {
-                <ion-item [routerLink]="['/admin/shops', shop.id]" detail>
-                  <ion-label><h2>{{ shop.name }}</h2><p>{{ shop.city }}</p></ion-label>
-                  <ion-badge slot="end" [color]="shop.isActive ? 'success' : 'danger'">{{ shop.isActive ? 'Active' : 'Deactivated' }}</ion-badge>
-                </ion-item>
-              }
-            </ion-list>
+            <section class="card">
+              <h2><span class="head-icon"><app-icon name="storefront" weight="duotone" /></span>Shops owned</h2>
+              <ul class="owner-item-list single admin-list">
+                @for (shop of d.shops; track shop.id) {
+                  <li>
+                    <a class="owner-item" [routerLink]="['/admin/shops', shop.id]">
+                      <span class="avatar shop"><app-icon name="storefront" weight="duotone" /></span>
+                      <span class="what"><strong>{{ shop.name }}</strong><small><app-icon name="map-pin" />{{ shop.city }}</small></span>
+                      <span class="flag" [attr.data-color]="shop.isActive ? 'success' : 'danger'">{{ shop.isActive ? 'Active' : 'Deactivated' }}</span>
+                      <app-icon class="go" name="caret-right" />
+                    </a>
+                  </li>
+                }
+              </ul>
+            </section>
           }
 
-          <h2 class="section-title">Recent activity</h2>
-          @if (d.recentActivity.length === 0) { <p class="muted">Nothing recorded yet.</p> }
-          <ion-list>
-            @for (entry of d.recentActivity; track entry.id) {
-              <ion-item>
-                <ion-label>
-                  <h2>{{ entry.summary }}</h2>
-                  <p class="meta">{{ entry.at | date: 'd MMM y, h:mm a' }} · by {{ entry.actorEmail ?? 'unknown' }} · {{ entry.action }}</p>
-                </ion-label>
-              </ion-item>
+          <section class="card">
+            <h2><span class="head-icon"><app-icon name="pulse" weight="duotone" /></span>Recent activity</h2>
+            @if (d.recentActivity.length === 0) { <p class="muted">Nothing recorded yet.</p> }
+            @else {
+              <ol class="admin-timeline">
+                @for (entry of d.recentActivity; track entry.id) {
+                  @let look = lookOf(entry.action);
+                  <li [attr.data-tone]="look.tone">
+                    <span class="dot"><app-icon [name]="look.icon" weight="duotone" /></span>
+                    <span class="what">
+                      <strong>{{ entry.summary }}</strong>
+                      <small class="meta">{{ entry.at | date: 'd MMM y, h:mm a' }} · by {{ entry.actorEmail ?? 'unknown' }}</small>
+                    </span>
+                  </li>
+                }
+              </ol>
             }
-          </ion-list>
+          </section>
         } @else if (!error()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading user" /></div>
+          <app-skeleton-list [count]="3" />
         }
       </main>
     </ion-content>
+
   `,
 })
 export class AdminUserDetailPage {
@@ -108,6 +145,11 @@ export class AdminUserDetailPage {
   protected readonly busy = signal(false);
   protected readonly error = signal('');
   protected readonly notice = signal('');
+  protected readonly initials = initials;
+  protected readonly kind = userKind;
+  protected readonly kindLabel = kindLabel;
+  protected readonly kindColor = kindColor;
+  protected readonly lookOf = activityLook;
   protected readonly form = inject(FormBuilder).nonNullable.group({
     fullName: ['', [Validators.required, Validators.pattern(/\S/), Validators.maxLength(200)]],
     email: ['', [Validators.required, Validators.email]],

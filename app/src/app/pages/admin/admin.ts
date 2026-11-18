@@ -1,8 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonLabel, IonSegment, IonSegmentButton, IonTitle, IonToolbar } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { personCircleOutline } from 'ionicons/icons';
+import { IonButton, IonButtons, IonContent, IonHeader, IonToolbar } from '@ionic/angular';
+import { AppIcon } from '../../core/icon';
 import { NotificationBell } from '../../core/notification-bell';
 import { AdminActivity } from './admin-activity';
 import { AdminOverview } from './admin-overview';
@@ -11,34 +10,48 @@ import { AdminUsers } from './admin-users';
 
 type Tab = 'overview' | 'users' | 'shops' | 'activity';
 
+const TABS: { value: Tab; label: string; icon: string }[] = [
+  { value: 'overview', label: 'Overview', icon: 'chart-bar' },
+  { value: 'users', label: 'Users', icon: 'users-three' },
+  { value: 'shops', label: 'Shops', icon: 'storefront' },
+  { value: 'activity', label: 'Activity', icon: 'pulse' },
+];
+
 /** The platform admin's home: overview numbers, users, shops and the activity log. */
 @Component({
   selector: 'app-admin',
-  imports: [RouterLink, NotificationBell, IonHeader, IonToolbar, IonTitle, IonButtons, IonButton, IonIcon, IonSegment, IonSegmentButton, IonLabel, IonContent, AdminOverview, AdminUsers, AdminShops, AdminActivity],
+  imports: [RouterLink, AppIcon, NotificationBell, IonHeader, IonToolbar, IonButtons, IonButton, IonContent, AdminOverview, AdminUsers, AdminShops, AdminActivity],
   template: `
-    <ion-header>
-      <ion-toolbar color="dark">
-        <ion-title>Small Mart Admin</ion-title>
+    <ion-header class="shop-header">
+      <ion-toolbar>
+        <div class="greeting" slot="start">
+          <img class="brand-mark" src="brand/logo-mark.svg" alt="Small Mart" />
+          <span class="who">
+            <small>Small Mart</small>
+            <strong>Admin console</strong>
+          </span>
+        </div>
         <ion-buttons slot="end">
           <app-notification-bell />
-          <ion-button routerLink="/account" aria-label="Account">
-            <ion-icon slot="icon-only" name="person-circle-outline" />
+          <ion-button routerLink="/account" aria-label="Account" class="bell-button">
+            <span slot="icon-only" class="bell"><app-icon name="user" /></span>
           </ion-button>
         </ion-buttons>
       </ion-toolbar>
-      <ion-toolbar>
-        <ion-segment [value]="tab()" (ionChange)="tab.set($any($event.detail.value))" [scrollable]="true">
-          <ion-segment-button value="overview"><ion-label>Overview</ion-label></ion-segment-button>
-          <ion-segment-button value="users"><ion-label>Users</ion-label></ion-segment-button>
-          <ion-segment-button value="shops"><ion-label>Shops</ion-label></ion-segment-button>
-          <ion-segment-button value="activity"><ion-label>Activity</ion-label></ion-segment-button>
-        </ion-segment>
+      <ion-toolbar class="tabs-toolbar">
+        <div class="owner-tabs admin-tabs" role="tablist" aria-label="Admin sections">
+          @for (t of tabs; track t.value) {
+            <button type="button" role="tab" [attr.aria-selected]="tab() === t.value" [class.on]="tab() === t.value" (click)="tab.set(t.value)">
+              <app-icon [name]="t.icon" [weight]="tab() === t.value ? 'fill' : 'regular'" />{{ t.label }}
+            </button>
+          }
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column wide">
+    <ion-content class="shop-bg">
+      <main class="shop-column admin">
         @switch (tab()) {
-          @case ('overview') { <app-admin-overview [refresh]="visits()" /> }
+          @case ('overview') { <app-admin-overview [refresh]="visits()" (open)="tab.set($event)" /> }
           @case ('users') { <app-admin-users [refresh]="visits()" /> }
           @case ('shops') { <app-admin-shops /> }
           @case ('activity') { <app-admin-activity /> }
@@ -48,13 +61,10 @@ type Tab = 'overview' | 'users' | 'shops' | 'activity';
   `,
 })
 export class AdminPage {
+  protected readonly tabs = TABS;
   protected readonly tab = signal<Tab>('overview');
   /** Goes up each time the page is shown again, so the visible tab reloads (for example after adding an owner). */
   protected readonly visits = signal(0);
-
-  constructor() {
-    addIcons({ personCircleOutline });
-  }
 
   ionViewWillEnter(): void {
     this.visits.update((n) => n + 1);
