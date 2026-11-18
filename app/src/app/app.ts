@@ -7,8 +7,8 @@ import { SideRail } from './core/side-rail';
   selector: 'app-root',
   imports: [IonApp, IonRouterOutlet, SideRail],
   template: `
-    <ion-app [class.has-rail]="auth.isCustomer()">
-      @if (auth.isCustomer()) { <app-side-rail /> }
+    <ion-app [class.has-rail]="auth.isCustomer() || auth.isShopOwner()">
+      @if (auth.isCustomer() || auth.isShopOwner()) { <app-side-rail [owner]="auth.isShopOwner()" /> }
       <ion-router-outlet />
     </ion-app>
   `,

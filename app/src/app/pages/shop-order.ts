@@ -1,9 +1,11 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, IonBackButton, IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonSpinner, IonText, IonTitle, IonToolbar } from '@ionic/angular';
+import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonSkeletonText, IonSpinner, IonTitle, IonToolbar } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
-import { OrderView } from '../core/order-view';
+import { AppIcon } from '../core/icon';
+import { OrderHero } from '../core/order-hero';
+import { OrderTracker } from '../core/order-tracker';
 import { ShopService } from '../core/shop.service';
 import { Order, OrderStatus, paymentColor, paymentLabel, statusColor, statusLabel } from '../core/store.models';
 
@@ -17,34 +19,40 @@ const NEXT: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>>
 /** One order as the shop handles it: check the payment, move it along, or cancel it. */
 @Component({
   selector: 'app-shop-order',
-  imports: [CurrencyPipe, DatePipe, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonBadge, IonButton, IonSpinner, IonText, OrderView],
+  imports: [CurrencyPipe, DatePipe, AppIcon, OrderHero, OrderTracker, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonFooter, IonButton, IonSpinner, IonSkeletonText],
   template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId + '/orders'" /></ion-buttons>
+    <ion-header class="shop-header">
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId + '/orders'" text="" /></ion-buttons>
         <ion-title>{{ order()?.number ?? 'Order' }}</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column">
+    <ion-content class="shop-bg">
+      <main class="shop-column narrow owner-order-page">
         @if (error(); as message) {
-          <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
+          <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         }
         @if (order(); as o) {
-          <h1>{{ o.customerName }}</h1>
-          <div class="badges" aria-live="polite">
-            <ion-badge [color]="statusColor(o.status)">{{ o.status === 'Placed' ? 'New order' : statusLabel(o.status) }}</ion-badge>
-            <ion-badge [color]="paymentColor(o)">{{ paymentLabel(o) }}</ion-badge>
-          </div>
-          @if (o.status === 'Cancelled' && o.cancelReason) {
-            <div class="notice" role="status"><strong>Cancelled</strong>{{ o.cancelReason }}</div>
+          <app-order-hero audience="shop" [status]="o.status" [number]="o.number" [shopName]="o.customerName" [reason]="o.cancelReason" />
+
+          <section class="card owner-customer">
+            <span class="avatar" aria-hidden="true">{{ initials(o.customerName) }}</span>
+            <span class="who">
+              <strong>{{ o.customerName }}</strong>
+              <small>{{ o.addressLine }}, {{ o.city }} {{ o.pincode }}</small>
+              <small>Ordered {{ o.createdAt | date: 'd MMM, h:mm a' }}</small>
+            </span>
+            <a class="call" [href]="'tel:' + o.phone" [attr.aria-label]="'Call ' + o.customerName"><app-icon name="phone-call" weight="duotone" /></a>
+          </section>
+          @if (o.note) {
+            <div class="card owner-note"><app-icon name="note-pencil" weight="duotone" /><span><strong>Note from the customer</strong>{{ o.note }}</span></div>
           }
 
           @if (o.paymentMethod === 'Upi' && o.status !== 'Cancelled') {
-            <section class="panel">
+            <section class="card pay-card owner-pay" [attr.data-state]="o.paymentStatus">
               @switch (o.paymentStatus) {
                 @case ('AwaitingVerification') {
-                  <strong>Check this UPI payment</strong>
+                  <h2><span class="head-icon warn"><app-icon name="qr-code" weight="duotone" /></span>Check this UPI payment</h2>
                   <p>
                     The customer says they paid <strong>{{ o.total | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
                     with transaction ID <strong class="selectable">{{ o.upiReference }}</strong>
@@ -60,44 +68,83 @@ const NEXT: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>>
                     <ion-spinner name="crescent" aria-label="Loading screenshot" />
                   }
                   <div class="actions">
-                    <ion-button color="success" [disabled]="busy()" (click)="verify()">Payment received</ion-button>
+                    <ion-button color="success" [disabled]="busy()" (click)="verify()"><app-icon slot="start" name="check" />Payment received</ion-button>
                     <ion-button fill="outline" color="danger" [disabled]="busy()" (click)="reject()">Not received</ion-button>
                   </div>
                 }
                 @case ('Paid') {
-                  <strong>UPI payment confirmed</strong>
+                  <h2><span class="head-icon ok"><app-icon name="seal-check" weight="duotone" /></span>UPI payment confirmed</h2>
                   <p>Transaction ID {{ o.upiReference }}@if (o.paymentVerifiedAt) {, confirmed {{ o.paymentVerifiedAt | date: 'd MMM, h:mm a' }} }.</p>
                 }
                 @case ('Rejected') {
-                  <strong>Payment not found</strong>
+                  <h2><span class="head-icon bad"><app-icon name="x-circle" weight="duotone" /></span>Payment not found</h2>
                   <p>You told the customer: "{{ o.paymentRejectReason }}". They can send the details again.</p>
                 }
                 @default {
-                  <strong>Waiting for the customer to pay by UPI</strong>
+                  <h2><span class="head-icon"><app-icon name="clock" weight="duotone" /></span>Waiting for the UPI payment</h2>
                   <p>You can accept this order once the customer has paid and you have confirmed the payment.</p>
                 }
               }
             </section>
           }
 
-          <app-order-view [order]="o" />
+          <section class="card">
+            <h2><span class="head-icon"><app-icon name="shopping-bag" weight="duotone" /></span>{{ o.items.length }} {{ o.items.length === 1 ? 'item' : 'items' }} to pack</h2>
+            <ul class="order-lines">
+              @for (line of o.items; track $index) {
+                <li>
+                  <span class="count">{{ line.quantity }} ×</span>
+                  <span class="what"><strong>{{ line.name }}</strong><small>{{ line.unit }} · {{ line.unitPrice | currency: 'INR' : 'symbol' : '1.0-2' }} each</small></span>
+                  <strong>{{ line.lineTotal | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
+                </li>
+              }
+            </ul>
+          </section>
 
-          @if (next(); as step) {
-            <ion-button expand="block" [disabled]="busy() || blocked()" (click)="advance(step.status)" class="ion-margin-top">
-              {{ step.status === 'Delivered' && o.paymentMethod === 'CashOnDelivery' ? 'Delivered, cash collected' : step.label }}
-            </ion-button>
-            @if (blocked()) { <p class="meta">Confirm the UPI payment first.</p> }
-          }
-          @if (o.status !== 'Delivered' && o.status !== 'Cancelled') {
-            <ion-button expand="block" fill="clear" color="danger" [disabled]="busy()" (click)="cancel()">
-              {{ o.status === 'Placed' ? 'Decline order' : 'Cancel order' }}
-            </ion-button>
-          }
+          <section class="card bill">
+            <h2><span class="head-icon"><app-icon name="receipt" weight="duotone" /></span>Bill</h2>
+            <dl>
+              <dt>Items total</dt><dd>{{ o.subtotal | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
+              <dt>Delivery fee</dt><dd>{{ o.deliveryFee ? (o.deliveryFee | currency: 'INR' : 'symbol' : '1.0-2') : 'Free' }}</dd>
+              <dt class="grand">{{ o.paymentStatus === 'Paid' ? 'Paid' : o.paymentMethod === 'CashOnDelivery' ? 'Collect in cash' : 'Total' }}</dt>
+              <dd class="grand">{{ o.total | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
+            </dl>
+          </section>
+
+          <section class="card">
+            <header class="card-head">
+              <h2><span class="head-icon"><app-icon name="clock" weight="duotone" /></span>Progress</h2>
+              <span class="status" [attr.data-color]="paymentColor(o)">{{ paymentLabel(o) }}</span>
+            </header>
+            <app-order-tracker [order]="o" />
+          </section>
         } @else if (!error()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading order" /></div>
+          <div class="sk-order" aria-hidden="true">
+            <ion-skeleton-text animated class="sk-hero" />
+            <ion-skeleton-text animated class="sk-block" />
+          </div>
         }
       </main>
     </ion-content>
+
+    @if (order(); as o) {
+      @if (next() || (o.status !== 'Delivered' && o.status !== 'Cancelled')) {
+        <ion-footer class="shop-footer">
+          <div class="pay-bar owner-bar">
+            @if (o.status !== 'Delivered' && o.status !== 'Cancelled') {
+              <button type="button" class="decline" [disabled]="busy()" (click)="cancel()">{{ o.status === 'Placed' ? 'Decline' : 'Cancel order' }}</button>
+            }
+            @if (next(); as step) {
+              <ion-button [disabled]="busy() || blocked()" (click)="advance(step.status)">
+                @if (busy()) { <ion-spinner name="crescent" aria-label="Saving" /> }
+                @else { {{ step.status === 'Delivered' && o.paymentMethod === 'CashOnDelivery' ? 'Delivered, cash collected' : step.label }}<app-icon slot="end" name="arrow-right" /> }
+              </ion-button>
+            }
+          </div>
+          @if (blocked() && next()) { <p class="bar-hint">Confirm the UPI payment first.</p> }
+        </ion-footer>
+      }
+    }
   `,
 })
 export class ShopOrderPage implements OnDestroy {
@@ -117,6 +164,10 @@ export class ShopOrderPage implements OnDestroy {
   protected readonly paymentColor = paymentColor;
   private proofFor: string | null = null;
   private timer: ReturnType<typeof setInterval> | null = null;
+
+  protected initials(name: string): string {
+    return name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
+  }
 
   protected next(): { status: OrderStatus; label: string } | undefined {
     const order = this.order();
