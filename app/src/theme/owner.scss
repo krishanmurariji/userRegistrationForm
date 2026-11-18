@@ -2087,3 +2087,75 @@ ion-header.shop-header .tabs-toolbar {
     animation: none;
   }
 }
+
+/* "A new version is available" banner (Android and Windows apps). */
+.update-banner {
+  position: fixed;
+  z-index: 28000;
+  left: 12px;
+  right: 12px;
+  top: calc(10px + env(safe-area-inset-top));
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 12px;
+  border-radius: 20px;
+  background: var(--sm-card);
+  border: 1px solid var(--sm-line);
+  box-shadow: 0 16px 40px -14px rgba(43, 29, 18, 0.45);
+  color: var(--sm-text);
+
+  .ub-icon {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    background: var(--sm-soft);
+    color: var(--sm-accent);
+    font-size: 22px;
+  }
+
+  .ub-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+
+    strong {
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    small {
+      color: var(--sm-muted);
+      font-size: 0.78rem;
+    }
+  }
+
+  .ub-later,
+  .ub-go {
+    flex: none;
+    border: 0;
+    border-radius: 12px;
+    padding: 9px 12px;
+    font: inherit;
+    font-weight: 800;
+    font-size: 0.88rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .ub-later {
+    background: transparent;
+    color: var(--sm-muted);
+  }
+
+  .ub-go {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+}

@@ -166,6 +166,12 @@ interface Feature {
               <strong>Web</strong><small>Use it right here in your browser</small>
             </a>
           </div>
+          <div class="lp-install reveal">
+            <app-icon name="shield-check" weight="duotone" />
+            <p><strong>Installing on Android:</strong> open the downloaded file and, if your phone asks, allow your browser to
+              “install unknown apps”. Small Mart is signed by us and tells you inside the app when a newer version is ready.
+              <strong>On Windows:</strong> if SmartScreen appears, choose “More info”, then “Run anyway”.</p>
+          </div>
         </section>
 
         <section class="lp-final reveal">

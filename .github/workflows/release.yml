@@ -159,6 +159,7 @@ jobs:
       - name: Point the app at the hosted API
         run: |
           sed -i -E "s|apiUrl: '[^']*'|apiUrl: '$API_URL'|" app/src/environments/environment.ts
+          sed -i -E "s|appVersion: '[^']*'|appVersion: '$VERSION'|" app/src/environments/environment.ts
       - name: Build the web app
         working-directory: app
         run: |
@@ -214,6 +215,7 @@ jobs:
       - name: Point the app at the hosted API
         run: |
           sed -i -E "s|apiUrl: '[^']*'|apiUrl: '$API_URL'|" app/src/environments/environment.ts
+          sed -i -E "s|appVersion: '[^']*'|appVersion: '$VERSION'|" app/src/environments/environment.ts
       - name: Build the web app into the Android project
         working-directory: app
         run: |
@@ -300,6 +302,7 @@ jobs:
       - name: Point the app at the hosted API
         run: |
           sed -i '' -E "s|apiUrl: '[^']*'|apiUrl: '$API_URL'|" app/src/environments/environment.ts
+          sed -i '' -E "s|appVersion: '[^']*'|appVersion: '$VERSION'|" app/src/environments/environment.ts
       - name: Build the web app into the iOS project
         working-directory: app
         run: |

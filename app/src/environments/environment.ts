@@ -6,6 +6,8 @@ export const environment = {
    * use it. The Release workflow can build against another address (its api_url box or the API_URL variable).
    */
   apiUrl: 'https://smallmart-api.runasp.net',
+  /** The app's version. The Release workflow fills it in; "dev" turns off the update check. */
+  appVersion: 'dev',
   /** Where the website's download buttons point: the newest published GitHub release. */
   downloadsUrl: 'https://github.com/krishanmurariji/userRegistrationForm/releases/latest/download',
   /**

@@ -1162,3 +1162,31 @@ ion-content.auth-bg {
     animation: none;
   }
 }
+
+.lp-install {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  max-width: 860px;
+  margin: 22px auto 0;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--sm-line);
+  background: var(--sm-card);
+  color: var(--sm-muted);
+  line-height: 1.55;
+
+  app-icon {
+    flex: none;
+    font-size: 28px;
+    color: var(--sm-ok);
+  }
+
+  p {
+    margin: 0;
+  }
+
+  strong {
+    color: var(--sm-text);
+  }
+}

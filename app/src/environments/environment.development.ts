@@ -2,6 +2,8 @@ export const environment = {
   production: false,
   /** Base URL of the Small Mart API, without a trailing slash. */
   apiUrl: 'http://localhost:5028',
+  /** The app's version. The Release workflow fills it in; "dev" turns off the update check. */
+  appVersion: 'dev',
   /** Where the website's download buttons point: the newest published GitHub release. */
   downloadsUrl: 'https://github.com/krishanmurariji/userRegistrationForm/releases/latest/download',
   /**
