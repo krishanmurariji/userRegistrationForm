@@ -32,33 +32,36 @@ change `applicationId` in `app/android/app/build.gradle` and `appId` in `app/cap
 
 ## 3. Create the signing key (once, keep it forever)
 
-Run this on your own computer (it needs Java, which Android Studio includes). Choose a strong password and write it
-down somewhere safe:
+Do this on **your own computer**, so the key never leaves your hands. It needs Java's `keytool` (Android Studio
+includes it, or install a JDK: `winget install EclipseAdoptium.Temurin.21.JDK`).
 
-```bash
-keytool -genkeypair -v -keystore smallmart-upload.jks -alias smallmart -keyalg RSA -keysize 2048 -validity 10000
+**Windows** (PowerShell, in the repository folder):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\signing\New-SigningKey.ps1
 ```
 
-Turn the file into text for GitHub:
+**macOS or Linux:**
 
 ```bash
-base64 -w0 smallmart-upload.jks > keystore.txt
+bash tools/signing/new-signing-key.sh
 ```
 
-(On Windows PowerShell: `[Convert]::ToBase64String([IO.File]::ReadAllBytes("smallmart-upload.jks")) > keystore.txt`.)
-
-Add four **repository secrets** (GitHub → Settings → Secrets and variables → Actions):
+The script asks for a password, creates `smallmart-upload.jks` in `Documents\SmallMart-Signing` (outside the
+repository) and prints its SHA-1 and SHA-256 fingerprints. If the GitHub CLI (`gh`) is installed and signed in, it also
+saves the four secrets below. Otherwise it tells you what to paste at GitHub → Settings → Secrets and variables →
+Actions:
 
 | Secret | Value |
 |---|---|
-| `ANDROID_KEYSTORE_BASE64` | the contents of `keystore.txt` |
-| `ANDROID_KEYSTORE_PASSWORD` | the keystore password |
+| `ANDROID_KEYSTORE_BASE64` | the contents of `keystore-base64.txt` (delete that file afterwards) |
+| `ANDROID_KEYSTORE_PASSWORD` | your password |
 | `ANDROID_KEY_ALIAS` | `smallmart` |
-| `ANDROID_KEY_PASSWORD` | the key password (the same one if you pressed Enter at that question) |
+| `ANDROID_KEY_PASSWORD` | the same password |
 
 Back up `smallmart-upload.jks` and the password (for example in Google Drive). Do not commit it. Then run
 **Release** again (Android only is enough). It now produces `SmallMart-Android-PlayStore.aab` and a signed
-`SmallMart-Android.apk`.
+`SmallMart-Android.apk`. The run's summary page shows the certificate fingerprints, so you can check it used your key.
 
 Play uses "Play App Signing": Google keeps the final key and your file is only the *upload* key, so a lost upload key
 can be reset through Play support. Samsung uses your key directly, so for Samsung the file must never be lost.

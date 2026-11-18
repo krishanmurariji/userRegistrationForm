@@ -488,3 +488,8 @@ App_Data/
 appsettings.Local.json
 
 deploy/backups/
+
+# Android signing keys must never be committed
+*.jks
+*.keystore
+keystore-base64.txt

@@ -252,6 +252,18 @@ jobs:
             cp app/android/app/build/outputs/apk/debug/app-debug.apk "out/SmallMart-Android.apk"
           fi
           ls -l out
+      - name: Check the signature
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
+        run: |
+          apksigner=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$apksigner" verify --print-certs out/SmallMart-Android.apk | tee signature.txt
+          {
+            echo "### Android signing certificate"
+            echo "Firebase and Google sign-in ask for these fingerprints. They are not secret."
+            echo '```'
+            grep -E 'SHA-1|SHA-256' signature.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: android
