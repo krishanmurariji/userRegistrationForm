@@ -2,7 +2,9 @@ import { DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { IonBackButton, IonBadge, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonLabel, IonList, IonSegment, IonSegmentButton, IonSpinner, IonText, IonTitle, IonToolbar } from '@ionic/angular';
+import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonSpinner, IonTitle, IonToolbar } from '@ionic/angular';
+import { AppIcon } from '../core/icon';
+import { SkeletonList } from '../core/skeletons';
 import { toApiError } from '../core/api-error';
 import { Item, StockMovement, StockReason, stockState } from '../core/shop.models';
 import { ShopService } from '../core/shop.service';
@@ -21,68 +23,69 @@ const REASONS: Record<StockReason, string> = {
 /** One item's stock: the number on hand, a form to change it, and the history of every change. */
 @Component({
   selector: 'app-item-stock',
-  imports: [DatePipe, ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonBadge, IonSegment, IonSegmentButton, IonLabel, IonInput, IonButton, IonList, IonItem, IonSpinner, IonText],
+  imports: [DatePipe, ReactiveFormsModule, AppIcon, SkeletonList, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonButton, IonSpinner],
   template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId + '/items/' + itemId" /></ion-buttons>
+    <ion-header class="shop-header">
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId + '/items/' + itemId" text="" /></ion-buttons>
         <ion-title>Stock</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column">
+    <ion-content class="shop-bg">
+      <main class="shop-column narrow owner-form">
         @if (error(); as message) {
-          <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
+          <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         }
         @if (item(); as i) {
-          <h1>{{ i.name }}</h1>
           @if (!i.trackStock) {
-            <div class="notice" role="status"><strong>Stock is not counted for this item.</strong>Switch on "Count stock for this item" on the item page first.</div>
+            <div class="card closed-note" role="status"><strong>Stock is not counted for this item.</strong> Switch on "Count stock for this item" on the item page first.</div>
           } @else {
-            <div class="stock-now">
+            <section class="stock-hero" [attr.data-color]="state(i)?.color">
+              <span class="label">{{ i.name }} · {{ i.unit }}</span>
               <span class="value" aria-live="polite">{{ i.stockQuantity }}</span>
-              <span>in stock · {{ i.unit }}</span>
-              @if (state(i); as st) { @if (st.color !== 'light') { <ion-badge [color]="st.color">{{ st.label }}</ion-badge> } }
-            </div>
-            <p class="meta">You are warned when it falls to {{ i.lowStockThreshold }}.</p>
+              <span class="sub">in stock @if (state(i); as st) { @if (st.color !== 'light') { · <strong>{{ st.label }}</strong> } }</span>
+              <small>You are warned when it falls to {{ i.lowStockThreshold }}.</small>
+            </section>
 
-            <h2 class="section-title">Change stock</h2>
-            <ion-segment [value]="kind()" (ionChange)="kind.set($any($event.detail.value)); form.controls.quantity.reset(null)">
-              <ion-segment-button value="Restock"><ion-label>Received</ion-label></ion-segment-button>
-              <ion-segment-button value="Damage"><ion-label>Damaged</ion-label></ion-segment-button>
-              <ion-segment-button value="Correction"><ion-label>Recount</ion-label></ion-segment-button>
-            </ion-segment>
-            <form [formGroup]="form" (ngSubmit)="save()" novalidate class="stack ion-margin-top">
-              <ion-input formControlName="quantity" type="number" inputmode="numeric" min="0" step="1"
-                [label]="quantityLabel()" labelPlacement="stacked" fill="outline" errorText="Enter a whole number" />
-              <ion-input formControlName="note" label="Note (optional)" labelPlacement="stacked" fill="outline"
-                placeholder="For example the supplier or the reason" maxlength="300" />
-              @if (saveError(); as message) {
-                <ion-text color="danger" role="alert"><p class="message">{{ message }}</p></ion-text>
-              }
-              <ion-button type="submit" expand="block" [disabled]="busy()">
-                @if (busy()) { <ion-spinner name="crescent" aria-label="Saving" /> } @else { {{ buttonLabel() }} }
-              </ion-button>
-            </form>
+            <section class="card stack">
+              <h2><span class="head-icon"><app-icon name="package" weight="duotone" /></span>Change stock</h2>
+              <div class="owner-tabs inline" role="tablist" aria-label="What happened">
+                @for (k of kinds; track k.value) {
+                  <button type="button" role="tab" [attr.aria-selected]="kind() === k.value" [class.on]="kind() === k.value"
+                    (click)="kind.set($any(k.value)); form.controls.quantity.reset(null)"><app-icon [name]="k.icon" />{{ k.label }}</button>
+                }
+              </div>
+              <form [formGroup]="form" (ngSubmit)="save()" novalidate class="stack">
+                <ion-input formControlName="quantity" type="number" inputmode="numeric" min="0" step="1"
+                  [label]="quantityLabel()" labelPlacement="stacked" fill="outline" errorText="Enter a whole number" />
+                <ion-input formControlName="note" label="Note (optional)" labelPlacement="stacked" fill="outline"
+                  placeholder="For example the supplier or the reason" maxlength="300" />
+                @if (saveError(); as message) { <p role="alert" class="error-text">{{ message }}</p> }
+                <ion-button type="submit" expand="block" [disabled]="busy()">
+                  @if (busy()) { <ion-spinner name="crescent" aria-label="Saving" /> } @else { {{ buttonLabel() }} }
+                </ion-button>
+              </form>
+            </section>
 
-            <h2 class="section-title">History</h2>
-            <ion-list>
-              @for (m of history(); track m.id) {
-                <ion-item>
-                  <ion-label>
-                    <h2>{{ reason(m) }}@if (m.orderNumber) { · {{ m.orderNumber }} }</h2>
-                    @if (m.note) { <p>{{ m.note }}</p> }
-                    <p class="meta">{{ m.at | date: 'd MMM y, h:mm a' }} · {{ m.quantityAfter }} in stock after</p>
-                  </ion-label>
-                  <ion-badge slot="end" [color]="m.change > 0 ? 'success' : m.change < 0 ? 'danger' : 'light'">
-                    {{ m.change > 0 ? '+' + m.change : m.change }}
-                  </ion-badge>
-                </ion-item>
-              }
-            </ion-list>
+            <section class="card">
+              <h2><span class="head-icon"><app-icon name="clock" weight="duotone" /></span>History</h2>
+              @if (history().length === 0) { <p class="hint">No changes yet.</p> }
+              <ul class="order-lines stock-history">
+                @for (m of history(); track m.id) {
+                  <li>
+                    <span class="change" [attr.data-sign]="m.change > 0 ? 'up' : m.change < 0 ? 'down' : 'same'">{{ m.change > 0 ? '+' + m.change : m.change }}</span>
+                    <span class="what">
+                      <strong>{{ reason(m) }}@if (m.orderNumber) { · {{ m.orderNumber }} }</strong>
+                      @if (m.note) { <small>{{ m.note }}</small> }
+                      <small>{{ m.at | date: 'd MMM y, h:mm a' }} · {{ m.quantityAfter }} in stock after</small>
+                    </span>
+                  </li>
+                }
+              </ul>
+            </section>
           }
         } @else if (!error()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading stock" /></div>
+          <app-skeleton-list [count]="2" />
         }
       </main>
     </ion-content>
@@ -96,6 +99,11 @@ export class ItemStockPage {
   protected readonly itemId = this.params.get('itemId')!;
   protected readonly item = signal<Item | null>(null);
   protected readonly history = signal<StockMovement[]>([]);
+  protected readonly kinds = [
+    { value: 'Restock', label: 'Received', icon: 'plus' },
+    { value: 'Damage', label: 'Damaged', icon: 'minus' },
+    { value: 'Correction', label: 'Recount', icon: 'pen' },
+  ];
   protected readonly kind = signal<Kind>('Restock');
   protected readonly busy = signal(false);
   protected readonly error = signal('');

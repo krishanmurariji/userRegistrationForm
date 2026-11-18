@@ -3,6 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 import { IonBackButton, IonButton, IonButtons, IonCheckbox, IonContent, IonHeader, IonInput, IonSpinner, IonText, IonTextarea, IonTitle, IonToggle, IonToolbar, NavController } from '@ionic/angular';
 import { PhotoEntry, PhotoPicker, photoFromFile, releasePhoto } from '../core/photo-picker';
 import { toApiError } from '../core/api-error';
+import { AppIcon } from '../core/icon';
+import { SkeletonList } from '../core/skeletons';
 import { Category, ScanField, ScanProduct, ScanStatus } from '../core/shop.models';
 import { ShopService } from '../core/shop.service';
 
@@ -40,33 +42,39 @@ const SOURCES: Record<string, string> = {
 /** Add items by photographing them: the photo is read into drafts, the owner checks them and sets prices. */
 @Component({
   selector: 'app-item-scan',
-  imports: [PhotoPicker, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonTextarea, IonCheckbox, IonToggle, IonButton, IonSpinner, IonText],
+  imports: [AppIcon, SkeletonList, PhotoPicker, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonTextarea, IonCheckbox, IonToggle, IonButton, IonSpinner, IonText],
   template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId" /></ion-buttons>
+    <ion-header class="shop-header">
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId" text="" /></ion-buttons>
         <ion-title>Add from a photo</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column">
+    <ion-content class="shop-bg">
+      <main class="shop-column narrow owner-form owner-scan">
         @if (status(); as st) {
           @if (!st.enabled) {
-            <div class="notice" role="status">
+            <div class="card closed-note" role="status">
               <strong>Reading items from photos is not set up yet.</strong>
               The platform admin needs to add an AI key on the server. You can still add items by hand or with quick add.
             </div>
           } @else {
             @if (drafts().length === 0) {
-              <h1>Take a photo of the product</h1>
-              <ul class="tips">
+              <section class="scan-hero">
+                <span class="ai-icon big"><app-icon name="sparkle" weight="duotone" /></span>
+                <h1>Take a photo of the product</h1>
+                <p>The name, size, MRP and category are filled in for you. You only add your price.</p>
+              </section>
+              <ul class="tips card">
                 <li>One product, close up, with the front label readable, works best.</li>
                 <li>If the barcode is in the photo, the details are more reliable.</li>
                 <li>A photo of a shelf adds several items at once.</li>
               </ul>
-              <div class="scan-photo">
-                @if (preview(); as src) { <img [src]="src" alt="The photo you chose" /> } @else { <span>No photo yet</span> }
-              </div>
+              <button type="button" class="scan-photo" [disabled]="busy()" (click)="picker.click()" [class.has-photo]="!!preview()">
+                @if (preview(); as src) { <img [src]="src" alt="The photo you chose" /> }
+                @else { <app-icon name="camera" weight="duotone" /><span>Tap to take or choose a photo</span> }
+                @if (busy()) { <span class="scan-line" aria-hidden="true"></span> }
+              </button>
               <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="picker.click()">
                 {{ photo() ? 'Choose a different photo' : 'Take or choose a photo' }}
               </ion-button>
@@ -75,20 +83,20 @@ const SOURCES: Record<string, string> = {
                 @if (busy()) { <ion-spinner name="crescent" aria-label="Reading the photo" /> } @else { Read details }
               </ion-button>
               @if (busy()) { <p class="meta" role="status">Reading the photo. This can take up to half a minute.</p> }
-              <p class="meta">
-                {{ st.remainingToday }} of {{ st.dailyLimit }} photo scans left today.
+              <p class="meta center">
+                <app-icon name="lightning" weight="duotone" /> {{ st.remainingToday }} of {{ st.dailyLimit }} photo scans left today.
                 @if (st.remainingToday === 0) { You can add items by hand, or scan again tomorrow. }
               </p>
               @if (nothingFound()) {
-                <div class="notice" role="status"><strong>No products were recognised in that photo.</strong>Try a closer, sharper photo with the label facing the camera.</div>
+                <div class="card closed-note" role="status"><strong>No products were recognised in that photo.</strong> Try a closer, sharper photo with the label facing the camera.</div>
               }
             } @else {
-              <h1>Check {{ drafts().length === 1 ? 'this item' : 'these ' + drafts().length + ' items' }}</h1>
+              <h1 class="page-title with-icon"><span class="head-icon"><app-icon name="check-circle" weight="duotone" /></span>Check {{ drafts().length === 1 ? 'this item' : 'these ' + drafts().length + ' items' }}</h1>
               <p class="meta">
                 Fields marked "Please check" are guesses. Type the price you sell at, which is never filled in for you, and make sure every item has at least one picture.
               </p>
               @for (d of drafts(); track $index; let i = $index) {
-                <section class="panel draft" [class.off]="!d.include">
+                <section class="card draft stack" [class.off]="!d.include">
                   <ion-checkbox [checked]="d.include" labelPlacement="end" justify="start" (ionChange)="patch(i, { include: $event.detail.checked })">
                     Add this item
                   </ion-checkbox>
@@ -116,7 +124,7 @@ const SOURCES: Record<string, string> = {
                       (ionInput)="type(i, 'description', $event.detail.value)" />
                     <ion-toggle [checked]="d.isActive" (ionChange)="patch(i, { isActive: $event.detail.checked })">Visible to customers</ion-toggle>
 
-                    <h3 class="draft-heading">Stock</h3>
+                    <h3 class="draft-heading"><app-icon name="package" weight="duotone" />Stock</h3>
                     <ion-toggle [checked]="d.trackStock" (ionChange)="patch(i, { trackStock: $event.detail.checked })">Count stock for this item</ion-toggle>
                     @if (d.trackStock) {
                       <ion-input label="How many do you have now?" labelPlacement="stacked" fill="outline" type="number" inputmode="numeric" min="0" step="1"
@@ -127,7 +135,7 @@ const SOURCES: Record<string, string> = {
                       <p class="meta">Off: the item is always shown as available.</p>
                     }
                     @if (d.error) {
-                      <ion-text color="danger" role="alert"><p class="message">{{ d.error }}</p></ion-text>
+                      <p role="alert" class="error-text">{{ d.error }}</p>
                     }
                   }
                 </section>
@@ -152,12 +160,12 @@ const SOURCES: Record<string, string> = {
             }
           }
           @if (added(); as count) {
-            <ion-text color="success" role="status"><p>{{ count }} {{ count === 1 ? 'item' : 'items' }} added to your shop.</p></ion-text>
+            <div class="card ok-card" role="status"><app-icon name="check-circle" weight="fill" />{{ count }} {{ count === 1 ? 'item' : 'items' }} added to your shop.</div>
           }
         } @else if (error(); as message) {
           <ion-text color="danger" role="alert"><p>{{ message }}</p></ion-text>
         } @else {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading" /></div>
+          <app-skeleton-list [count]="2" />
         }
       </main>
     </ion-content>

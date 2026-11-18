@@ -1,6 +1,8 @@
 /** Picks a duotone icon for a category from its name, so a category without a photo still looks right. */
 const rules: [RegExp, string][] = [
-  [/dairy|milk|curd|paneer|butter|ghee/i, 'cow'],
+  [/\boils?\b|ghee/i, 'drop'],
+  [/masala|spice/i, 'pepper'],
+  [/dairy|milk|curd|paneer|butter/i, 'cow'],
   [/cheese/i, 'cheese'],
   [/egg/i, 'egg'],
   [/vegetable|sabzi|veggie|veg\b/i, 'carrot'],

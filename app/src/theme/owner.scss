@@ -1024,3 +1024,533 @@ ion-header.shop-header .tabs-toolbar {
     animation: none;
   }
 }
+
+/* ==========================================================================
+   Owner forms: item, shop details, categories, stock, add from a photo.
+   ========================================================================== */
+.shop-column.owner-form {
+  padding-bottom: 40px;
+
+  .hint {
+    margin: 0;
+    color: var(--sm-muted);
+    font-size: 0.86rem;
+
+    &.center {
+      margin: -4px 0 14px;
+      text-align: center;
+    }
+  }
+
+  .meta.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    color: var(--sm-muted);
+    text-align: center;
+  }
+
+  .card.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    h2 {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* The "fill it in from a photo" banner. */
+.ai-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 14px;
+  padding: 16px;
+  border-radius: 22px;
+  color: #fffaf3 !important;
+  text-decoration: none;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255, 171, 133, 0.55), transparent 50%),
+    linear-gradient(135deg, #b5652f, #7a3b1b);
+  box-shadow: 0 14px 30px -14px rgba(122, 59, 27, 0.7);
+  transition: transform 0.25s var(--sm-ease);
+
+  .what {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    small {
+      opacity: 0.88;
+      line-height: 1.4;
+    }
+  }
+
+  .go {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 250, 243, 0.18);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &.static:hover {
+    transform: none;
+  }
+}
+
+.ai-icon {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 250, 243, 0.18);
+  font-size: 28px;
+
+  &.big {
+    width: 76px;
+    height: 76px;
+    border-radius: 26px;
+    margin: 0 auto 10px;
+    background: linear-gradient(145deg, var(--sm-peach), var(--sm-soft));
+    color: #9b5227;
+    font-size: 42px;
+    box-shadow: 0 12px 26px -10px rgba(155, 82, 39, 0.5);
+    animation: lp-bob 3s ease-in-out infinite alternate;
+  }
+}
+
+.price-preview {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--sm-deal-soft);
+  color: var(--sm-deal);
+  font-size: 0.9rem;
+}
+
+/* A setting with an explanation on the left and a switch on the right. */
+.switch-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+
+  > span {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    small {
+      color: var(--sm-muted);
+    }
+  }
+
+  ion-toggle {
+    flex: none;
+  }
+}
+
+.shop-column .stock-now {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--sm-page);
+
+  b {
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+}
+
+.shop-column .danger-zone .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Shop details: cover and logo edited in place. */
+.brand-editor {
+  position: relative;
+  height: 170px;
+  margin: 0 0 54px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--sm-peach) 55%, transparent), transparent 55%),
+    linear-gradient(135deg, var(--sm-soft), var(--sm-sand));
+
+  .cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
+
+  .cover-btn {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(43, 29, 18, 0.72);
+    color: #fff;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+  }
+
+  .logo-btn {
+    position: absolute;
+    left: 18px;
+    bottom: -42px;
+    width: 92px;
+    height: 92px;
+    padding: 0;
+    border: 4px solid var(--sm-card);
+    border-radius: 26px;
+    overflow: visible;
+    display: grid;
+    place-items: center;
+    background: var(--sm-soft);
+    color: var(--sm-accent);
+    font-size: 44px;
+    box-shadow: var(--sm-shadow);
+    cursor: pointer;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 22px;
+    }
+
+    .edit {
+      position: absolute;
+      right: -8px;
+      bottom: -8px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--sm-card);
+      background: var(--ion-color-primary);
+      color: var(--ion-color-primary-contrast);
+      font-size: 14px;
+    }
+  }
+}
+
+/* Categories. */
+.add-category .add-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  ion-input {
+    flex: 1;
+  }
+
+  ion-button {
+    margin-top: 6px;
+    min-height: 50px;
+  }
+}
+
+.owner-item-list.single {
+  display: block;
+
+  li + li {
+    border-top: 1px solid var(--sm-line);
+  }
+
+  li {
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+  }
+}
+
+.shop-column .owner-item.static:hover {
+  background: none;
+}
+
+.round-btn {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--sm-sand);
+  color: var(--sm-accent);
+  font-size: 18px;
+  cursor: pointer;
+  transition: transform 0.2s var(--sm-spring);
+
+  &.danger {
+    background: color-mix(in srgb, var(--ion-color-danger) 10%, transparent);
+    color: var(--ion-color-danger);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+/* Stock. */
+.stock-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 0 14px;
+  padding: 24px 16px 20px;
+  border-radius: 26px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 85% 0%, color-mix(in srgb, var(--sm-peach) 55%, transparent), transparent 55%),
+    linear-gradient(135deg, var(--sm-soft), var(--sm-sand));
+
+  .label {
+    color: var(--sm-muted);
+    font-weight: 700;
+  }
+
+  .value {
+    font-size: 3.6rem;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sub {
+    font-weight: 600;
+  }
+
+  small {
+    margin-top: 6px;
+    color: var(--sm-muted);
+  }
+
+  &[data-color='warning'] .value,
+  &[data-color='warning'] strong {
+    color: var(--sm-deal);
+  }
+
+  &[data-color='danger'] .value,
+  &[data-color='danger'] strong {
+    color: var(--ion-color-danger);
+  }
+}
+
+.owner-tabs.inline {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.stock-history {
+  li {
+    align-items: flex-start;
+  }
+
+  .change {
+    flex: none;
+    min-width: 52px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--sm-sand);
+    color: var(--sm-muted);
+    font-weight: 800;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+
+    &[data-sign='up'] {
+      background: color-mix(in srgb, var(--sm-ok) 14%, transparent);
+      color: var(--sm-ok);
+    }
+
+    &[data-sign='down'] {
+      background: color-mix(in srgb, var(--ion-color-danger) 12%, transparent);
+      color: var(--ion-color-danger);
+    }
+  }
+}
+
+/* Add from a photo. */
+.scan-hero {
+  margin: 8px 0 16px;
+  text-align: center;
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0 auto;
+    max-width: 420px;
+    color: var(--sm-muted);
+  }
+}
+
+.shop-column .tips.card {
+  margin: 0 0 14px;
+  padding: 14px 16px 14px 34px;
+  color: var(--sm-muted);
+  line-height: 1.6;
+}
+
+.owner-scan .scan-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  max-height: 380px;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 2px dashed color-mix(in srgb, var(--sm-accent) 40%, var(--sm-line));
+  border-radius: 26px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--sm-card);
+  color: var(--sm-accent);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+
+  app-icon {
+    font-size: 64px;
+  }
+
+  img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: var(--sm-page);
+  }
+
+  &.has-photo {
+    border-style: solid;
+    border-color: var(--sm-line);
+  }
+
+  /* A light that sweeps over the photo while it is being read. */
+  .scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--sm-peach);
+    box-shadow: 0 0 18px 6px color-mix(in srgb, var(--sm-peach) 60%, transparent);
+    animation: owner-scan 1.6s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes owner-scan {
+  from {
+    top: 6%;
+  }
+
+  to {
+    top: 92%;
+  }
+}
+
+.owner-scan {
+  ion-button {
+    margin: 0 0 10px;
+  }
+
+  .draft.off {
+    opacity: 0.6;
+  }
+
+  .draft-heading {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 6px 0 0;
+    font-size: 1rem;
+  }
+
+  ion-input.review {
+    --border-color: var(--sm-deal);
+  }
+}
+
+.shop-column .ok-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--sm-ok);
+  font-weight: 700;
+
+  app-icon {
+    font-size: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-icon.big,
+  .owner-scan .scan-photo .scan-line {
+    animation: none;
+  }
+}
+
+/* The bottom bar on the forms: the name shortens, the button never wraps. */
+.pay-bar {
+  > span {
+    flex: 1;
+    min-width: 0;
+
+    strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  ion-button {
+    flex: none;
+    white-space: nowrap;
+  }
+}

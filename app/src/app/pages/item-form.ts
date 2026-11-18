@@ -1,8 +1,10 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonSelect, IonSelectOption, IonSpinner, IonText, IonTextarea, IonTitle, IonToggle, IonToolbar, NavController } from '@ionic/angular';
+import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonFooter, IonHeader, IonInput, IonSelect, IonSelectOption, IonSpinner, IonTextarea, IonTitle, IonToggle, IonToolbar, NavController } from '@ionic/angular';
 import { toApiError } from '../core/api-error';
+import { AppIcon } from '../core/icon';
+import { SkeletonList } from '../core/skeletons';
 import { Category, Item } from '../core/shop.models';
 import { PhotoEntry, PhotoPicker, photoFromFile, releasePhoto } from '../core/photo-picker';
 import { ShopService, fileUrl } from '../core/shop.service';
@@ -16,108 +18,136 @@ function priceNotAboveMrp(group: AbstractControl): ValidationErrors | null {
 /** Adds an item (/shops/:shopId/items/new) or edits one (/shops/:shopId/items/:itemId). */
 @Component({
   selector: 'app-item-form',
-  imports: [ReactiveFormsModule, RouterLink, PhotoPicker, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonTextarea, IonSelect, IonSelectOption, IonToggle, IonItem, IonButton, IonSpinner, IonText],
+  imports: [ReactiveFormsModule, RouterLink, PhotoPicker, AppIcon, SkeletonList, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonFooter, IonInput, IonTextarea, IonSelect, IonSelectOption, IonToggle, IonButton, IonSpinner],
   template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId" /></ion-buttons>
+    <ion-header class="shop-header">
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId" text="" /></ion-buttons>
         <ion-title>{{ itemId ? 'Edit item' : 'Add item' }}</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column">
+    <ion-content class="shop-bg">
+      <main class="shop-column narrow owner-form">
         @if (loading()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading" /></div>
+          <app-skeleton-list [count]="3" />
         } @else {
-          <form [formGroup]="form" (ngSubmit)="save()" novalidate class="stack">
+          <form [formGroup]="form" (ngSubmit)="save()" novalidate>
             @if (!itemId) {
-              <a class="scan-link" [routerLink]="['/shops', shopId, 'scan']">
-                <strong>Have the product in your hand?</strong>
-                <span>Take a photo and the details are filled in for you. You only add the price.</span>
-                <span class="go">Fill in from a photo</span>
+              <a class="ai-banner" [routerLink]="['/shops', shopId, 'scan']">
+                <span class="ai-icon"><app-icon name="sparkle" weight="duotone" /></span>
+                <span class="what"><strong>Have the product in your hand?</strong>
+                  <small>Take a photo and the name, size and MRP are filled in for you. You only add the price.</small></span>
+                <span class="go">Try it <app-icon name="arrow-right" /></span>
               </a>
             }
-
-            <app-photo-picker label="Pictures" [photos]="photos()" [busy]="busy()" [minKeep]="itemId ? 1 : 0"
-              (add)="addPhotos($event)" (remove)="removePhoto($event)" (makeCover)="coverPhoto($event)" (problem)="error.set($event)" />
-
-            <ion-input formControlName="name" label="Item name" labelPlacement="stacked" fill="outline"
-              errorText="Enter the item name" />
-            <ion-select formControlName="categoryId" label="Category" labelPlacement="stacked" fill="outline"
-              interface="popover" placeholder="No category">
-              <ion-select-option [value]="null">No category</ion-select-option>
-              @for (c of categories(); track c.id) {
-                <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
-              }
-              <ion-select-option [value]="newCategory">+ New category…</ion-select-option>
-            </ion-select>
-            @if (form.controls.categoryId.value === newCategory) {
-              <ion-input formControlName="newCategoryName" label="New category name" labelPlacement="stacked" fill="outline"
-                placeholder="For example Dairy" maxlength="80" errorText="Enter a name for the new category" />
-            }
-            <div class="two-columns">
-              <ion-input formControlName="price" type="number" inputmode="decimal" min="0" step="0.01"
-                label="Price (₹)" labelPlacement="stacked" fill="outline" errorText="Enter a price above 0" />
-              <ion-input formControlName="mrp" type="number" inputmode="decimal" min="0" step="0.01"
-                label="MRP (₹, optional)" labelPlacement="stacked" fill="outline" />
-            </div>
-            @if (form.hasError('priceAboveMrp')) {
-              <ion-text color="danger" role="alert"><p class="message">The price cannot be higher than the MRP.</p></ion-text>
-            }
-            <ion-input formControlName="unit" label="Unit" labelPlacement="stacked" fill="outline"
-              placeholder="1 kg, 500 g, 1 piece" errorText="Enter what one unit is" />
-            <ion-input formControlName="barcode" inputmode="numeric" label="Barcode (optional)" labelPlacement="stacked"
-              fill="outline" />
-            <ion-textarea formControlName="description" label="Description (optional)" labelPlacement="stacked"
-              fill="outline" [autoGrow]="true" />
-            <ion-item lines="none" class="plain-item">
-              <ion-toggle formControlName="isActive">Visible to customers</ion-toggle>
-            </ion-item>
-
-            <h2 class="section-title">Stock</h2>
-            <ion-item lines="none" class="plain-item">
-              <ion-toggle formControlName="trackStock">Count stock for this item</ion-toggle>
-            </ion-item>
-            @if (form.controls.trackStock.value) {
-              @if (countedBefore()) {
-                <div class="panel">
-                  <strong>{{ stockQuantity() }} in stock</strong>
-                  <ion-button fill="outline" [routerLink]="['/shops', shopId, 'items', itemId, 'stock']">Add, remove or correct stock</ion-button>
-                </div>
-              } @else {
-                <ion-input formControlName="openingStock" type="number" inputmode="numeric" min="0" step="1"
-                  label="How many do you have now?" labelPlacement="stacked" fill="outline" errorText="Enter 0 or more" />
-              }
-              <ion-input formControlName="lowStockThreshold" type="number" inputmode="numeric" min="0" step="1"
-                label="Warn me when stock falls to" labelPlacement="stacked" fill="outline" errorText="Enter 0 or more" />
-              <p class="meta">Customers cannot order more than you have. Orders reduce the stock, and cancelled orders put it back.</p>
-            } @else {
-              <p class="meta">Off: the item is always shown as available.</p>
-            }
-
             @if (copied()) {
-              <div class="notice info" role="status"><strong>This is a copy.</strong>Change the name, unit and price, then switch on "Visible to customers".</div>
-            }
-            @if (error(); as message) {
-              <ion-text color="danger" role="alert"><p class="message">{{ message }}</p></ion-text>
+              <div class="card closed-note" role="status"><strong>This is a copy.</strong> Change the name, unit and price, then switch on "Visible to customers".</div>
             }
 
-            <ion-button type="submit" expand="block" [disabled]="busy()">
-              @if (busy()) { <ion-spinner name="crescent" aria-label="Saving" /> }
-              @else { {{ itemId ? 'Save changes' : 'Add item' }} }
-            </ion-button>
-            @if (itemId) {
-              <ion-button expand="block" fill="outline" [disabled]="busy()" (click)="duplicate()">
-                Duplicate (for another size or variant)
-              </ion-button>
-              <ion-button expand="block" fill="clear" color="danger" [disabled]="busy()" (click)="remove()">
-                Delete item
-              </ion-button>
+            <section class="card">
+              <app-photo-picker label="Pictures" [photos]="photos()" [busy]="busy()" [minKeep]="itemId ? 1 : 0"
+                (add)="addPhotos($event)" (remove)="removePhoto($event)" (makeCover)="coverPhoto($event)" (problem)="error.set($event)" />
+            </section>
+
+            <section class="card stack">
+              <h2><span class="head-icon"><app-icon name="tag" weight="duotone" /></span>Details</h2>
+              <ion-input formControlName="name" label="Item name" labelPlacement="stacked" fill="outline"
+                errorText="Enter the item name" />
+              <ion-select formControlName="categoryId" label="Category" labelPlacement="stacked" fill="outline"
+                interface="popover" placeholder="No category">
+                <ion-select-option [value]="null">No category</ion-select-option>
+                @for (c of categories(); track c.id) {
+                  <ion-select-option [value]="c.id">{{ c.name }}</ion-select-option>
+                }
+                <ion-select-option [value]="newCategory">+ New category…</ion-select-option>
+              </ion-select>
+              @if (form.controls.categoryId.value === newCategory) {
+                <ion-input formControlName="newCategoryName" label="New category name" labelPlacement="stacked" fill="outline"
+                  placeholder="For example Dairy" maxlength="80" errorText="Enter a name for the new category" />
+              }
+              <div class="two-columns">
+                <ion-input formControlName="unit" label="Unit" labelPlacement="stacked" fill="outline"
+                  placeholder="1 kg, 500 g, 1 piece" errorText="Enter what one unit is" />
+                <ion-input formControlName="barcode" inputmode="numeric" label="Barcode (optional)" labelPlacement="stacked"
+                  fill="outline" />
+              </div>
+              <ion-textarea formControlName="description" label="Description (optional)" labelPlacement="stacked"
+                fill="outline" [autoGrow]="true" />
+            </section>
+
+            <section class="card stack">
+              <h2><span class="head-icon"><app-icon name="wallet" weight="duotone" /></span>Price</h2>
+              <div class="two-columns">
+                <ion-input formControlName="price" type="number" inputmode="decimal" min="0" step="0.01"
+                  label="Your price (₹)" labelPlacement="stacked" fill="outline" errorText="Enter a price above 0" />
+                <ion-input formControlName="mrp" type="number" inputmode="decimal" min="0" step="0.01"
+                  label="MRP (₹, optional)" labelPlacement="stacked" fill="outline" />
+              </div>
+              @if (form.hasError('priceAboveMrp')) {
+                <p role="alert" class="error-text">The price cannot be higher than the MRP.</p>
+              } @else if (saving(); as off) {
+                <p class="price-preview"><app-icon name="tag" />Customers see <strong>{{ off }}% off</strong> the MRP.</p>
+              }
+            </section>
+
+            <section class="card stack">
+              <h2><span class="head-icon"><app-icon name="package" weight="duotone" /></span>Stock</h2>
+              <label class="switch-row">
+                <span><strong>Count stock for this item</strong><small>{{ form.controls.trackStock.value ? 'Customers cannot order more than you have.' : 'Off: the item is always shown as available.' }}</small></span>
+                <ion-toggle formControlName="trackStock" aria-label="Count stock for this item" />
+              </label>
+              @if (form.controls.trackStock.value) {
+                @if (countedBefore()) {
+                  <div class="stock-now">
+                    <span><b>{{ stockQuantity() }}</b> in stock</span>
+                    <ion-button fill="outline" size="small" [routerLink]="['/shops', shopId, 'items', itemId, 'stock']">Add, remove or correct</ion-button>
+                  </div>
+                } @else {
+                  <ion-input formControlName="openingStock" type="number" inputmode="numeric" min="0" step="1"
+                    label="How many do you have now?" labelPlacement="stacked" fill="outline" errorText="Enter 0 or more" />
+                }
+                <ion-input formControlName="lowStockThreshold" type="number" inputmode="numeric" min="0" step="1"
+                  label="Warn me when stock falls to" labelPlacement="stacked" fill="outline" errorText="Enter 0 or more" />
+                <p class="hint">Orders reduce the stock, and cancelled orders put it back.</p>
+              }
+            </section>
+
+            <section class="card">
+              <label class="switch-row">
+                <span><strong>Visible to customers</strong><small>{{ form.controls.isActive.value ? 'Customers can see and order it.' : 'Hidden: only you can see it.' }}</small></span>
+                <ion-toggle formControlName="isActive" aria-label="Visible to customers" />
+              </label>
+            </section>
+
+            @if (error(); as message) {
+              <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
             }
+
+            @if (itemId) {
+              <section class="card danger-zone">
+                <h2><span class="head-icon"><app-icon name="copy" /></span>More</h2>
+                <div class="actions">
+                  <ion-button fill="outline" [disabled]="busy()" (click)="duplicate()">Duplicate for another size</ion-button>
+                  <ion-button fill="clear" color="danger" [disabled]="busy()" (click)="remove()"><app-icon slot="start" name="trash" />Delete item</ion-button>
+                </div>
+              </section>
+            }
+            <button type="submit" hidden aria-hidden="true" tabindex="-1"></button>
           </form>
         }
       </main>
     </ion-content>
+    @if (!loading()) {
+      <ion-footer class="shop-footer">
+        <div class="pay-bar">
+          <span><small>{{ itemId ? 'Editing' : 'New item' }}</small><strong>{{ form.controls.name.value || 'Untitled' }}</strong></span>
+          <ion-button [disabled]="busy()" (click)="save()">
+            @if (busy()) { <ion-spinner name="crescent" aria-label="Saving" /> }
+            @else { {{ itemId ? 'Save changes' : 'Add item' }}<app-icon slot="end" name="check" /> }
+          </ion-button>
+        </div>
+      </ion-footer>
+    }
   `,
 })
 export class ItemFormPage implements OnInit, OnDestroy {
@@ -159,6 +189,13 @@ export class ItemFormPage implements OnInit, OnDestroy {
   /** True when the saved item already counts stock; then the number changes only on the stock page. */
   protected readonly countedBefore = signal(false);
   protected readonly stockQuantity = signal(0);
+
+  /** The discount customers will see, in whole percent, or 0 when there is none. */
+  protected saving(): number {
+    const { price, mrp } = this.form.getRawValue() as { price: number | null; mrp: number | null };
+    const p = Number(price), m = Number(mrp);
+    return p > 0 && m > p ? Math.round(((m - p) / m) * 100) : 0;
+  }
 
   async ngOnInit(): Promise<void> {
     try {

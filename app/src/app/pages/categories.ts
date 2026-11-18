@@ -1,56 +1,58 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonSpinner, IonText, IonTitle, IonToolbar } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { createOutline, trashOutline } from 'ionicons/icons';
+import { AlertController, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonTitle, IonToolbar } from '@ionic/angular';
+import { categoryIcon } from '../core/category-icon';
+import { AppIcon } from '../core/icon';
+import { SkeletonList } from '../core/skeletons';
 import { toApiError } from '../core/api-error';
 import { Category } from '../core/shop.models';
 import { ShopService } from '../core/shop.service';
 
 @Component({
   selector: 'app-categories',
-  imports: [ReactiveFormsModule, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonList, IonItem, IonLabel, IonInput, IonButton, IonIcon, IonSpinner, IonText],
+  imports: [ReactiveFormsModule, AppIcon, SkeletonList, IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle, IonContent, IonInput, IonButton],
   template: `
-    <ion-header>
-      <ion-toolbar color="primary">
-        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId" /></ion-buttons>
+    <ion-header class="shop-header">
+      <ion-toolbar>
+        <ion-buttons slot="start"><ion-back-button [defaultHref]="'/shops/' + shopId" text="" /></ion-buttons>
         <ion-title>Categories</ion-title>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ion-padding">
-      <main class="page-column">
-        <form class="add-row" [formGroup]="form" (ngSubmit)="add()" novalidate>
-          <ion-input formControlName="name" label="New category" labelPlacement="stacked" fill="outline"
-            placeholder="For example Dairy" maxlength="80" />
-          <ion-button type="submit" [disabled]="busy()">Add</ion-button>
+    <ion-content class="shop-bg">
+      <main class="shop-column narrow owner-form">
+        <form class="card add-category" [formGroup]="form" (ngSubmit)="add()" novalidate>
+          <h2><span class="head-icon"><app-icon name="plus" /></span>New category</h2>
+          <div class="add-line">
+            <ion-input formControlName="name" label="Category name" labelPlacement="stacked" fill="outline"
+              placeholder="For example Dairy" maxlength="80" />
+            <ion-button type="submit" [disabled]="busy()">Add</ion-button>
+          </div>
+          <p class="hint">Categories group your items so customers find them faster, for example Dairy, Snacks or Vegetables.</p>
         </form>
 
         @if (error(); as message) {
-          <ion-text color="danger" role="alert"><p class="message">{{ message }}</p></ion-text>
+          <div class="card"><p role="alert" class="error-text">{{ message }}</p></div>
         }
 
         @if (loading()) {
-          <div class="centered"><ion-spinner name="crescent" aria-label="Loading categories" /></div>
+          <app-skeleton-list [count]="4" />
         } @else if (categories().length === 0) {
-          <p class="muted">No categories yet. Categories group your items, for example Dairy, Snacks or Vegetables.</p>
+          <div class="card empty-card">
+            <span class="empty-art small"><app-icon name="squares-four" weight="duotone" /></span>
+            <p>No categories yet.</p>
+          </div>
         } @else {
-          <ion-list>
+          <ul class="owner-item-list single">
             @for (c of categories(); track c.id) {
-              <ion-item>
-                <ion-label>
-                  <h2>{{ c.name }}</h2>
-                  <p>{{ c.itemCount }} {{ c.itemCount === 1 ? 'item' : 'items' }}</p>
-                </ion-label>
-                <ion-button slot="end" fill="clear" [attr.aria-label]="'Rename ' + c.name" (click)="rename(c)">
-                  <ion-icon slot="icon-only" name="create-outline" />
-                </ion-button>
-                <ion-button slot="end" fill="clear" color="danger" [attr.aria-label]="'Delete ' + c.name" (click)="remove(c)">
-                  <ion-icon slot="icon-only" name="trash-outline" />
-                </ion-button>
-              </ion-item>
+              <li class="owner-item static">
+                <span class="thumb"><app-icon [name]="icon(c.name)" weight="duotone" /></span>
+                <span class="what"><strong>{{ c.name }}</strong><small>{{ c.itemCount }} {{ c.itemCount === 1 ? 'item' : 'items' }}</small></span>
+                <button type="button" class="round-btn" [attr.aria-label]="'Rename ' + c.name" (click)="rename(c)"><app-icon name="pen" /></button>
+                <button type="button" class="round-btn danger" [attr.aria-label]="'Delete ' + c.name" (click)="remove(c)"><app-icon name="trash" /></button>
+              </li>
             }
-          </ion-list>
+          </ul>
         }
       </main>
     </ion-content>
@@ -67,9 +69,7 @@ export class CategoriesPage {
   protected readonly busy = signal(false);
   protected readonly error = signal('');
 
-  constructor() {
-    addIcons({ createOutline, trashOutline });
-  }
+  protected readonly icon = categoryIcon;
 
   ionViewWillEnter(): void {
     void this.run(async () => undefined);
