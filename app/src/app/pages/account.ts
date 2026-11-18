@@ -42,6 +42,12 @@ import { NotificationService } from '../core/notification.service';
               </a>
             </nav>
           }
+          <nav class="card menu" aria-label="Privacy">
+            <a routerLink="/privacy"><span class="head-icon"><app-icon name="shield-check" weight="duotone" /></span><span class="what">Privacy policy<small>What we collect and why</small></span><app-icon class="go" name="caret-right" /></a>
+            @if (!auth.isAdmin()) {
+              <a routerLink="/delete-account" class="danger"><span class="head-icon bad"><app-icon name="trash" weight="duotone" /></span><span class="what">Delete account<small>Erase your account and personal details</small></span><app-icon class="go" name="caret-right" /></a>
+            }
+          </nav>
           <ion-button expand="block" fill="outline" class="sign-out" [disabled]="busy()" (click)="signOut()"><app-icon slot="start" name="sign-out" />Sign out</ion-button>
         </main>
       }

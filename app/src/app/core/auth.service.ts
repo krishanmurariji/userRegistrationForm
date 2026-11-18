@@ -34,7 +34,7 @@ export class AuthService {
 
   /** True for the sign-in endpoints, which must be called without a token and never trigger a refresh. */
   isPublicUrl(url: string): boolean {
-    return url.startsWith(`${this.api}/`) && url !== `${this.api}/me`;
+    return url.startsWith(`${this.api}/`) && url !== `${this.api}/me` && url !== `${this.api}/delete-account`;
   }
 
   /** Restores the saved session at startup, then checks it with the server in the background. */
@@ -71,6 +71,12 @@ export class AuthService {
 
   resetPassword(userId: string, token: string, newPassword: string): Promise<Message> {
     return firstValueFrom(this.http.post<Message>(`${this.api}/reset-password`, { userId, token, newPassword }));
+  }
+
+  /** Deletes the signed-in account for good, then clears the session on this device. */
+  async deleteAccount(password: string, confirm: string): Promise<void> {
+    await firstValueFrom(this.http.post(`${this.api}/delete-account`, { password: password || null, confirm }));
+    await this.end();
   }
 
   async logout(): Promise<void> {

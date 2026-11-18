@@ -10,6 +10,10 @@
     max-width: 680px;
   }
 
+}
+
+.shop-column.admin,
+.shop-column.legal {
   ion-button app-icon[slot='start'] {
     margin-right: 6px;
   }
@@ -722,4 +726,94 @@
       font-size: 0.92rem;
     }
   }
+}
+
+/* ==========================================================================
+   Privacy policy and delete-account pages.
+   ========================================================================== */
+.shop-column.legal {
+  .legal-hero {
+    margin: 10px 0 16px;
+    text-align: center;
+
+    img,
+    .hero-icon {
+      display: inline-grid;
+      place-items: center;
+      margin-bottom: 8px;
+    }
+
+    .hero-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 22px;
+      background: color-mix(in srgb, var(--ion-color-danger) 12%, transparent);
+      color: var(--ion-color-danger);
+      font-size: 36px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 1.45rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      margin: 0 auto;
+      max-width: 480px;
+      color: var(--sm-muted);
+    }
+  }
+
+  .card {
+    margin-bottom: 12px;
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    h2.kept {
+      margin-top: 18px;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 6px;
+      padding-left: 20px;
+      line-height: 1.55;
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    p {
+      line-height: 1.55;
+    }
+  }
+
+  form.stack ion-input {
+    margin-bottom: 14px;
+  }
+
+  .legal-foot {
+    text-align: center;
+    margin: 6px 0 20px;
+  }
+}
+
+.shop-column .menu a.danger .what {
+  color: var(--ion-color-danger);
+}
+
+.auth-bg .links a.small {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--sm-muted, inherit);
 }

@@ -31,6 +31,8 @@ interface Feature {
             <a href="#shops" (click)="go($event, 'shops')">For shops</a>
             <a href="#how" (click)="go($event, 'how')">How it works</a>
             <a href="#download" (click)="go($event, 'download')">Download</a>
+            <a routerLink="/privacy">Privacy policy</a>
+            <a routerLink="/delete-account">Delete account</a>
           </nav>
           <div class="lp-actions">
             @if (auth.isSignedIn()) {

@@ -50,6 +50,7 @@ import { SocialButtons } from '../core/social-buttons';
         <div class="links">
           <a routerLink="/forgot-password">Forgot password?</a>
           <span>New here? <a routerLink="/register">Create an account</a></span>
+          <a routerLink="/privacy" class="small">Privacy policy</a>
         </div>
       </app-auth-shell>
     </ion-content>
