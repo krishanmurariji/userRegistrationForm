@@ -79,7 +79,16 @@ export class AuthService {
     await this.end();
   }
 
+  private readonly signOutHooks: (() => Promise<void>)[] = [];
+
+  /** Work to do while still signed in, just before signing out (for example, unregistering this phone). */
+  beforeSignOut(hook: () => Promise<void>): void {
+    this.signOutHooks.push(hook);
+  }
+
   async logout(): Promise<void> {
+    // Give each hook a moment, but never let one hold up signing out.
+    await Promise.all(this.signOutHooks.map((hook) => Promise.race([hook().catch(() => undefined), new Promise((r) => setTimeout(r, 2500))])));
     const refreshToken = this.session?.refreshToken;
     await this.end();
     if (refreshToken) {

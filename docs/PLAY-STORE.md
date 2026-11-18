@@ -167,6 +167,7 @@ run the app for us count as "service providers", not sharing).
 | Financial info → Other (UPI reference, payment screenshot) | Yes | Optional | App functionality, Fraud prevention |
 | Photos and videos → Photos | Yes | Optional | App functionality |
 | App activity → Other actions (sign-ins) | Yes | Required | Fraud prevention, security and compliance |
+| Device or other IDs (push notification token, shop owners only) | Yes | Optional (allow notifications) | App functionality |
 
-Not collected: location, contacts, messages, files, calendar, health, device or other IDs, crash logs, web browsing.
+Not collected: location, contacts, messages, files, calendar, health, crash logs, web browsing.
 Data is not processed only on the device (it is sent to our server), and none of it is used for ads or analytics.

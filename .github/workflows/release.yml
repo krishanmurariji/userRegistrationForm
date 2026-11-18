@@ -219,6 +219,16 @@ jobs:
         run: |
           npm ci
           npm run mobile:android
+      - name: Switch on push notifications
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > app/android/app/google-services.json
+            echo "Push notifications: on"
+          else
+            echo "::notice::GOOGLE_SERVICES_JSON is not set, so this build has no phone notifications (the in-app alert still works). See docs/PUSH-NOTIFICATIONS.md."
+          fi
       - name: Prepare the signing key
         if: ${{ env.HAS_KEYSTORE == 'true' }}
         env:

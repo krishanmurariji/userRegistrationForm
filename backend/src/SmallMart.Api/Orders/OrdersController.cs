@@ -16,7 +16,7 @@ namespace SmallMart.Api.Orders;
 [Route("api/orders")]
 [Authorize(Roles = Roles.Customer)]
 public partial class OrdersController(
-    AppDbContext db, ImageStorage images, StockService stock, Notifier notifier, TimeProvider clock) : ControllerBase
+    AppDbContext db, ImageStorage images, StockService stock, Notifier notifier, SmallMart.Api.Push.OrderPushQueue push, TimeProvider clock) : ControllerBase
 {
     [HttpGet("mine")]
     public async Task<IReadOnlyList<OrderSummaryDto>> Mine(
@@ -152,6 +152,9 @@ public partial class OrdersController(
             $"{order.CustomerName} ordered {order.Items.Sum(i => i.Quantity)} item(s) for ₹{order.Total:0.##}" +
             (method == PaymentMethod.Upi ? ", paying by UPI." : ", cash on delivery."),
             $"/shops/{shop.Id}/orders/{order.Id}", ct);
+        // A cash order can be accepted straight away; a UPI order is announced once the payment proof arrives.
+        if (method == PaymentMethod.CashOnDelivery)
+            push.NewOrder(order.Id);
         await stock.WarnIfLowAsync(shop.Id, lines, ct);
         return CreatedAtAction(nameof(Get), new { id = order.Id }, OrderDto.From(order));
     }
@@ -211,6 +214,7 @@ public partial class OrdersController(
         await notifier.ToShopAsync(order.ShopId, $"Check UPI payment for {order.DisplayNumber}",
             $"{order.CustomerName} says they paid ₹{order.Total:0.##} (transaction ID {reference}).",
             $"/shops/{order.ShopId}/orders/{order.Id}", ct);
+        push.NewOrder(order.Id);
         return Ok(OrderDto.From(order));
     }
 

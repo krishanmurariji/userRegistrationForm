@@ -1,0 +1,41 @@
+# Compiles the Android app whenever its native code changes, so a mistake shows up here instead of in a release.
+name: Android check
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'app/android/**'
+      - 'app/package.json'
+      - 'app/capacitor.config.ts'
+      - '.github/workflows/android-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build the debug app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Build the web app into the Android project
+        working-directory: app
+        run: |
+          npm ci
+          npm run mobile:android
+      - name: Compile
+        working-directory: app/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon

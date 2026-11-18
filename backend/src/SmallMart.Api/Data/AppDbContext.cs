@@ -27,6 +27,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<CatalogProduct> CatalogProducts => Set<CatalogProduct>();
     public DbSet<AiScan> AiScans => Set<AiScan>();
     public DbSet<StoredFile> StoredFiles => Set<StoredFile>();
+    public DbSet<DeviceToken> DeviceTokens => Set<DeviceToken>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -154,6 +155,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             b.Property(m => m.Note).HasMaxLength(300);
             b.HasIndex(m => new { m.ItemId, m.Id });
             b.HasOne(m => m.Item).WithMany().HasForeignKey(m => m.ItemId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<DeviceToken>(b =>
+        {
+            b.Property(d => d.Token).HasMaxLength(512);
+            b.Property(d => d.Platform).HasMaxLength(20);
+            b.HasIndex(d => d.Token).IsUnique();
+            b.HasIndex(d => d.UserId);
+            b.HasOne(d => d.User).WithMany().HasForeignKey(d => d.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<Notification>(b =>

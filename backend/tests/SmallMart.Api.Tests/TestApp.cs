@@ -42,6 +42,7 @@ public class TestApp : WebApplicationFactory<Program>
 
     public FakeEmailSender Emails { get; } = new();
     public FakeAi Ai { get; } = new();
+    public FakePush Push { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -71,6 +72,8 @@ public class TestApp : WebApplicationFactory<Program>
             services.RemoveAll<IExternalTokenValidator>();
             services.AddSingleton<IExternalTokenValidator>(new FakeExternalValidator("google"));
             services.AddSingleton<IExternalTokenValidator>(new FakeExternalValidator("microsoft"));
+            services.RemoveAll<SmallMart.Api.Push.IPushTransport>();
+            services.AddSingleton<SmallMart.Api.Push.IPushTransport>(Push);
         });
     }
 
@@ -255,3 +258,29 @@ public class FakeExternalValidator(string provider) : IExternalTokenValidator
 
 [CollectionDefinition("api")]
 public class ApiCollection : ICollectionFixture<TestApp>;
+
+/// <summary>Stands in for Firebase: records every push instead of sending it.</summary>
+public class FakePush : SmallMart.Api.Push.IPushTransport
+{
+    public ConcurrentQueue<(string Device, IReadOnlyDictionary<string, string> Data)> Sent { get; } = new();
+    public bool IsConfigured => true;
+
+    public Task<SmallMart.Api.Push.PushResult> SendAsync(string deviceToken, IReadOnlyDictionary<string, string> data, CancellationToken ct)
+    {
+        Sent.Enqueue((deviceToken, data));
+        return Task.FromResult(deviceToken.StartsWith("dead-") ? SmallMart.Api.Push.PushResult.Unregistered : SmallMart.Api.Push.PushResult.Sent);
+    }
+
+    /// <summary>Waits for the background worker to send a push to this device about this order.</summary>
+    public async Task<IReadOnlyDictionary<string, string>?> WaitForAsync(string device, Guid orderId, int ms = 5000)
+    {
+        for (var waited = 0; waited < ms; waited += 50)
+        {
+            var hit = Sent.FirstOrDefault(m => m.Device == device && m.Data["orderId"] == orderId.ToString());
+            if (hit.Data is not null)
+                return hit.Data;
+            await Task.Delay(50);
+        }
+        return null;
+    }
+}

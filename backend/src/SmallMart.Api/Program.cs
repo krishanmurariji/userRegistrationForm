@@ -79,6 +79,11 @@ builder.Services.AddScoped<ShopAccess>();
 builder.Services.AddScoped<AuditLog>();
 builder.Services.AddScoped<Notifier>();
 builder.Services.AddScoped<StockService>();
+builder.Services.AddScoped<SmallMart.Api.Orders.OrderDecisions>();
+builder.Services.AddSingleton<SmallMart.Api.Push.OrderPushQueue>();
+builder.Services.AddSingleton<SmallMart.Api.Push.OrderActionTokens>();
+builder.Services.AddHttpClient<SmallMart.Api.Push.IPushTransport, SmallMart.Api.Push.FcmTransport>(c => c.Timeout = TimeSpan.FromSeconds(15));
+builder.Services.AddHostedService<SmallMart.Api.Push.OrderPushWorker>();
 
 // Reading items from photos. The key stays on the server; the app never sees it.
 builder.Services.Configure<AiOptions>(config.GetSection(AiOptions.Section));

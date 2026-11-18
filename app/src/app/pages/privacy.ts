@@ -55,6 +55,7 @@ import { AppIcon } from '../core/icon';
             <li><strong>Hosting and database:</strong> MonsterASP.NET (the server) and Supabase (the database).</li>
             <li><strong>Email:</strong> Google (Gmail) sends our emails.</li>
             <li><strong>Sign-in:</strong> Google and Microsoft, only if you choose to sign in with them.</li>
+            <li><strong>Notifications (shop owners on Android):</strong> Google Firebase Cloud Messaging delivers new-order alerts to the phone using a notification ID for that phone, which is removed when you sign out.</li>
             <li><strong>Product scanning (shop owners only):</strong> OpenAI reads product photos. Open Food Facts looks up barcodes.</li>
           </ul>
         </section>

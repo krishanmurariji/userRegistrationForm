@@ -75,6 +75,7 @@ public class AccountDeletionController(UserManager<ApplicationUser> users, AppDb
         await db.ShopMembers.Where(m => m.UserId == user.Id).ExecuteDeleteAsync(ct);
         await db.RefreshTokens.Where(t => t.UserId == user.Id).ExecuteDeleteAsync(ct);
         await db.Notifications.Where(n => n.UserId == user.Id).ExecuteDeleteAsync(ct);
+        await db.DeviceTokens.Where(d => d.UserId == user.Id).ExecuteDeleteAsync(ct);
 
         foreach (var login in await users.GetLoginsAsync(user))
             await users.RemoveLoginAsync(user, login.LoginProvider, login.ProviderKey);
