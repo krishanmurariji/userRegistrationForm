@@ -70,10 +70,18 @@ $secrets = [ordered]@{
   ANDROID_KEY_PASSWORD      = $plain1
 }
 
-$gh = Get-Command gh -ErrorAction SilentlyContinue
-if ($gh -and (& gh auth status 2>$null; $LASTEXITCODE -eq 0)) {
+$ghReady = $false
+if (Get-Command gh -ErrorAction SilentlyContinue) {
+  # gh prints to stderr when signed out; that must not stop the script.
+  $ErrorActionPreference = 'Continue'
+  & gh auth status *> $null
+  $ghReady = ($LASTEXITCODE -eq 0)
+  $ErrorActionPreference = 'Stop'
+}
+if ($ghReady) {
   foreach ($s in $secrets.GetEnumerator()) {
-    $s.Value | & gh secret set $s.Key --repo $Repo
+    # --body passes the value exactly; piping would add a line break in Windows PowerShell.
+    & gh secret set $s.Key --repo $Repo --body $s.Value
     if ($LASTEXITCODE -ne 0) { throw "Could not save $($s.Key)." }
     Write-Host "Saved secret $($s.Key)" -ForegroundColor Green
   }
