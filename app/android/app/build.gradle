@@ -9,8 +9,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         // The release workflow passes these (-PappVersionCode=42 -PappVersionName=1.2.0). A store only accepts an
         // update whose versionCode is higher than the last one.
-        versionCode (project.findProperty("appVersionCode") ?: "1").toInteger()
-        versionName project.findProperty("appVersionName") ?: "1.0"
+        versionCode = Integer.parseInt((project.findProperty("appVersionCode") ?: "1").toString())
+        versionName = (project.findProperty("appVersionName") ?: "1.0").toString()
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
