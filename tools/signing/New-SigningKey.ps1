@@ -14,7 +14,7 @@
   KEEP THE .jks FILE AND THE PASSWORD SAFE FOR EVER. Samsung Galaxy Store and any APK you hand out are tied to this key.
 #>
 param(
-  [string]$Repo = 'krishanmurariji/userRegistrationForm',
+  [string]$Repo = 'krishanmurariji/SmallMart',
   [string]$Alias = 'smallmart',
   [string]$OutDir = (Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'SmallMart-Signing')
 )

@@ -5,7 +5,7 @@ export const environment = {
   /** The app's version. The Release workflow fills it in; "dev" turns off the update check. */
   appVersion: 'dev',
   /** Where the website's download buttons point: the newest published GitHub release. */
-  downloadsUrl: 'https://github.com/krishanmurariji/userRegistrationForm/releases/latest/download',
+  downloadsUrl: 'https://github.com/krishanmurariji/SmallMart/releases/latest/download',
   /**
    * Email address people can write to about their account and data. Shown on the privacy policy and delete-account
    * pages, which app stores require. Leave empty to hide it.

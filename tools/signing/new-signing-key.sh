@@ -3,7 +3,7 @@
 # secrets the Release workflow needs. Run once from the repository folder:  bash tools/signing/new-signing-key.sh
 # KEEP THE .jks FILE AND THE PASSWORD SAFE FOR EVER.
 set -euo pipefail
-REPO=${REPO:-krishanmurariji/userRegistrationForm}
+REPO=${REPO:-krishanmurariji/SmallMart}
 ALIAS=smallmart
 OUT_DIR=${OUT_DIR:-$HOME/SmallMart-Signing}
 JKS=$OUT_DIR/smallmart-upload.jks

@@ -34,7 +34,7 @@ The first run can take 20 to 40 minutes. iOS uses macOS machines, which cost mor
 
 Every release uses the same file names (`SmallMart-Android.apk`, `SmallMart-iPhone-unsigned.ipa`,
 `SmallMart-Windows-Setup.exe`, ...), so the website's download buttons always fetch the newest **published** release
-from `https://github.com/krishanmurariji/userRegistrationForm/releases/latest/download/<file name>`. Drafts and
+from `https://github.com/krishanmurariji/SmallMart/releases/latest/download/<file name>`. Drafts and
 pre-releases are not "latest": publish the release for the buttons to work.
 
 ## Installing the test builds

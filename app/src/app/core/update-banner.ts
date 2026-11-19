@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 import { AppIcon } from './icon';
 import { isDesktopApp } from './platform';
 
-const LATEST = 'https://api.github.com/repos/krishanmurariji/userRegistrationForm/releases/latest';
+const LATEST = 'https://api.github.com/repos/krishanmurariji/SmallMart/releases/latest';
 const SKIP_KEY = 'smallmart.skipVersion';
 
 /** "1.0.10" > "1.0.9". Anything that is not a plain version counts as 0. */

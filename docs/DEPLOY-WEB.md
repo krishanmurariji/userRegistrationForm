@@ -11,7 +11,7 @@ The app already talks to `https://smallmart-api.runasp.net` (set in `app/src/env
 ## Step 1: create the site
 
 1. Sign in at dash.cloudflare.com (a free account is enough).
-2. **Workers & Pages**, **Create**, **Pages**, **Connect to Git**. Connect GitHub and pick `userRegistrationForm`.
+2. **Workers & Pages**, **Create**, **Pages**, **Connect to Git**. Connect GitHub and pick `SmallMart`.
 3. Settings:
    | Setting | Value |
    |---|---|

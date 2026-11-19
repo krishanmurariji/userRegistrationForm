@@ -5,7 +5,7 @@ export const environment = {
   production: false,
   apiUrl: 'http://10.0.2.2:5028',
   /** Where the website's download buttons point: the newest published GitHub release. */
-  downloadsUrl: 'https://github.com/krishanmurariji/userRegistrationForm/releases/latest/download',
+  downloadsUrl: 'https://github.com/krishanmurariji/SmallMart/releases/latest/download',
   googleClientId: '478008530175-79l8gdo3s7m6sohs9bge1p2o8nlee5br.apps.googleusercontent.com',
   microsoftClientId: '61bba06e-ef7f-4c33-8033-03b135a35fd3',
   microsoftTenant: 'common',

@@ -49,7 +49,7 @@ so expect small fixes on the first run and send me the output of any command tha
 In PowerShell:
 
 ```bash
-git clone https://github.com/krishanmurariji/userRegistrationForm.git smallmart
+git clone https://github.com/krishanmurariji/SmallMart.git smallmart
 cd smallmart\deploy
 copy .env.example .env
 notepad .env
