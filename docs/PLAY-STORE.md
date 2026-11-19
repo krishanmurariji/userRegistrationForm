@@ -14,8 +14,8 @@ creating the signing key). Work through this page top to bottom.
 |---|---|
 | Target Android 16 (API 36) | `app/android/variables.gradle` |
 | Delete account inside the app | Account → Delete account |
-| Delete account on the web (Play asks for this link) | `https://userregistrationform.pages.dev/delete-account` |
-| Privacy policy link | `https://userregistrationform.pages.dev/privacy` |
+| Delete account on the web (Play asks for this link) | `https://smallmart.pages.dev/delete-account` |
+| Privacy policy link | `https://smallmart.pages.dev/privacy` |
 | App icon 512 × 512 | `docs/store/icon-512.png` |
 | Feature graphic 1024 × 500 (Play only) | `docs/store/feature-graphic.png` |
 | Phone screenshots 1080 × 1920 | `docs/store/screenshot-1.png` … `screenshot-6.png` |
@@ -76,7 +76,7 @@ can be reset through Play support. Samsung uses your key directly, so for Samsun
 2. **Create app:** name `Small Mart`, default language English (India), App, Free.
 3. **Store listing:** paste the texts from section 6 and upload the images from `docs/store/`.
 4. **App content** (left menu, "Policy and programs"):
-   - Privacy policy: `https://userregistrationform.pages.dev/privacy`
+   - Privacy policy: `https://smallmart.pages.dev/privacy`
    - App access: "All or some functionality is restricted". Add a demo customer login for the reviewer, for
      example `priya@demo.local` / its password, once the demo data is seeded on the live server.
    - Ads: No ads.
@@ -154,7 +154,7 @@ Small Mart works on Android, iPhone, Windows and on the web.
 ## 7. Data safety answers
 
 Data is encrypted in transit: **Yes**. Users can request deletion: **Yes** (link:
-`https://userregistrationform.pages.dev/delete-account`). Data shared with third parties: **No** (the services that
+`https://smallmart.pages.dev/delete-account`). Data shared with third parties: **No** (the services that
 run the app for us count as "service providers", not sharing).
 
 | Data type | Collected | Optional? | Purpose |
