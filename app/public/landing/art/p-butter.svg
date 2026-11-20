@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<g transform="translate(0 30)"><path d="M26 98 L100 70 L176 98 L176 168 L100 196 L26 168 Z" fill="#f7c948"/>
+<path d="M26 98 L100 70 L176 98 L100 126 Z" fill="#ffe08a"/><path d="M100 126 L176 98 L176 168 L100 196 Z" fill="#e8b22f"/>
+<path d="M26 98 L100 126 L100 196 L26 168 Z" fill="#f2bd3a"/>
+<text x="62" y="160" transform="rotate(20 62 160)" text-anchor="middle" font-family="Arial" font-weight="800" font-size="18" fill="#c2562a">BUTTER</text></g></svg>

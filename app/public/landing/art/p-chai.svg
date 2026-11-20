@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<path d="M48 54 L132 40 L160 56 L160 212 L76 226 L48 210 Z" fill="#2f6b3f"/>
+<path d="M48 54 L132 40 L160 56 L76 70 Z" fill="#4c8c5a"/><path d="M76 70 L160 56 L160 212 L76 226 Z" fill="#c2562a"/>
+<g transform="translate(118 112)"><path d="M-26 -8 h40 v26 a20 20 0 0 1 -40 0 Z" fill="#fff4e6"/><path d="M14 0 a10 10 0 0 1 0 18" fill="none" stroke="#fff4e6" stroke-width="5"/>
+<path d="M-14 -20 q4 -8 0 -14 M-2 -20 q4 -8 0 -14" stroke="#fff4e6" stroke-width="4" fill="none" stroke-linecap="round"/></g>
+<text x="118" y="190" text-anchor="middle" font-family="Arial" font-weight="800" font-size="22" fill="#fff4e6">CHAI</text></svg>

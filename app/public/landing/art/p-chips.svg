@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<path d="M46 40 l8 8 l8 -8 l8 8 l8 -8 l8 8 l8 -8 l8 8 l8 -8 l8 8 l8 -8 l8 8 l8 -8 l4 4 L150 200 l-8 -8 l-8 8 l-8 -8 l-8 8 l-8 -8 l-8 8 l-8 -8 l-8 8 l-8 -8 l-8 8 l-8 -8 l-8 8 L50 200 Z" fill="#7a3fb0"/>
+<ellipse cx="100" cy="120" rx="44" ry="40" fill="#ffd23f"/>
+<g fill="#e8a020"><ellipse cx="86" cy="112" rx="16" ry="10" transform="rotate(-20 86 112)"/><ellipse cx="112" cy="128" rx="16" ry="10" transform="rotate(25 112 128)"/></g>
+<text x="100" y="186" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="22" fill="#fff">CHIPS</text></svg>

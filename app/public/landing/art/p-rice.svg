@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<path d="M44 50 Q100 34 156 50 L164 214 H36 Z" fill="#fff8ee"/>
+<path d="M44 50 Q100 34 156 50 L156 66 Q100 52 44 66 Z" fill="#e3d7c3"/>
+<rect x="44" y="96" width="112" height="74" rx="10" fill="#9b5227"/>
+<text x="100" y="130" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="17" fill="#fff">BASMATI</text><text x="100" y="156" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="18" fill="#ffe1cc">RICE</text>
+<g fill="#e3d7c3"><ellipse cx="70" cy="190" rx="5" ry="2.4" transform="rotate(20 70 190)"/><ellipse cx="90" cy="196" rx="5" ry="2.4" transform="rotate(-15 90 196)"/><ellipse cx="112" cy="188" rx="5" ry="2.4" transform="rotate(30 112 188)"/><ellipse cx="132" cy="196" rx="5" ry="2.4" transform="rotate(-25 132 196)"/><ellipse cx="80" cy="182" rx="5" ry="2.4" transform="rotate(10 80 182)"/><ellipse cx="124" cy="182" rx="5" ry="2.4" transform="rotate(-5 124 182)"/></g></svg>

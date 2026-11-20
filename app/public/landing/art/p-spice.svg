@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<rect x="56" y="40" width="88" height="30" rx="8" fill="#2b1d12"/>
+<path d="M50 70 H150 V198 Q150 214 134 214 H66 Q50 214 50 198 Z" fill="#c8361b"/>
+<rect x="58" y="108" width="84" height="60" rx="10" fill="#fff4e6"/>
+<path d="M90 120 q22 -6 30 14 q-14 22 -34 20 q12 -10 4 -34" fill="#c8361b"/><path d="M88 122 q-6 -8 2 -12" stroke="#2f6b3f" stroke-width="4" fill="none"/>
+<text x="100" y="196" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="18" fill="#fff">MIRCH</text></svg>

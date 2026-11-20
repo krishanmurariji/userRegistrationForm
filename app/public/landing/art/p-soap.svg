@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<g transform="rotate(-8 100 140)"><rect x="34" y="96" width="132" height="84" rx="26" fill="#7fc7c0"/><rect x="34" y="96" width="132" height="70" rx="26" fill="#a7e0d8"/>
+<ellipse cx="100" cy="128" rx="40" ry="18" fill="#7fc7c0"/><text x="100" y="135" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="18" fill="#fff">SOAP</text></g>
+<g fill="#fff" stroke="#a7e0d8" stroke-width="3"><circle cx="150" cy="70" r="12"/><circle cx="172" cy="96" r="7"/><circle cx="132" cy="54" r="6"/></g></svg>

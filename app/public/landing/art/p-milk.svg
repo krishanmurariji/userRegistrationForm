@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<path d="M52 40 H148 L158 60 L150 212 Q100 224 50 212 L42 60 Z" fill="#eaf3ff"/>
+<path d="M52 40 H148 L152 54 H48 Z" fill="#3d7fd0"/>
+<path d="M44 150 Q100 128 156 150 L150 212 Q100 224 50 212 Z" fill="#3d7fd0"/>
+<path d="M100 74 C88 92 82 102 82 112 a18 18 0 0 0 36 0 C118 102 112 92 100 74 Z" fill="#3d7fd0"/>
+<text x="100" y="186" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="24" fill="#fff">MILK</text></svg>

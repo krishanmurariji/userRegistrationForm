@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<rect x="84" y="24" width="32" height="20" rx="4" fill="#c2562a"/>
+<path d="M80 44 H120 L132 78 Q146 92 146 120 V200 Q146 214 132 214 H68 Q54 214 54 200 V120 Q54 92 68 78 Z" fill="#f2b632" opacity=".95"/>
+<path d="M66 96 Q100 86 134 96 V140 Q100 150 66 140 Z" fill="#fff4e6"/>
+<text x="100" y="126" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="22" fill="#c2562a">OIL</text>
+<path d="M70 160 V196" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".5"/></svg>

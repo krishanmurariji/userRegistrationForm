@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<g transform="rotate(-12 100 130)"><rect x="18" y="92" width="164" height="82" rx="14" fill="#f08a24"/>
+<path d="M18 104 l-8 -6 v70 l8 -6 Z M182 104 l8 -6 v70 l-8 -6 Z" fill="#d06f12"/>
+<circle cx="66" cy="133" r="26" fill="#d9a35a"/><circle cx="66" cy="133" r="26" fill="none" stroke="#b9823f" stroke-width="3" stroke-dasharray="4 5"/>
+<g fill="#8a4a22"><circle cx="58" cy="125" r="3"/><circle cx="74" cy="128" r="3"/><circle cx="64" cy="142" r="3"/></g>
+<text x="132" y="140" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="20" fill="#fff">BISCUIT</text></g></svg>

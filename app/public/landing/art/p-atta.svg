@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240"><ellipse cx="100" cy="228" rx="70" ry="9" fill="#2b1d12" opacity=".12"/>
+<path d="M40 52 Q100 30 160 52 L170 214 Q100 230 30 214 Z" fill="#f4e2c4"/>
+<path d="M40 52 Q100 30 160 52 L158 70 Q100 52 42 70 Z" fill="#e3c79c"/>
+<path d="M34 112 H166 L168 168 H32 Z" fill="#c2562a"/>
+<text x="100" y="148" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="800" font-size="30" fill="#fff">ATTA</text>
+<g fill="none" stroke="#c48a3a" stroke-width="5" stroke-linecap="round"><path d="M100 104 V78"/><path d="M100 92 q-12 -4 -14 -16 q12 2 14 16 q2 -14 14 -16 q-2 12 -14 16"/></g>
+<text x="100" y="196" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="16" fill="#8a4a22">5 kg</text></svg>
